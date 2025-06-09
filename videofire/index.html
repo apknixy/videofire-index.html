@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>VideoFire</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script type="text/javascript" src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+    <script src="http://www.youtube.com/iframe_api"></script>
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a; /* Dark background */
+            color: #ffffff; /* White text */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .header {
+            background-color: #282828;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+        .header h1 {
+            margin: 0;
+            color: #e50914;
+            font-size: 24px;
+        }
+        .header button {
+            background-color: #e50914;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        .header button:hover {
+            background-color: #c00810;
+        }
+
+        /* --- Login Page Styles --- */
+        #loginPage {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .login-container {
+            background-color: #282828;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-container h2 {
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+        .login-container input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background-color: #333;
+            color: #fff;
+            font-size: 16px;
+        }
+        .login-container button {
+            background-color: #e50914;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .login-container button:hover {
+            background-color: #c00810;
+        }
+        #loginMessage {
+            color: #ffcc00;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #e50914;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto 0;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- Home Screen (Video List) Styles --- */
+        #homePage {
+            flex-grow: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            display: none; /* Hidden by default */
+        }
+        .video-item {
+            background-color: #282828;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            display: flex;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out;
+        }
+        .video-item:active {
+            transform: scale(0.98);
+        }
+        .video-thumbnail {
+            width: 150px;
+            height: 90px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .video-info {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+        }
+        .video-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #ffffff;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .video-details {
+            font-size: 12px;
+            color: #bbbbbb;
+        }
+
+        /* --- Video Player Overlay Styles --- */
+        #videoPlayerOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.95);
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            z-index: 1000;
+        }
+        .player-header {
+            width: 100%;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            background-color: #000;
+        }
+        .player-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .player-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+        }
+        #media-container {
+            position: relative;
+            width: 100vw;
+            height: 56.25vw; /* 16:9 aspect ratio */
+            max-width: 100%;
+            max-height: 80vh; /* Adjust as needed */
+            background-color: #000;
+            margin-bottom: 10px;
+        }
+        #youtubePlayerDiv, #vastPlayerDiv {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #vastPlayerDiv {
+            z-index: 2; /* VAST player overlays YouTube when active */
+            display: none; /* Hidden by default */
+        }
+        #vast-video-element {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure video fits */
+            background-color: black;
+        }
+        .video-meta-info {
+            width: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .video-meta-info h2 {
+            font-size: 20px;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        .video-meta-info p {
+            font-size: 14px;
+            color: #bbbbbb;
+        }
+
+        /* --- Adsterea Ad Styles --- */
+        .adsterea-banner-container {
+            margin: 15px auto;
+            text-align: center;
+            background-color: #333;
+            padding: 5px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .adsterea-native-container {
+            margin: 20px 0;
+            background-color: #2e2e2e;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        /* Specific styles for Adsterea Native Ad Container (if needed) */
+        #container-39628927897b21d6c45567203000ccc6 {
+            min-height: 100px; /* Ensure it has some space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #aaa;
+        }
+        /* Social Bar Ad (usually floats, might not need a div) */
+    </style>
+</head>
+<body>
+
+    <div id="loginPage">
+        <div class="login-container">
+            <h2>Login to VideoFire</h2>
+            <input type="text" id="usernameInput" placeholder="Your Username (from email)">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button id="loginBtn">Login</button>
+            <div id="loginSpinner" class="loading-spinner"></div>
+            <p id="loginMessage"></p>
+        </div>
+    </div>
+
+    <div id="mainApp" style="display: none;">
+        <div class="header">
+            <h1>VideoFire</h1>
+            <button id="logoutBtn">Logout</button>
+        </div>
+
+        <div id="homePage">
+            <div class="adsterea-banner-container">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '7281653bd62d5d460d6daa8793f19c5e',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js"></script>
+                <p style="font-size: 10px; color: #777;">(Adsterea Banner)</p>
+            </div>
+
+            <div class="adsterea-native-container">
+                <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Recommended for you:</p>
+                <script async="async" data-cfasync="false" src="//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js"></script>
+                <div id="container-39628927897b21d6c45567203000ccc6"></div>
+                <p style="font-size: 10px; color: #777; margin-top: 5px;">(Adsterea Native Ad)</p>
+            </div>
+
+            <div id="videoList">
+                <p style="text-align: center; color: #aaa;">Loading videos...</p>
+            </div>
+
+            <div class="adsterea-banner-container" style="max-width: 320px;">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : 'f4fd46187fcf3a252df23d7277e02fd7',
+                        'format' : 'iframe',
+                        'height' : 50,
+                        'width' : 320,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="//www.highperformanceformat.com/f4fd46187fcf3a252df23d7277e02fd7/invoke.js"></script>
+                <p style="font-size: 10px; color: #777;">(Adsterea Mobile Banner)</p>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="videoPlayerOverlay">
+        <div class="player-header">
+            <button id="closePlayerBtn">&larr;</button>
+            <h3 id="playerVideoTitle"></h3>
+        </div>
+        <div id="media-container">
+            <div id="youtubePlayerDiv"></div>
+            <div id="vastPlayerDiv">
+                <video id="vast-video-element" playsinline></video>
+            </div>
+        </div>
+        <div class="video-meta-info">
+            <h2 id="videoDetailsTitle"></h2>
+            <p id="videoDetailsCreator"></p>
+            <p id="videoDetailsViews"></p>
+        </div>
+    </div>
+
+    <script type='text/javascript' src='//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js'></script>
+    <script type='text/javascript' src='//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js'></script>
+
+
+    <script>
+        // Your web app's Firebase configuration (use the one you provided earlier)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",
+            authDomain: "videofire-268ff.firebaseapp.com",
+            databaseURL: "https://videofire-268ff-default-rtdb.firebaseio.com",
+            projectId: "videofire-268ff",
+            storageBucket: "videofire-268ff.firebasestorage.app",
+            messagingSenderId: "910374058927",
+            appId: "1:910374058927:web:6add3afdea07cfa2914d5a"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // --- DOM Elements ---
+        const loginPage = document.getElementById('loginPage');
+        const usernameInput = document.getElementById('usernameInput');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginSpinner = document.getElementById('loginSpinner');
+        const loginMessage = document.getElementById('loginMessage');
+        const mainApp = document.getElementById('mainApp');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const homePage = document.getElementById('homePage');
+        const videoListDiv = document.getElementById('videoList');
+        const videoPlayerOverlay = document.getElementById('videoPlayerOverlay');
+        const closePlayerBtn = document.getElementById('closePlayerBtn');
+        const playerVideoTitleDisplay = document.getElementById('playerVideoTitle');
+        const videoDetailsTitle = document.getElementById('videoDetailsTitle');
+        const videoDetailsCreator = document.getElementById('videoDetailsCreator');
+        const videoDetailsViews = document.getElementById('videoDetailsViews');
+        
+        // --- Global App State Variables ---
+        let youtubePlayer;
+        let currentPlayingYoutubeId = null;
+        let lastAdPlayPosition = 0; // In seconds
+        let preRollAdCount = 0; // Counter for pre-roll ads
+        let isPlayingAd = false;
+        let vastPlayerManager = null; // IMA SDK AdsManager
+        let vastAdsLoader = null; // IMA SDK AdsLoader
+        let vastAdDisplayContainer = null; // IMA SDK AdDisplayContainer
+        let vastVideoElement; // HTML video element for VAST ads
+        let currentVideoData = {}; // Stores details of the video currently selected
+        let usersDataCache = {}; // Cache for creator display names
+
+        const VAST_AD_TAG_URL = 'https://s.magsrv.com/v1/vast.php?idzone=5609878';
+        const MID_ROLL_INTERVAL_SECONDS = 5 * 60; // 5 minutes
+
+        // --- Authentication Logic ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // User is signed in. Hide login, show main app.
+                loginPage.style.display = 'none';
+                mainApp.style.display = 'flex';
+                loadHomePage();
+                loadUsersData(); // Load users for display names
+            } else {
+                // User is signed out. Show login page.
+                loginPage.style.display = 'flex';
+                mainApp.style.display = 'none';
+            }
+        });
+
+        loginBtn.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!username || !password) {
+                loginMessage.textContent = 'Please enter username and password.';
+                return;
+            }
+
+            loginMessage.textContent = 'Logging in...';
+            loginSpinner.style.display = 'block';
+            loginBtn.disabled = true;
+
+            try {
+                // Firebase Auth does not directly support username login.
+                // We need to find the user's email based on the generated username.
+                // This requires reading from the 'users' node in Realtime Database.
+
+                const usersRef = database.ref('users');
+                const snapshot = await usersRef.orderByChild('generatedUsername').equalTo(username).once('value');
+                const userData = snapshot.val();
+
+                if (userData) {
+                    const uid = Object.keys(userData)[0]; // Get the UID
+                    const email = userData[uid].email;
+
+                    if (email && userData[uid].generatedPassword === password) { // Simple password check
+                        // Sign in with email and password
+                        await auth.signInWithEmailAndPassword(email, password);
+                        loginMessage.textContent = 'Login successful!';
+                        // AuthStateChanged will handle the UI update
+                    } else {
+                        loginMessage.textContent = 'Invalid username or password.';
+                    }
+                } else {
+                    loginMessage.textContent = 'Invalid username or password.';
+                }
+
+            } catch (error) {
+                console.error("Login error:", error);
+                loginMessage.textContent = `Login failed: ${error.message}`;
+            } finally {
+                loginSpinner.style.display = 'none';
+                loginBtn.disabled = false;
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            try {
+                await auth.signOut();
+                console.log("User logged out.");
+                // AuthStateChanged will handle the UI update
+            } catch (error) {
+                console.error("Logout error:", error);
+                alert("Error logging out: " + error.message);
+            }
+        });
+
+        // --- Home Page Logic (Video List) ---
+        async function loadHomePage() {
+            homePage.style.display = 'flex';
+            videoListDiv.innerHTML = '<p style="text-align: center; color: #aaa;">Loading videos...</p>';
+
+            try {
+                const snapshot = await database.ref('videos').once('value');
+                const videos = snapshot.val();
+                videoListDiv.innerHTML = ''; // Clear loading message
+
+                if (!videos) {
+                    videoListDiv.innerHTML = '<p style="text-align: center; color: #aaa;">No videos found.</p>';
+                    return;
+                }
+
+                const videoIds = Object.keys(videos).sort((a, b) => {
+                    // Sort by timestamp for latest first
+                    const tsA = videos[a].uploadTimestamp || 0;
+                    const tsB = videos[b].uploadTimestamp || 0;
+                    return tsB - tsA;
+                });
+
+                videoIds.forEach(videoId => {
+                    const video = videos[videoId];
+                    createVideoItem(video);
+                });
+
+            } catch (error) {
+                console.error("Error fetching videos:", error);
+                videoListDiv.innerHTML = '<p style="text-align: center; color: red;">Error loading videos.</p>';
+            }
+        }
+
+        async function loadUsersData() {
+            try {
+                const snapshot = await database.ref('users').once('value');
+                usersDataCache = snapshot.val() || {};
+                // If videos are already loaded, re-render to apply display names
+                if (homePage.style.display === 'flex') {
+                    const currentVideosSnapshot = await database.ref('videos').once('value');
+                    const currentVideos = currentVideosSnapshot.val();
+                    if (currentVideos) {
+                        videoListDiv.innerHTML = '';
+                        Object.keys(currentVideos).sort((a, b) => (currentVideos[b].uploadTimestamp || 0) - (currentVideos[a].uploadTimestamp || 0)).forEach(videoId => {
+                            createVideoItem(currentVideos[videoId]);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading user data:", error);
+            }
+        }
+
+        function createVideoItem(video) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'video-item';
+            itemDiv.dataset.youtubeId = video.youtubeId;
+
+            const thumbnailUrl = `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`;
+            const creatorDisplayName = usersDataCache[video.creatorUid] ? usersDataCache[video.creatorUid].displayName || video.creatorUid : (video.creatorUid || 'Unknown Creator');
+            const views = video.views !== undefined ? video.views.toLocaleString() : '0';
+            const timeAgo = calculateTimeAgo(video.uploadTimestamp || Date.now());
+
+            itemDiv.innerHTML = `
+                <img src="${thumbnailUrl}" alt="Video Thumbnail" class="video-thumbnail">
+                <div class="video-info">
+                    <div class="video-title">${video.title || 'Untitled Video'}</div>
+                    <div class="video-details">
+                        By: ${creatorDisplayName} •
+                        ${views} views •
+                        ${timeAgo}
+                    </div>
+                </div>
+            `;
+            
+            itemDiv.addEventListener('click', () => {
+                currentVideoData = video; // Store data for player
+                openVideoPlayer(video.youtubeId);
+            });
+
+            videoListDiv.appendChild(itemDiv);
+        }
+
+        function calculateTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+            if (seconds < 60) return "just now";
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            if (seconds < 2592000) return `${Math.floor(seconds / 86400)} days ago`;
+            if (seconds < 31536000) return `${Math.floor(seconds / 2592000)} months ago`;
+            return `${Math.floor(seconds / 31536000)} years ago`;
+        }
+
+        // --- Video Player Logic ---
+        function openVideoPlayer(youtubeId) {
+            currentPlayingYoutubeId = youtubeId;
+            playerVideoTitleDisplay.textContent = currentVideoData.title || 'Loading Video...';
+            videoDetailsTitle.textContent = currentVideoData.title || 'Loading Video...';
+            videoDetailsCreator.textContent = `By: ${usersDataCache[currentVideoData.creatorUid]?.displayName || currentVideoData.creatorUid || 'Unknown Creator'}`;
+            videoDetailsViews.textContent = `${(currentVideoData.views || 0).toLocaleString()} views`;
+
+            videoPlayerOverlay.style.display = 'flex';
+            homePage.style.display = 'none'; // Hide home page
+
+            if (!vastVideoElement) { // Initialize VAST player elements once
+                vastVideoElement = document.getElementById('vast-video-element');
+                vastAdDisplayContainer = new google.ima.AdDisplayContainer(document.getElementById('vastPlayerDiv'), vastVideoElement);
+                vastAdsLoader = new google.ima.AdsLoader(vastAdDisplayContainer);
+
+                vastAdsLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, onAdsManagerLoaded, false);
+                vastAdsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError, false);
+            }
+
+            // Request ads
+            const adsRequest = new google.ima.AdsRequest();
+            adsRequest.adTagUrl = VAST_AD_TAG_URL;
+            adsRequest.linearAdSlotWidth = document.getElementById('vastPlayerDiv').offsetWidth;
+            adsRequest.linearAdSlotHeight = document.getElementById('vastPlayerDiv').offsetHeight;
+            adsRequest.omidAccessModeRules = {}; // Necessary for some ad providers
+
+            vastAdsLoader.requestAds(adsRequest);
+            vastAdDisplayContainer.initialize(); // Initialize ad display container
+
+            // Load YouTube video after ad setup
+            if (youtubePlayer) {
+                youtubePlayer.loadVideoById(youtubeId);
+            } else {
+                // Player will be created when YouTube API is ready
+            }
+        }
+
+        function closeVideoPlayer() {
+            videoPlayerOverlay.style.display = 'none';
+            homePage.style.display = 'flex'; // Show home page
+            if (youtubePlayer) {
+                youtubePlayer.stopVideo();
+            }
+            if (vastPlayerManager) {
+                vastPlayerManager.destroy(); // Clean up ads manager
+                vastPlayerManager = null;
+            }
+            isPlayingAd = false;
+            clearInterval(window.midRollCheckInterval);
+            window.midRollCheckInterval = null;
+
+            // Optional: Update view count for the *current* video if not already done
+            updateViewCount(currentPlayingYoutubeId); // Pass the last played video ID
+        }
+
+        closePlayerBtn.addEventListener('click', closeVideoPlayer);
+
+        // --- YouTube Player API Callbacks ---
+        function onYouTubeIframeAPIReady() {
+            youtubePlayer = new YT.Player('youtubePlayerDiv', {
+                height: '100%',
+                width: '100%',
+                videoId: currentPlayingYoutubeId || '', // Initial ID
+                playerVars: {
+                    'controls': 1,
+                    'autoplay': 0, // No autoplay initially
+                    'modestbranding': 1,
+                    'rel': 0,
+                    'showinfo': 0,
+                    'iv_load_policy': 3 // Disable annotations
+                },
+                events: {
+                    'onReady': onYouTubePlayerReady,
+                    'onStateChange': onYouTubePlayerStateChange,
+                    'onError': onYouTubePlayerError
+                }
+            });
+        }
+
+        function onYouTubePlayerReady(event) {
+            console.log("YouTube Player is ready.");
+            // Video will be played after pre-roll ads
+        }
+
+        function onYouTubePlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING && !isPlayingAd) {
+                // Start mid-roll check
+                if (!window.midRollCheckInterval) {
+                    window.midRollCheckInterval = setInterval(checkForMidRollAd, 1000); // Check every second
+                }
+            } else if (event.data !== YT.PlayerState.PLAYING) {
+                // Pause mid-roll check
+                clearInterval(window.midRollCheckInterval);
+                window.midRollCheckInterval = null;
+            }
+
+            if (event.data === YT.PlayerState.ENDED) {
+                console.log("YouTube video ended.");
+                updateViewCount(currentPlayingYoutubeId); // Final view count update
+            }
+        }
+
+        function onYouTubePlayerError(event) {
+            console.error("YouTube Player Error:", event.data);
+            alert("Error playing YouTube video.");
+            vastAdDisplayContainer.destroy(); // Clean up if error
+            hideAdPlayer(); // Hide ad container
+        }
+
+
+        // --- Google IMA SDK (VAST) Ad Logic ---
+
+        function onAdsManagerLoaded(adsManagerLoadedEvent) {
+            vastPlayerManager = adsManagerLoadedEvent.getAdsManager(vastVideoElement);
+            vastPlayerManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
+            vastPlayerManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, onAllAdsCompleted);
+
+            vastPlayerManager.addEventListener(google.ima.AdEvent.Type.LOADED, onAdLoaded);
+            vastPlayerManager.addEventListener(google.ima.AdEvent.Type.STARTED, onAdStarted);
+            vastPlayerManager.addEventListener(google.ima.AdEvent.Type.COMPLETE, onAdComplete);
+
+            try {
+                // Initialize the AdsManager. Ad rules will be auto-played.
+                vastPlayerManager.init(document.getElementById('vastPlayerDiv').offsetWidth, document.getElementById('vastPlayerDiv').offsetHeight, google.ima.ViewMode.NORMAL);
+                // Start playing the ads.
+                vastPlayerManager.start();
+                showAdPlayer();
+            } catch (adError) {
+                console.error("AdsManager init/start error:", adError);
+                // Play video if ads failed
+                hideAdPlayer();
+                youtubePlayer.playVideo();
+            }
+        }
+
+        function onAdError(adErrorEvent) {
+            console.error("Ad error:", adErrorEvent.getError());
+            if (vastPlayerManager) {
+                vastPlayerManager.destroy(); // Clean up if ad error
+                vastPlayerManager = null;
+            }
+            // If it was a pre-roll or mid-roll, try to resume video
+            hideAdPlayer();
+            youtubePlayer.playVideo();
+        }
+
+        function onAllAdsCompleted() {
+            console.log("All ads completed.");
+            hideAdPlayer();
+            youtubePlayer.playVideo(); // Resume main video after all ads
+        }
+
+        function onAdLoaded(adEvent) {
+            const ad = adEvent.getAd();
+            if (!ad.isLinear()) {
+                // Non-linear ad. Do not pause YouTube player.
+                vastPlayerManager.discardAd(ad); // Discard non-linear ads if not desired
+            } else {
+                // Linear ad.
+                console.log("Ad loaded:", ad.getAdPodInfo().getAdPosition() + "/" + ad.getAdPodInfo().getTotalAds());
+                // For pre-roll logic: if we need to enforce 2 ads, this gets complex with IMA SDK.
+                // IMA SDK typically plays ads based on ad rules in the VAST response.
+                // We're letting IMA SDK handle pre-roll sequencing.
+            }
+        }
+        
+        function onAdStarted(adEvent) {
+             isPlayingAd = true;
+             console.log("Ad started.");
+             vastVideoElement.controls = adEvent.getAd().isSkippable(); // Show controls if skippable
+        }
+
+        function onAdComplete(adEvent) {
+            console.log("Ad complete.");
+            isPlayingAd = false;
+        }
+
+        function showAdPlayer() {
+            document.getElementById('vastPlayerDiv').style.display = 'block';
+            document.getElementById('youtubePlayerDiv').style.display = 'none';
+        }
+
+        function hideAdPlayer() {
+            document.getElementById('vastPlayerDiv').style.display = 'none';
+            document.getElementById('youtubePlayerDiv').style.display = 'block';
+        }
+
+        function checkForMidRollAd() {
+            if (youtubePlayer && youtubePlayer.getPlayerState() === YT.PlayerState.PLAYING && !isPlayingAd) {
+                const currentTime = youtubePlayer.getCurrentTime();
+                const duration = youtubePlayer.getDuration();
+
+                if (duration > 0 && currentTime > lastAdPlayPosition + MID_ROLL_INTERVAL_SECONDS) {
+                    // Avoid playing ads too close to the end (e.g., last 30 seconds)
+                    if (currentTime < duration - 30) {
+                        lastAdPlayPosition = currentTime;
+                        console.log("Triggering mid-roll ad at:", currentTime);
+                        // Request a new ad for mid-roll
+                        const adsRequest = new google.ima.AdsRequest();
+                        adsRequest.adTagUrl = VAST_AD_TAG_URL;
+                        adsRequest.linearAdSlotWidth = document.getElementById('vastPlayerDiv').offsetWidth;
+                        adsRequest.linearAdSlotHeight = document.getElementById('vastPlayerDiv').offsetHeight;
+                        adsRequest.setAdWillAutoPlay(false); // We want to control playback after ad
+                        adsRequest.setAdWillPlayMuted(false);
+
+                        vastAdsLoader.requestAds(adsRequest);
+                        vastAdDisplayContainer.initialize();
+                        // The onAdsManagerLoaded will handle playing the ad, and onAllAdsCompleted will resume YouTube
+                    }
+                }
+            }
+        }
+        
+        // --- View Count Logic ---
+        async function updateViewCount(youtubeId) {
+            const currentUser = auth.currentUser;
+            if (!currentUser || !youtubeId) return;
+
+            const videoRef = database.ref('videos/' + youtubeId);
+            const userViewedRef = database.ref('users/' + currentUser.uid + '/watchedVideos/' + youtubeId);
+
+            // Fetch current video data and user's watched status in a transaction
+            // Firebase transaction for safe increment
+            videoRef.transaction(currentVideo => {
+                if (currentVideo) {
+                    // Only increment if the user has watched at least 7%
+                    // This logic requires tracking percentage within the video player's JS
+                    // For simplicity, we'll assume a view "counts" if video ended or user left.
+                    // A robust solution would pass current position vs duration to this function.
+
+                    // For now, let's just increment if it's considered "watched"
+                    // You'd need a global variable to store last calculated percentage, e.g., `currentWatchedPercentage`
+                    const currentWatchedPercentage = youtubePlayer ? (youtubePlayer.getCurrentTime() / youtubePlayer.getDuration()) * 100 : 0;
+                    
+                    if (currentWatchedPercentage >= 7 && !sessionStorage.getItem(`view_counted_${youtubeId}`)) {
+                        // Check if already counted in this session to prevent multiple increments
+                        sessionStorage.setItem(`view_counted_${youtubeId}`, 'true'); // Mark as counted for this session
+
+                        currentVideo.views = (currentVideo.views || 0) + 1;
+                        console.log(`View counted for ${youtubeId}! New views: ${currentVideo.views}`);
+
+                        // Also update creator's total views
+                        database.ref('users/' + currentVideo.creatorUid + '/totalViews').transaction(currentTotalViews => {
+                            return (currentTotalViews || 0) + 1;
+                        });
+                    }
+                }
+                return currentVideo;
+            }, (error, committed, snapshot) => {
+                if (error) {
+                    console.error('Transaction failed abnormally!', error);
+                } else if (!committed) {
+                    console.log('Transaction aborted (e.g. concurrent update).');
+                } else {
+                    console.log('Views updated successfully!');
+                }
+            });
+        }
+        // Ensure session storage is cleared on app start/refresh if needed for new sessions
+        window.addEventListener('load', () => {
+             // sessionStorage.clear(); // Uncomment if you want to clear all view tracking on every page load
+        });
+    </script>
+</body>
+</html>
