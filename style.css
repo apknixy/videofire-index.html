@@ -1,0 +1,340 @@
+/* General Body Styles */
+body {
+    font-family: 'Roboto', sans-serif; /* Or any clean font */
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Screen Management */
+.screen {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow-y: auto; /* Enable vertical scrolling for content within screens */
+}
+
+.screen.active {
+    display: block;
+}
+
+/* Login Screen */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    background-color: #fff;
+    padding: 20px;
+}
+
+.app-logo {
+    width: 150px;
+    margin-bottom: 30px;
+}
+
+.google-signin-btn {
+    background-color: #4285F4;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+}
+
+.google-signin-btn:hover {
+    background-color: #357ae8;
+}
+
+.google-signin-btn img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Channel Creation Screen */
+.channel-create-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background-color: #fff;
+}
+
+.channel-create-container input[type="text"] {
+    width: 80%;
+    max-width: 300px;
+    padding: 10px;
+    margin: 15px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.channel-create-container button {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+/* Main App Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.header-logo {
+    height: 30px; /* Adjust as needed */
+    margin-right: 10px;
+}
+
+.app-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ff0000;
+}
+
+.left-section {
+    display: flex;
+    align-items: center;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.icon-button img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Bottom Navigation */
+.bottom-navigation {
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+}
+
+.nav-item {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    color: #555;
+    cursor: pointer;
+    padding: 5px;
+    flex: 1; /* Distribute space evenly */
+}
+
+.nav-item img {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 3px;
+}
+
+.nav-item.active {
+    color: #ff0000;
+}
+
+/* Content Sections */
+.app-content {
+    padding: 15px;
+    padding-bottom: 70px; /* Space for bottom nav */
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* Video Thumbnail Styling (for Home/Search) */
+.video-thumbnail-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    cursor: pointer;
+}
+
+.video-thumbnail-item img {
+    width: 100%;
+    height: 200px; /* Adjust as needed */
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.video-info {
+    padding: 0 5px;
+}
+
+.video-info h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    max-height: 3.9em; /* Approx 3 lines */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.video-info p {
+    margin: 5px 0 0;
+    font-size: 13px;
+    color: #606060;
+}
+
+/* Upload Form */
+#upload-form-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+#upload-form-container label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+#upload-form-container input[type="file"],
+#upload-form-container input[type="text"],
+#upload-form-container textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#upload-form-container textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+#upload-form-container button[type="submit"] {
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 12px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    align-self: flex-start; /* Align button to start */
+    margin-top: 10px;
+}
+
+/* Video Playback Screen */
+#video-playback-screen video {
+    width: 100%;
+    max-height: 300px; /* Or responsive height */
+    background-color: #000;
+    display: block;
+    margin-bottom: 15px;
+}
+
+#vast-ad-player {
+    width: 100%;
+    height: 300px; /* Same as video player */
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.video-actions {
+    display: flex;
+    gap: 20px;
+    margin: 15px 0;
+}
+
+.video-actions button {
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+}
+
+.video-actions button img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Adsterea Ads */
+.ad-unit {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    text-align: center;
+}
+
+.ad-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+/* Basic Responsiveness */
+@media (min-width: 600px) {
+    .app-content {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+}
