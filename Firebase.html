@@ -1,72 +1,73 @@
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
-    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
-    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";  
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";  
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js";  
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",
-        authDomain: "videofire-268ff.firebaseapp.com",
-        databaseURL: "https://videofire-268ff-default-rtdb.firebaseio.com",
-        projectId: "videofire-268ff",
-        storageBucket: "videofire-268ff.firebasestorage.app",
-        messagingSenderId: "910374058927",
-        appId: "1:910374058927:web:6add3afdea07cfa2914d5a"
-    };
+    const firebaseConfig = {  
+        apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",  
+        authDomain: "videofire-268ff.firebaseapp.com",  
+        databaseURL: "https://videofire-268ff-default-rtdb.firebaseio.com",  
+        projectId: "videofire-268ff",  
+        storageBucket: "videofire-268ff.firebasestorage.app",  
+        messagingSenderId: "910374058927",  
+        appId: "1:910374058927:web:6add3afdea07cfa2914d5a"  
+    };  
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
+    const app = initializeApp(firebaseConfig);  
+    const auth = getAuth(app);  
+    const database = getDatabase(app);  
 
     // Google Sign-In function
-    window.signInWithGoogle = async () => {
-        const provider = new GoogleAuthProvider();
-        try {
-            await signInWithPopup(auth, provider);
-            // User signed in successfully
-        } catch (error) {
-            console.error("Google Sign-In Error:", error);
-        }
-    };
+    window.signInWithGoogle = async () => {  
+        const provider = new GoogleAuthProvider();  
+        try {  
+            await signInWithPopup(auth, provider);  
+            // User signed in successfully  
+        } catch (error) {  
+            console.error("Google Sign-In Error:", error);  
+        }  
+    };  
 
-    // Check auth state persistence
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // User is signed in.
-            console.log("User logged in:", user.displayName, user.email, user.uid);
-            // Redirect to main app interface or show content
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app-screen').style.display = 'block';
+    // Check auth state persistence  
+    onAuthStateChanged(auth, async (user) => {  
+        if (user) {  
+            // User is signed in  
+            console.log("User logged in:", user.displayName, user.email, user.uid);  
+            document.getElementById('login-screen').style.display = 'none';  
+            document.getElementById('main-app-screen').style.display = 'block';  
 
             // Check if user has a channel name
-            const userRef = ref(database, 'users/' + user.uid);
-            const snapshot = await get(child(userRef, 'channelName'));
-            if (!snapshot.exists()) {
-                // Show channel name creation screen
-                document.getElementById('main-app-screen').style.display = 'none';
-                document.getElementById('channel-creation-screen').style.display = 'block';
-            } else {
-                // Channel name exists, proceed to home
-                loadHomePage(); // Function to load home content
-            }
+            const userRef = ref(database, 'users/' + user.uid);  
+            const snapshot = await get(child(userRef, 'channelName'));  
+            if (!snapshot.exists()) {  
+                // No channel name, show channel creation screen  
+                document.getElementById('main-app-screen').style.display = 'none';  
+                document.getElementById('channel-creation-screen').style.display = 'block';  
+            } else {  
+                // Channel name exists, proceed to home  
+                loadHomePage();  // Load home content  
+            }  
+        } else {  
+            // User is signed out  
+            console.log("User logged out.");  
+            document.getElementById('login-screen').style.display = 'block';  
+            document.getElementById('main-app-screen').style.display = 'none';  
+            document.getElementById('channel-creation-screen').style.display = 'none';  
+        }  
+    });  
 
-        } else {
-            // User is signed out.
-            console.log("User logged out.");
-            document.getElementById('login-screen').style.display = 'block';
-            document.getElementById('main-app-screen').style.display = 'none';
-            document.getElementById('channel-creation-screen').style.display = 'none';
-        }
-    });
+    window.signOutUser = () => {  
+        signOut(auth).then(() => {  
+            // Sign-out successful  
+            document.getElementById('login-screen').style.display = 'block';  
+            document.getElementById('main-app-screen').style.display = 'none';  
+            document.getElementById('channel-creation-screen').style.display = 'none';  
+        }).catch((error) => {  
+            console.error("Sign Out Error:", error);  
+        });  
+    };  
 
-    window.signOutUser = () => {
-        signOut(auth).then(() => {
-            // Sign-out successful.
-        }).catch((error) => {
-            console.error("Sign Out Error:", error);
-        });
-    };
-
-    // Expose Firebase and other functions globally for easy access in HTML event handlers
-    window.auth = auth;
-    window.database = database;
+    // Expose Firebase and other functions globally for easy access in HTML event handlers  
+    window.auth = auth;  
+    window.database = database;  
 </script>
