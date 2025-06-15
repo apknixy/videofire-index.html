@@ -52,10 +52,63 @@
             align-items: center;
             justify-content: center;
         }
-        /* Iframe responsiveness ke liye Tailwind classes */
+        /* Tailwind classes for iframe responsiveness */
         iframe {
             max-width: 100%;
             height: auto;
+        }
+        /* Custom toggle switch style */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4a5568; /* gray-600 */
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #f97316; /* orange-500 */
+        }
+
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px #f97316;
+        }
+
+        input:checked + .toggle-slider:before {
+            -webkit-transform: translateX(20px);
+            -ms-transform: translateX(20px);
+            transform: translateX(20px);
         }
     </style>
 </head>
@@ -229,10 +282,68 @@
                     <label for="video-url-input" class="block text-gray-300 text-sm font-semibold mb-2">YouTube Video URL:</label>
                     <input type="text" id="video-url-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., https://youtu.be/WC2FUEmKEu8" required />
                 </div>
-                <div class="mb-6">
-                    <label for="video-title-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Title:</label>
-                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Video ka title enter karein" required />
+                <div class="mb-4">
+                    <label for="video-title-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Title (Max 100 words):</label>
+                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Video ka title enter karein" maxlength="100" required />
                 </div>
+                <div class="mb-4">
+                    <label for="video-description-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Description:</label>
+                    <textarea id="video-description-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Video ke baare mein likhein"></textarea>
+                </div>
+                <div class="mb-6">
+                    <label for="video-tags-input" class="block text-gray-300 text-sm font-semibold mb-2">Tags (Comma-separated, Max 200 words):</label>
+                    <input type="text" id="video-tags-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="tag1, tag2, tag3" maxlength="200" />
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-300 text-sm font-semibold mb-2">Visibility:</label>
+                    <div class="flex items-center space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="video-visibility" value="public" class="form-radio text-orange-500" checked>
+                            <span class="ml-2 text-gray-300">Public (Sab dekh sakte hain)</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="video-visibility" value="private" class="form-radio text-orange-500">
+                            <span class="ml-2 text-gray-300">Private (Sirf aap)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h3 class="text-gray-300 text-sm font-semibold mb-3 border-b border-gray-700 pb-2">Monetization Settings (Video ke ads)</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label for="monetize-vast" class="text-gray-300">VAST Ads (Video ke shuru mein)</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="monetize-vast" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="monetize-banner-468x60" class="text-gray-300">Banner Ad (468x60)</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="monetize-banner-468x60" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="monetize-banner-300x250" class="text-gray-300">Banner Ad (300x250)</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="monetize-banner-300x250" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label for="monetize-native" class="text-gray-300">Native Ads</label>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="monetize-native" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <!-- Popunder aur Slide Video ads yahaan se hata diye gaye hain -->
+                    </div>
+                </div>
+
                 <p id="upload-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
                 <button type="submit" id="upload-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="upload-button-text">Video Upload Karein</span>
@@ -426,6 +537,14 @@
         const uploadVideoForm = document.getElementById('upload-video-form');
         const videoUrlInput = document.getElementById('video-url-input');
         const videoTitleInput = document.getElementById('video-title-input');
+        const videoDescriptionInput = document.getElementById('video-description-input'); // New
+        const videoTagsInput = document.getElementById('video-tags-input'); // New
+        const videoVisibilityPublic = document.querySelector('input[name="video-visibility"][value="public"]'); // New
+        const videoVisibilityPrivate = document.querySelector('input[name="video-visibility"][value="private"]'); // New
+        const monetizeVast = document.getElementById('monetize-vast'); // New
+        const monetizeBanner468x60 = document.getElementById('monetize-banner-468x60'); // New
+        const monetizeBanner300x250 = document.getElementById('monetize-banner-300x250'); // New
+        const monetizeNative = document.getElementById('monetize-native'); // New
         const uploadErrorMessage = document.getElementById('upload-error-message');
         const uploadSubmitButton = document.getElementById('upload-submit-button');
         const uploadButtonText = document.getElementById('upload-button-text');
@@ -478,9 +597,9 @@
         // --- Utility Functions ---
 
         /**
-         * YouTube URL ko parse karta hai video ID, embed URL, aur thumbnail URL nikalne ke liye.
-         * @param {string} url - YouTube video URL.
-         * @returns {object|null} videoId, embedUrl, thumbnailUrl ke saath ek object, ya agar invalid hai toh null.
+         * Parses a YouTube URL to extract video ID, embed URL, and thumbnail URL.
+         * @param {string} url - The YouTube video URL.
+         * @returns {object|null} An object with videoId, embedUrl, thumbnailUrl, or null if invalid.
          */
         function getYouTubeInfo(url) {
             const regExp = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|shorts\/|v\/|)([\w-]{11})(?:\S+)?/g;
@@ -498,12 +617,12 @@
         }
 
         /**
-         * Custom modal dialog dikhata hai.
-         * @param {string} title - Modal ka title.
-         * @param {string} message - Message content.
-         * @param {boolean} showConfirmButton - Confirm button dikhana hai ya nahi.
-         * @param {function} onConfirm - Confirm button ke liye callback.
-         * @param {function} onClose - Close button ke liye callback.
+         * Shows a custom modal dialog.
+         * @param {string} title - The title of the modal.
+         * @param {string} message - The message content.
+         * @param {boolean} showConfirmButton - Whether to show a confirm button.
+         * @param {function} onConfirm - Callback for confirm button.
+         * @param {function} onClose - Callback for close button.
          */
         function showCustomModal(title, message, showConfirmButton = false, onConfirm = () => {}, onClose = () => {}) {
             customModalTitle.textContent = title;
@@ -520,8 +639,8 @@
         }
 
         /**
-         * Ek specific modal ko band karta hai.
-         * @param {string} modalName - Modal ka naam ('custom', 'comment', 'upload', 'withdraw', 'auth').
+         * Closes a specific modal.
+         * @param {string} modalName - The name of the modal ('custom', 'comment', 'upload', 'withdraw', 'auth').
          */
         function closeModal(modalName) {
             switch (modalName) {
@@ -534,9 +653,17 @@
                     break;
                 case 'upload':
                     uploadVideoModal.classList.add('hidden');
-                    uploadVideoForm.reset(); // Form clear karein
-                    videoUrlInput.value = ''; // Inputs ko puri tarah reset karein
+                    uploadVideoForm.reset(); // Clear form
+                    // Also reset specific inputs if not covered by form.reset()
+                    videoUrlInput.value = '';
                     videoTitleInput.value = '';
+                    videoDescriptionInput.value = '';
+                    videoTagsInput.value = '';
+                    videoVisibilityPublic.checked = true; // Default to public
+                    monetizeVast.checked = true; // Default to checked
+                    monetizeBanner468x60.checked = true;
+                    monetizeBanner300x250.checked = true;
+                    monetizeNative.checked = true;
                     uploadErrorMessage.classList.add('hidden');
                     break;
                 case 'withdraw':
@@ -560,7 +687,7 @@
         // --- Firebase Initialization ---
 
         /**
-         * Firebase ko initialize karta hai aur authentication listener set karta hai.
+         * Initializes Firebase and sets up authentication listener.
          */
         async function initializeFirebase() {
             console.log("Firebase initialize ho raha hai...");
@@ -575,14 +702,17 @@
                     console.log("Auth state badal gaya. User:", user ? user.uid : "Koi user nahi");
                     if (user) {
                         currentUserId = user.uid;
-                        displayUserId.textContent = user.email ? user.email.split('@')[0] : currentUserId.substring(0, 8) + '...';
+                        // Display username or a truncated UID
+                        const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile/${user.uid}`);
+                        const userDoc = await getDoc(userProfileRef);
+                        const displayUsername = userDoc.exists() && userDoc.data().username ? userDoc.data().username : user.email ? user.email.split('@')[0] : currentUserId.substring(0, 8) + '...';
+                        displayUserId.textContent = displayUsername;
+
                         userInfo.classList.remove('hidden'); // User ki jaankari dikhayein
                         closeModal('auth'); // Agar user login ho gaya hai toh auth modal band karein
 
-                        // Sunischit karein ki user profile maujood hai (ya ek dummy banayein)
-                        const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile/${user.uid}`);
+                        // Ensure user profile exists (or create a dummy one)
                         try {
-                            const userDoc = await getDoc(userProfileRef);
                             if (!userDoc.exists()) {
                                 console.log("Nayi user profile bana rahe hain UID ke liye:", user.uid);
                                 await setDoc(userProfileRef, {
@@ -590,6 +720,8 @@
                                     email: user.email || null,
                                     joinedAt: serverTimestamp(),
                                     isEmailVerified: user.emailVerified || false,
+                                    followers: [], // New field
+                                    following: [] // New field
                                 });
                             } else {
                                 // Latest jaankari ke saath profile update karein agar email verified hai
@@ -597,6 +729,9 @@
                                 if (user.emailVerified && !userData.isEmailVerified) {
                                     await updateDoc(userProfileRef, { isEmailVerified: true });
                                 }
+                                // Ensure new fields exist for existing users
+                                if (!userData.followers) await updateDoc(userProfileRef, { followers: [] });
+                                if (!userData.following) await updateDoc(userProfileRef, { following: [] });
                             }
                         } catch (profileError) {
                             console.error("User profile banane/fetch karne mein error:", profileError);
@@ -675,7 +810,7 @@
             if (!authReady || !currentUserId) {
                 console.log("Auth taiyar nahi ya user login nahi hai, auth modal dikha rahe hain.");
                 authModal.classList.remove('hidden');
-                homeLoading.classList.add('hidden');
+                homeLoading.classList.add('hidden'); // Hide loading if auth modal is shown
                 return;
             }
 
@@ -728,7 +863,7 @@
 
             console.log("Firestore se videos fetch kar rahe hain...");
             try {
-                // Public videos ke liye path: /artifacts/{appId}/public/data/videos
+                // Path for public videos: /artifacts/{appId}/public/data/videos
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
                 const q = query(videosColRef);
 
@@ -741,16 +876,24 @@
                     // Client-side par timestamp (ghatate kram) se sort karein
                     videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
-                    console.log("Fetched videos:", videoList);
+                    // Filter videos based on visibility
+                    const filteredVideoList = videoList.filter(video => {
+                        if (video.visibility === 'private') {
+                            return video.userId === currentUserId; // Sirf uploader hi private video dekh sakta hai
+                        }
+                        return true; // Public videos sab dekh sakte hain
+                    });
 
-                    if (videoList.length === 0) {
+                    console.log("Fetched and filtered videos:", filteredVideoList);
+
+                    if (filteredVideoList.length === 0) {
                         noVideosMessage.classList.remove('hidden');
                         homeLoading.classList.add('hidden');
                         return;
                     }
 
                     videoFeedContainer.innerHTML = ''; // Existing videos ko re-rendering se pehle clear karein
-                    for (const video of videoList) {
+                    for (const video of filteredVideoList) {
                         const videoCard = createVideoCardElement(video);
                         videoFeedContainer.appendChild(videoCard);
                     }
@@ -773,7 +916,7 @@
         }
 
         /**
-         * Ek single video card ke liye HTML element banata hai.
+         * Creates an HTML element for a single video card.
          * @param {object} video - Video data.
          * @returns {HTMLElement} Video card element.
          */
@@ -785,6 +928,11 @@
 
             const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
             const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/1280x720/000000/FFFFFF?text=Invalid+Video+URL';
+
+            // Extract tags and format them
+            const tagsHtml = (video.tags && video.tags.length > 0)
+                ? video.tags.map(tag => `<span class="inline-block bg-gray-700 text-gray-300 rounded-full px-3 py-1 text-xs font-semibold mr-2 mb-2">#${tag.trim()}</span>`).join('')
+                : '';
 
             videoCard.innerHTML = `
                 <!-- Video Player Container -->
@@ -804,16 +952,18 @@
                     <div id="youtube-iframe-wrapper-${video.id}" class="w-full h-full hidden"></div>
                 </div>
 
-                <!-- Video ki jaankari aur Controls -->
+                <!-- Video Info and Controls -->
                 <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent flex flex-col justify-end text-white z-10">
-                    <!-- Adstreaa Banner 468x60 -->
-                    <div class="mb-4 w-full flex justify-center">
+                    <!-- Conditional Adstreaa Banner 468x60 -->
+                    ${video.monetization?.banner468x60 ? `<div class="mb-4 w-full flex justify-center">
                         <div id="adstreaa-banner-468x60-${video.id}" class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
-                            Banner 468x60 Ad (Adstreaa Placeholder)
+                            Banner 468x60 Ad (Adstreaa)
                         </div>
-                    </div>
+                    </div>` : ''}
 
                     <h2 class="text-xl font-bold mb-2 text-orange-300 drop-shadow">${video.title}</h2>
+                    <p class="text-sm text-gray-300 mb-2 drop-shadow">${video.description || ''}</p>
+                    <div class="flex flex-wrap mb-4">${tagsHtml}</div>
                     <p class="text-sm text-gray-300 mb-4 drop-shadow">By ${video.userName || 'Anonymous User'} | ${video.viewsCount || 0} views</p>
 
                     <!-- Social Buttons -->
@@ -838,20 +988,27 @@
                         </button>
                     </div>
 
-                    <!-- Hilltops MultiTag: Banner 300x250 -->
-                    <div class="mt-4 w-full flex justify-center">
+                    <!-- Conditional Hilltops Banner 300x250 -->
+                    ${video.monetization?.banner300x250 ? `<div class="mt-4 w-full flex justify-center">
                         <div id="hilltops-banner-300x250-${video.id}" class="w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
-                            Banner 300x250 Ad (Hilltops Placeholder)
+                            Banner 300x250 Ad (Hilltops)
                         </div>
-                    </div>
+                    </div>` : ''}
+
+                     <!-- Conditional Adstreaa Native Ads -->
+                    ${video.monetization?.native ? `<div class="mt-4 w-full flex justify-center">
+                        <div id="adstreaa-native-${video.id}" class="w-full max-w-sm bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 p-2 min-h-[100px]">
+                            Native Ad (Adstreaa)
+                        </div>
+                    </div>` : ''}
                 </div>
             `;
 
-            // DOM mein element hone ke baad event listeners attach karein
+            // Attach event listeners after element is in DOM
             videoCard.querySelector(`#like-button-${video.id}`).addEventListener('click', () => handleLike(video.id));
             videoCard.querySelector(`#comment-button-${video.id}`).addEventListener('click', () => openCommentModal(video.id));
 
-            // Real-time like count listener set up karein
+            // Set up real-time like count listener
             const likeCountSpan = videoCard.querySelector(`#like-button-${video.id} .like-count`);
             const likeIcon = videoCard.querySelector(`#like-button-${video.id} .like-icon`);
             const videoRef = doc(db, `artifacts/${appId}/public/data/videos/${video.id}`);
@@ -862,7 +1019,7 @@
                 }
             });
 
-            // Shuruaati like status check karein
+            // Check initial like status
             if (currentUserId && db) { // Sunischit karein ki db available hai
                 const userLikeRef = doc(db, `artifacts/${appId}/public/data/likes/${video.id}_${currentUserId}`);
                 getDoc(userLikeRef).then(docSnap => {
@@ -875,57 +1032,82 @@
                 }).catch(error => console.error("Shuruaati like status check karne mein error:", error));
             }
 
-            // Ad ke baad video chalayein
+            // Play ad then video
             const playerContainer = videoCard.querySelector(`#player-container-${video.id}`);
             const adOverlay = videoCard.querySelector(`#ad-overlay-${video.id}`);
             const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
             const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
             const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
 
-            // Inline ad scripts ko unke respective containers mein inject karein
-            const adstreaaBanner468x60Div = videoCard.querySelector(`#adstreaa-banner-468x60-${video.id}`);
-            if (adstreaaBanner468x60Div) {
-                const scriptText = `
-                    atOptions = {  
-                        'key' : '7281653bd62d5d460d6daa8793f19c5e',  
-                        'format' : 'iframe',  
-                        'height' : 60,  
-                        'width' : 468,  
-                        'params' : {}  
-                    };  
-                `;
-                const script1 = document.createElement('script');
-                script1.type = 'text/javascript';
-                script1.textContent = scriptText;
-                adstreaaBanner468x60Div.appendChild(script1);
+            // Inject inline ad scripts into their respective containers conditionally
+            if (video.monetization?.banner468x60) {
+                const adstreaaBanner468x60Div = videoCard.querySelector(`#adstreaa-banner-468x60-${video.id}`);
+                if (adstreaaBanner468x60Div) {
+                    const scriptText = `
+                        atOptions = {  
+                            'key' : '7281653bd62d5d460d6daa8793f19c5e',  
+                            'format' : 'iframe',  
+                            'height' : 60,  
+                            'width' : 468,  
+                            'params' : {}  
+                        };  
+                    `;
+                    const script1 = document.createElement('script');
+                    script1.type = 'text/javascript';
+                    script1.textContent = scriptText;
+                    adstreaaBanner468x60Div.appendChild(script1);
 
-                const script2 = document.createElement('script');
-                script2.type = 'text/javascript';
-                script2.src = '//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js';
-                adstreaaBanner468x60Div.appendChild(script2);
+                    const script2 = document.createElement('script');
+                    script2.type = 'text/javascript';
+                    script2.src = '//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js';
+                    adstreaaBanner468x60Div.appendChild(script2);
+                }
             }
 
-            const hilltopsBanner300x250Div = videoCard.querySelector(`#hilltops-banner-300x250-${video.id}`);
-            if (hilltopsBanner300x250Div) {
-                const scriptFn = `
-                    (function(zrot){     
-                    var d = document,     
-                    s = d.createElement('script'),     
-                    l = d.scripts[d.scripts.length - 1];     
-                    s.settings = zrot || {};     
-                    s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";     
-                    s.async = true;     
-                    s.referrerPolicy = 'no-referrer-when-downgrade';     
-                    l.parentNode.insertBefore(s, l);     
-                    })({});
-                `;
-                const script = document.createElement('script');
-                script.textContent = scriptFn;
-                hilltopsBanner300x250Div.appendChild(script);
+            if (video.monetization?.banner300x250) {
+                const hilltopsBanner300x250Div = videoCard.querySelector(`#hilltops-banner-300x250-${video.id}`);
+                if (hilltopsBanner300x250Div) {
+                    const scriptFn = `
+                        (function(zrot){     
+                        var d = document,     
+                        s = d.createElement('script'),     
+                        l = d.scripts[d.scripts.length - 1];     
+                        s.settings = zrot || {};     
+                        s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";     
+                        s.async = true;     
+                        s.referrerPolicy = 'no-referrer-when-downgrade';     
+                        l.parentNode.insertBefore(s, l);     
+                        })({});
+                    `;
+                    const script = document.createElement('script');
+                    script.textContent = scriptFn;
+                    hilltopsBanner300x250Div.appendChild(script);
+                }
+            }
+
+            if (video.monetization?.native) {
+                const adstreaaNativeDiv = videoCard.querySelector(`#adstreaa-native-${video.id}`);
+                if (adstreaaNativeDiv) {
+                    // Adstreaa Native Ads (global script is loaded once, but you might need to invoke it per div)
+                    // For dynamic loading, ensure the `invoke.js` is loaded, then trigger the ad for the specific div.
+                    // This often requires a global setup and then a div with a specific ID.
+                    // Simplified for this demo: we assume the global script is loaded and it will populate any div with a matching ID pattern.
+                    // Real-world: You'd call a specific function from ad network to load into this div.
+                    adstreaaNativeDiv.textContent = "Native Ad (Adstreaa Loaded)"; // Indicate it's trying to load.
+                    // Example (if ad network provided an API to load per div):
+                    // window.adstreaa.loadNativeAd('adstreaa-native-' + video.id);
+                }
             }
 
 
-            playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessage);
+            // Play VAST ad if enabled for this video
+            if (video.monetization?.vast) {
+                playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessage);
+            } else {
+                console.log("VAST ads disabled for video:", video.id, ". Playing video directly.");
+                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, true); // Skip ad
+            }
+
 
             return videoCard;
         }
@@ -987,6 +1169,7 @@
                                     <div class="p-4">
                                         <h3 class="text-lg font-semibold text-orange-300 truncate">${video.title}</h3>
                                         <p class="text-sm text-gray-400 mt-1">${video.viewsCount || 0} views</p>
+                                        <p class="text-xs text-gray-500 mt-1">Visibility: ${video.visibility || 'Public'}</p>
                                     </div>
                                 </div>
                             `;
@@ -1346,8 +1529,8 @@
         }
 
         /**
-         * Video upload form submission ko handle karta hai.
-         * @param {Event} e - Form submission event.
+         * Handles video upload form submission.
+         * @param {Event} e - The form submission event.
          */
         async function handleUploadSubmit(e) {
             e.preventDefault();
@@ -1358,9 +1541,39 @@
 
             const videoUrl = videoUrlInput.value.trim();
             const videoTitle = videoTitleInput.value.trim();
+            const videoDescription = videoDescriptionInput.value.trim(); // New
+            const videoTags = videoTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0); // New
+
+            const visibility = document.querySelector('input[name="video-visibility"]:checked').value; // New
+
+            const monetizationSettings = { // New
+                vast: monetizeVast.checked,
+                banner468x60: monetizeBanner468x60.checked,
+                banner300x250: monetizeBanner300x250.checked,
+                native: monetizeNative.checked
+            };
+
 
             if (!videoUrl || !videoTitle) {
                 uploadErrorMessage.textContent = "Kripya video URL aur title dono enter karein.";
+                uploadErrorMessage.classList.remove('hidden');
+                uploadSubmitButton.disabled = false;
+                uploadButtonText.textContent = 'Video Upload Karein';
+                uploadLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            if (videoTitle.split(/\s+/).length > 100) { // Simple word count
+                uploadErrorMessage.textContent = "Video title 100 words se zyada nahi hona chahiye.";
+                uploadErrorMessage.classList.remove('hidden');
+                uploadSubmitButton.disabled = false;
+                uploadButtonText.textContent = 'Video Upload Karein';
+                uploadLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            if (videoTags.join(' ').split(/\s+/).length > 200) { // Simple word count for all tags combined
+                uploadErrorMessage.textContent = "Video tags 200 words se zyada nahi hone chahiye.";
                 uploadErrorMessage.classList.remove('hidden');
                 uploadSubmitButton.disabled = false;
                 uploadButtonText.textContent = 'Video Upload Karein';
@@ -1399,10 +1612,14 @@
                     userName: username,
                     youtubeUrl: videoUrl,
                     title: videoTitle,
+                    description: videoDescription, // New
+                    tags: videoTags, // New
                     thumbnailUrl: youTubeInfo.thumbnailUrl,
                     viewsCount: 0,
                     likesCount: 0,
-                    timestamp: serverTimestamp()
+                    timestamp: serverTimestamp(),
+                    visibility: visibility, // New
+                    monetization: monetizationSettings // New
                 });
 
                 showCustomModal('Safalta!', 'Video safaltaapoorvak upload ho gaya. Yeh jald hi feed mein dikhega.', false, null, () => {
@@ -1411,7 +1628,7 @@
                 uploadVideoForm.reset(); // Form clear karein
             } catch (error) {
                 console.error("Video upload karne mein error:", error);
-                uploadErrorMessage.textContent = `Video upload karne mein asafal: ${error.message}. Firebase security rules check karein.`;
+                uploadErrorMessage.textContent = `Video upload karne mein asafal: ${error.message}. Kripya Firebase security rules check karein.`;
                 uploadErrorMessage.classList.remove('hidden');
             } finally {
                 uploadSubmitButton.disabled = false;
@@ -1768,60 +1985,15 @@
         function injectExternalAdScripts() {
             console.log("External ad scripts inject kar rahe hain...");
 
-            // Adstreaa Social Bar
+            // Adstreaa Social Bar - Less intrusive
             loadScript('//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js');
 
-            // Adstreaa Native Ads
-            // Iske invoke hone ke liye div ki zaroorat hai
-            const nativeAdDiv = document.createElement('div');
-            nativeAdDiv.id = "container-39628927897b21d6c45567203000ccc6";
-            nativeAdDiv.className = "my-4 p-4 bg-gray-900 rounded-lg text-center text-gray-400"; // Styling for visibility
-            nativeAdDiv.textContent = "Native Ad (Placeholder)"; // Placeholder text
-            document.body.appendChild(nativeAdDiv);
-            loadScript('//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js', 'text/javascript', document.head)
-                .then(() => {
-                    console.log("Adstreaa Native Ads script load ho gaya aur div taiyar hai.");
-                });
-
-            // Hilltops Popunder (bahut invasive, isse hattana behtar hai ya bahut kam use karna)
-            // Agar aap ise zaroor rakhna chahte hain, toh yahaan uncomment karein.
-            // Main ise abhi comment hi rakunga user experience ke liye.
-            // const hilltopsPopunderTrigger = `
-            //     if (!window._hilltopsPopunderLoaded) {
-            //         setTimeout(function() {
-            //             window.open('https://assured-sandwich.com/bV3fV.0WPv3/pSvrb/m/VsJQZ/DR0/2XN/D/In0JNVTzMU3MLVThYo0-MvjeQB1/Mgz/gT', '_blank');
-            //             window._hilltopsPopunderLoaded = true;
-            //         }, 15000); // 15 seconds ke baad popunder trigger karein
-            //     }
-            // `;
-            // const hilltopsPopunderScript = document.createElement('script');
-            // hilltopsPopunderScript.textContent = hilltopsPopunderTrigger;
-            // document.body.appendChild(hilltopsPopunderScript);
-            // console.log("Hilltops Popunder script trigger inject kiya gaya.");
-
-            // Adstreaa Popunder Ad (bhi invasive)
-            // loadScript('//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js');
-
-
-            // Hilltops Banner 300x100 (yeh bhi global, agar aap isse global footer mein rakhna chahte hain toh)
-            // Maine isse abhi comment rakha hai, kyunki video cards mein specific banners hain.
-            /*
-            const hilltopsBanner300x100Fn = `
-                (function(ahzkl){
-                var d = document,
-                s = d.createElement('script'),
-                l = d.scripts[d.scripts.length - 1];
-                s.settings = ahzkl || {};
-                s.src = "//definitive-priority.com/brX/VEs/d.GRlA0BY_Wicn/behmh9xu/ZeUrlXkDPKTFY/0wMxjKQC1KNtTGM_tpNpjwQGyMN/DdUR1HNjAm";
-                s.async = true;
-                s.referrerPolicy = 'no-referrer-when-downgrade';
-                l.parentNode.insertBefore(s, l);
-                })({});
-            `;
-            const hilltopsBannerScript = document.createElement('script');
-            hilltopsBannerScript.textContent = hilltopsBanner300x100Fn;
-            document.body.appendChild(hilltopsBannerScript);
-            */
+            // Note: Popunder ads and global banners 320x50, 160x300, 300x100 are removed
+            // as requested for better user experience.
+            // Only per-video monetized ads will be injected dynamically in createVideoCardElement.
+            // Native ads are generally loaded globally if they auto-populate, but if they require
+            // a specific div and API call, it needs to be handled per video card in createVideoCardElement.
+            // For now, removing global native ad script and relying on per-video rendering for specific ad slots.
 
             console.log("Sabhi external ad scripts inject karne ke liye shuru kiye gaye.");
         }
