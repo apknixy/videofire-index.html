@@ -10,18 +10,18 @@
     <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
     <style>
         body {
-            font-family: 'Inter', sans-serif; /* Using Inter font */
-            background-color: #0d0d0d; /* Darkest background */
+            font-family: 'Inter', sans-serif; /* Inter font ka upyog */
+            background-color: #0d0d0d; /* Gehra background color */
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevent body scroll, main content will scroll */
+            overflow: hidden; /* Body scroll ko rokna, mukhy content scroll hoga */
         }
         .hide-scrollbar::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, Opera */
+            display: none; /* Chrome, Safari, Opera ke liye */
         }
         .hide-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none;  /* IE aur Edge ke liye */
+            scrollbar-width: none;  /* Firefox ke liye */
         }
         .snap-mandatory {
             scroll-snap-type: y mandatory;
@@ -29,7 +29,7 @@
         .snap-center {
             scroll-snap-align: center;
         }
-        /* Custom animation for ad message */
+        /* Ad message ke liye custom animation */
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(-20px); }
             10% { opacity: 1; transform: translateY(0); }
@@ -39,7 +39,7 @@
         .animate-fade-in-out {
             animation: fadeInOut 3s ease-in-out forwards;
         }
-        /* Full screen ad container */
+        /* Poori screen ad container */
         #ima-ad-container {
             width: 100vw;
             height: 100vh;
@@ -47,12 +47,12 @@
             top: 0;
             left: 0;
             background-color: black;
-            z-index: 100; /* Ensure it's above everything else */
-            display: none; /* Hidden by default */
+            z-index: 100; /* Baaki sabke upar rakhna */
+            display: none; /* Default roop se chupa hua */
             align-items: center;
             justify-content: center;
         }
-        /* Tailwind classes for iframe responsiveness */
+        /* Iframe responsiveness ke liye Tailwind classes */
         iframe {
             max-width: 100%;
             height: auto;
@@ -61,11 +61,11 @@
 </head>
 <body class="bg-gray-950 text-white min-h-screen flex flex-col">
 
-    <!-- Global Ad Container for IMA SDK (hidden by default) -->
+    <!-- Global Ad Container for IMA SDK (default roop se chupa hua) -->
     <div id="ima-ad-container" class="bg-black flex flex-col items-center justify-center">
         <div class="text-white text-lg font-bold mb-4 flex items-center">
             <svg class="animate-pulse h-6 w-6 mr-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-            <span>Ad playing...</span>
+            <span>Ad chal raha hai...</span>
         </div>
         <svg class="animate-spin h-8 w-8 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -80,13 +80,13 @@
             <span class="text-2xl font-extrabold text-orange-500 drop-shadow-md">Video Fire</span>
         </div>
         <div class="flex items-center space-x-4">
-            <button id="search-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200" title="Search">
+            <button id="search-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200" title="Khojen">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
-            <button id="upload-header-button" class="p-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white transition duration-200 shadow-md" title="Upload Video">
+            <button id="upload-header-button" class="p-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white transition duration-200 shadow-md" title="Video Upload Karein">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
             </button>
-            <button id="withdraw-header-button" class="p-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition duration-200 shadow-md" title="Withdraw">
+            <button id="withdraw-header-button" class="p-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition duration-200 shadow-md" title="Nikalein">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             </button>
             <button id="profile-header-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200" title="Profile">
@@ -104,18 +104,18 @@
         <!-- Home Page (Video Feed) -->
         <div id="home-page" class="w-full h-full overflow-y-scroll snap-y snap-mandatory bg-gray-950 hide-scrollbar">
             <div id="video-feed-container" class="w-full h-full">
-                <!-- Videos will be injected here -->
+                <!-- Videos yahaan inject kiye jayenge -->
             </div>
             <div id="home-loading" class="flex flex-col items-center justify-center h-full text-white hidden">
                 <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="ml-3 mt-2">Loading videos...</span>
+                <span class="ml-3 mt-2">Videos load ho rahe hain...</span>
             </div>
             <div id="home-error" class="flex items-center justify-center h-full text-red-500 text-center p-4 hidden"></div>
             <div id="no-videos-message" class="flex items-center justify-center h-full text-white text-lg hidden">
-                No videos available. Upload some!
+                Koi video available nahi hai. Kuch upload karein!
             </div>
         </div>
 
@@ -131,25 +131,25 @@
                     </div>
                 </div>
 
-                <h2 class="text-2xl font-bold mb-6 text-orange-300">My Uploads</h2>
+                <h2 class="text-2xl font-bold mb-6 text-orange-300">Mere Uploads</h2>
                 <div id="user-videos-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- User videos will be injected here -->
+                    <!-- User videos yahaan inject kiye jayenge -->
                 </div>
                 <p id="no-user-videos-message" class="text-gray-400 text-center py-8 bg-gray-900 rounded-lg border border-gray-800 hidden">
-                    You haven't uploaded any videos yet.
+                    Aapne abhi tak koi video upload nahi kiya hai.
                 </p>
-                <div id="profile-loading" class="flex justify-center items-center h-48 text-white hidden">Loading profile...</div>
+                <div id="profile-loading" class="flex justify-center items-center h-48 text-white hidden">Profile load ho raha hai...</div>
                 <div id="profile-error" class="text-red-500 text-center mt-8 hidden"></div>
             </div>
         </div>
 
         <!-- Search Page (Placeholder) -->
         <div id="search-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
-            Search Functionality Coming Soon!
+            Search Functionality Jald Hi Aaegi!
         </div>
         <!-- People Page (Placeholder) -->
         <div id="people-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
-            People/Follow Functionality Coming Soon!
+            Log / Follow Functionality Jald Hi Aaegi!
         </div>
 
     </main>
@@ -162,7 +162,7 @@
         </button>
         <button id="people-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h2a2 2 0 002-2V4a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2m0 0a2 2 0 100 4 2 2 0 000-4zm0 0H9m4 0h4m-4 0a2 2 0 100 4 2 2 0 000-4zm0 0H9"></path></svg>
-            <span class="text-xs mt-1">People</span>
+            <span class="text-xs mt-1">Log</span>
         </button>
         <button id="upload-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
@@ -180,8 +180,8 @@
             <h3 id="custom-modal-title" class="text-xl font-bold mb-4 text-orange-400"></h3>
             <p id="custom-modal-message" class="mb-6 text-gray-300"></p>
             <div class="flex justify-center space-x-4">
-                <button id="custom-modal-confirm-button" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition duration-200 hidden">Confirm</button>
-                <button id="custom-modal-close-button" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition duration-200">Close</button>
+                <button id="custom-modal-confirm-button" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition duration-200 hidden">Pushti Karein</button>
+                <button id="custom-modal-close-button" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition duration-200">Band Karein</button>
             </div>
         </div>
     </div>
@@ -201,15 +201,15 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="ml-2 mt-2 text-gray-300">Loading comments...</span>
+                    <span class="ml-2 mt-2 text-gray-300">Comments load ho rahe hain...</span>
                 </div>
-                <p id="no-comments-message" class="text-gray-400 text-center mt-4 hidden">No comments yet. Be the first!</p>
-                <!-- Comments will be injected here -->
+                <p id="no-comments-message" class="text-gray-400 text-center mt-4 hidden">Abhi tak koi comment nahi. Pehle comment karein!</p>
+                <!-- Comments yahaan inject kiye jayenge -->
             </div>
             <div class="p-4 border-t border-gray-700 bg-gray-900">
                 <div class="flex space-x-2">
-                    <input type="text" id="new-comment-input" class="flex-1 p-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Add a comment..." />
-                    <button id="add-comment-button" class="px-5 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-white transition duration-200">Post</button>
+                    <input type="text" id="new-comment-input" class="flex-1 p-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Ek comment likhein..." />
+                    <button id="add-comment-button" class="px-5 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-white transition duration-200">Post Karein</button>
                 </div>
             </div>
         </div>
@@ -219,7 +219,7 @@
     <div id="upload-video-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[900] p-4 hidden">
         <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-orange-400">Upload New Video</h2>
+                <h2 class="text-2xl font-bold text-orange-400">Naya Video Upload Karein</h2>
                 <button id="upload-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -231,11 +231,11 @@
                 </div>
                 <div class="mb-6">
                     <label for="video-title-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Title:</label>
-                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Enter video title" required />
+                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Video ka title enter karein" required />
                 </div>
                 <p id="upload-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
                 <button type="submit" id="upload-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="upload-button-text">Upload Video</span>
+                    <span id="upload-button-text">Video Upload Karein</span>
                     <svg id="upload-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -249,26 +249,26 @@
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[900] p-4 hidden">
         <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-orange-400">Withdraw Earnings</h2>
+                <h2 class="text-2xl font-bold text-orange-400">Earnings Nikalein</h2>
                 <button id="withdraw-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             <p class="text-gray-300 text-sm mb-4">
-                Minimum withdrawal amount: ₹100. Payments are sent manually via UPI.
+                Minimum nikasi rashi: ₹100. Payments UPI ke madhyam se manually bheje jate hain.
             </p>
             <form id="withdraw-form">
                 <div class="mb-4">
-                    <label for="withdraw-amount-input" class="block text-gray-300 text-sm font-semibold mb-2">Amount (₹):</label>
+                    <label for="withdraw-amount-input" class="block text-gray-300 text-sm font-semibold mb-2">Rashi (₹):</label>
                     <input type="number" id="withdraw-amount-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., 150" min="100" step="any" required />
                 </div>
                 <div class="mb-6">
-                    <label for="upi-id-input" class="block text-gray-300 text-sm font-semibold mb-2">Your UPI ID:</label>
-                    <input type="text" id="upi-id-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., yourname@upi" required />
+                    <label for="upi-id-input" class="block text-gray-300 text-sm font-semibold mb-2">Aapki UPI ID:</label>
+                    <input type="text" id="upi-id-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., aapkanam@upi" required />
                 </div>
                 <p id="withdraw-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
                 <button type="submit" id="withdraw-submit-button" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="withdraw-button-text">Request Withdrawal</span>
+                    <span id="withdraw-button-text">Nikasi Ka Anurodh Karein</span>
                     <svg id="withdraw-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -300,16 +300,16 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </button>
-                <button type="button" id="forgot-password-button" class="text-gray-400 hover:text-orange-400 text-sm mt-2">Forgot Password?</button>
+                <button type="button" id="forgot-password-button" class="text-gray-400 hover:text-orange-400 text-sm mt-2">Password Bhool Gaye?</button>
             </form>
 
             <!-- Sign Up Form -->
             <form id="signup-form" class="space-y-4 hidden">
                 <input type="email" id="signup-email" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Email" required />
-                <input type="password" id="signup-password" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Password (min 6 characters)" required />
+                <input type="password" id="signup-password" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Password (kam se kam 6 akshar)" required />
                 <p id="signup-error-message" class="text-red-500 text-sm hidden"></p>
                 <button type="submit" id="signup-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="signup-button-text">Sign Up</span>
+                    <span id="signup-button-text">Sign Up Karein</span>
                     <svg id="signup-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -321,7 +321,7 @@
                 <div class="absolute inset-0 flex items-center">
                     <div class="w-full border-t border-gray-700"></div>
                 </div>
-                <div class="relative z-10 px-4 bg-gray-800 text-gray-400 text-sm">OR</div>
+                <div class="relative z-10 px-4 bg-gray-800 text-gray-400 text-sm">YA</div>
             </div>
 
             <button id="google-sign-in-button" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -331,11 +331,11 @@
                     <path d="M4.05404 15.4302L0.0259998 18.4652C0.603003 19.4202 1.34304 20.2792 2.22804 20.9702L6.25604 17.9352C5.37104 17.2442 4.63104 16.3852 4.05404 15.4302Z" fill="#F9BC05"/>
                     <path d="M2.05404 6.44418L6.08204 9.47918C6.96704 7.21818 9.38704 5.45418 12.0001 5.45418V0.72718C7.68313 0.72718 4.02013 3.03718 2.05404 6.44418Z" fill="#EA4335"/>
                 </svg>
-                <span>Sign in with Google</span>
+                <span>Google ke saath Sign In karein</span>
             </button>
 
             <button id="guest-login-button" class="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition duration-200 mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span id="guest-login-button-text">Continue as Guest</span>
+                <span id="guest-login-button-text">Guest ke roop mein jaari rakhein</span>
                 <svg id="guest-login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -478,9 +478,9 @@
         // --- Utility Functions ---
 
         /**
-         * Parses a YouTube URL to extract video ID, embed URL, and thumbnail URL.
-         * @param {string} url - The YouTube video URL.
-         * @returns {object|null} An object with videoId, embedUrl, thumbnailUrl, or null if invalid.
+         * YouTube URL ko parse karta hai video ID, embed URL, aur thumbnail URL nikalne ke liye.
+         * @param {string} url - YouTube video URL.
+         * @returns {object|null} videoId, embedUrl, thumbnailUrl ke saath ek object, ya agar invalid hai toh null.
          */
         function getYouTubeInfo(url) {
             const regExp = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|shorts\/|v\/|)([\w-]{11})(?:\S+)?/g;
@@ -498,12 +498,12 @@
         }
 
         /**
-         * Shows a custom modal dialog.
-         * @param {string} title - The title of the modal.
-         * @param {string} message - The message content.
-         * @param {boolean} showConfirmButton - Whether to show a confirm button.
-         * @param {function} onConfirm - Callback for confirm button.
-         * @param {function} onClose - Callback for close button.
+         * Custom modal dialog dikhata hai.
+         * @param {string} title - Modal ka title.
+         * @param {string} message - Message content.
+         * @param {boolean} showConfirmButton - Confirm button dikhana hai ya nahi.
+         * @param {function} onConfirm - Confirm button ke liye callback.
+         * @param {function} onClose - Close button ke liye callback.
          */
         function showCustomModal(title, message, showConfirmButton = false, onConfirm = () => {}, onClose = () => {}) {
             customModalTitle.textContent = title;
@@ -520,8 +520,8 @@
         }
 
         /**
-         * Closes a specific modal.
-         * @param {string} modalName - The name of the modal ('custom', 'comment', 'upload', 'withdraw', 'auth').
+         * Ek specific modal ko band karta hai.
+         * @param {string} modalName - Modal ka naam ('custom', 'comment', 'upload', 'withdraw', 'auth').
          */
         function closeModal(modalName) {
             switch (modalName) {
@@ -534,8 +534,8 @@
                     break;
                 case 'upload':
                     uploadVideoModal.classList.add('hidden');
-                    uploadVideoForm.reset(); // Clear form
-                    videoUrlInput.value = ''; // Ensure inputs are truly reset
+                    uploadVideoForm.reset(); // Form clear karein
+                    videoUrlInput.value = ''; // Inputs ko puri tarah reset karein
                     videoTitleInput.value = '';
                     uploadErrorMessage.classList.add('hidden');
                     break;
@@ -560,31 +560,31 @@
         // --- Firebase Initialization ---
 
         /**
-         * Initializes Firebase and sets up authentication listener.
+         * Firebase ko initialize karta hai aur authentication listener set karta hai.
          */
         async function initializeFirebase() {
-            console.log("Initializing Firebase...");
+            console.log("Firebase initialize ho raha hai...");
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                console.log("Firebase app, db, auth initialized.");
+                console.log("Firebase app, db, auth initialize ho gaye hain.");
 
                 // Auth state listener
                 onAuthStateChanged(auth, async (user) => {
-                    console.log("Auth state changed. User:", user ? user.uid : "No user");
+                    console.log("Auth state badal gaya. User:", user ? user.uid : "Koi user nahi");
                     if (user) {
                         currentUserId = user.uid;
-                        displayUserId.textContent = currentUserId.substring(0, 8) + '...';
-                        userInfo.classList.remove('hidden'); // Show user info
-                        closeModal('auth'); // Close auth modal if user logs in
+                        displayUserId.textContent = user.email ? user.email.split('@')[0] : currentUserId.substring(0, 8) + '...';
+                        userInfo.classList.remove('hidden'); // User ki jaankari dikhayein
+                        closeModal('auth'); // Agar user login ho gaya hai toh auth modal band karein
 
-                        // Ensure user profile exists (or create a dummy one)
+                        // Sunischit karein ki user profile maujood hai (ya ek dummy banayein)
                         const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile/${user.uid}`);
                         try {
                             const userDoc = await getDoc(userProfileRef);
                             if (!userDoc.exists()) {
-                                console.log("Creating new user profile for UID:", user.uid);
+                                console.log("Nayi user profile bana rahe hain UID ke liye:", user.uid);
                                 await setDoc(userProfileRef, {
                                     username: user.email ? user.email.split('@')[0] : `User_${user.uid.substring(0, 6)}`,
                                     email: user.email || null,
@@ -592,68 +592,68 @@
                                     isEmailVerified: user.emailVerified || false,
                                 });
                             } else {
-                                // Update profile with latest info if email is verified
+                                // Latest jaankari ke saath profile update karein agar email verified hai
                                 const userData = userDoc.data();
                                 if (user.emailVerified && !userData.isEmailVerified) {
                                     await updateDoc(userProfileRef, { isEmailVerified: true });
                                 }
                             }
                         } catch (profileError) {
-                            console.error("Error creating/fetching user profile:", profileError);
-                            showCustomModal('Profile Error', 'Failed to load user profile. Some features might be limited.', false);
+                            console.error("User profile banane/fetch karne mein error:", profileError);
+                            showCustomModal('Profile Error', 'User profile load karne mein asafal. Kuch features seemit ho sakte hain.', false);
                         }
 
                     } else {
                         currentUserId = null;
                         displayUserId.textContent = '';
-                        userInfo.classList.add('hidden'); // Hide user info
-                        authModal.classList.remove('hidden'); // Show auth modal if no user is logged in
+                        userInfo.classList.add('hidden'); // User ki jaankari chhupayein
+                        authModal.classList.remove('hidden'); // Auth modal dikhayein agar koi user login nahi hai
                     }
-                    authReady = true; // Firebase auth has completed its initial check
-                    console.log("Auth is ready. Current page:", currentPage);
-                    // Only show page if auth is ready and user is logged in (or explicitly a guest)
-                    if (user || initialAuthToken) { // If user is logged in or custom token was attempted
+                    authReady = true; // Firebase auth ne apni shuruaati jaanch poori kar li hai
+                    console.log("Auth taiyar hai. Vartaman page:", currentPage);
+                    // Page tabhi dikhayein jab auth taiyar ho aur user login ho (ya explicitly guest ho)
+                    if (user || initialAuthToken) { // Agar user login hai ya custom token try kiya gaya tha
                         showPage(currentPage);
                     } else if (!user && !authModal.classList.contains('hidden')) {
-                         // If no user and auth modal is shown, do nothing (wait for user action)
-                         homeLoading.classList.add('hidden'); // Hide loading if auth modal is shown
+                         // Agar koi user nahi aur auth modal dikh raha hai, toh kuch na karein (user action ka intezaar karein)
+                         homeLoading.classList.add('hidden'); // Loading chhupayein agar auth modal dikh raha hai
                     }
                 });
 
-                // Use the initialAuthToken if available
+                // Agar initialAuthToken available hai toh uska upyog karein
                 if (initialAuthToken) {
                     try {
-                        console.log("Signing in with custom token...");
+                        console.log("Custom token se sign in kar rahe hain...");
                         await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token successfully.");
+                        console.log("Custom token se sign in safaltaapoorvak ho gaya.");
                     } catch (error) {
-                        console.error("Error signing in with custom token:", error);
-                        // showCustomModal('Authentication Error', 'Failed to sign in with provided token. Please try manual login.', false);
-                        // The onAuthStateChanged listener will handle the case of no user after this attempt.
+                        console.error("Custom token se sign in karne mein error:", error);
+                        // showCustomModal('Authentication Error', 'Pradan kiye gaye token se sign in karne mein asafal. Kripya manual login try karein.', false);
+                        // onAuthStateChanged listener is asafal prayas ke baad koi user na hone ki sthiti ko handle karega.
                     }
                 }
 
-                console.log("Firebase initialized.");
+                console.log("Firebase initialize ho gaya.");
 
             } catch (error) {
-                console.error("Critical: Failed to initialize Firebase:", error);
-                showCustomModal('Initialization Error', 'Failed to initialize the application. Please check console for details and ensure your Firebase config is correct.', false);
+                console.error("Critical: Firebase initialize karne mein asafal:", error);
+                showCustomModal('Initialization Error', 'Application initialize karne mein asafal. Kripya console mein details check karein aur sunischit karein ki aapka Firebase config sahi hai.', false);
                 authReady = false;
-                // Display a full-screen error message
+                // Poori screen par error message dikhayein
                 homeLoading.classList.add('hidden');
-                homeError.textContent = `Critical error initializing app: ${error.message}. Please check your Firebase configuration.`;
+                homeError.textContent = `Application initialize karne mein gambhir error: ${error.message}. Kripya apni Firebase configuration check karein.`;
                 homeError.classList.remove('hidden');
-                homePage.classList.remove('hidden'); // Ensure home page is visible to show error
-                profilePage.classList.add('hidden'); // Hide other pages
+                homePage.classList.remove('hidden'); // Sunischit karein ki home page error dikhane ke liye dikh raha hai
+                profilePage.classList.add('hidden'); // Baaki pages chhupayein
             }
         }
 
 
-        // --- UI Navigation and Rendering ---
+        // --- UI Navigation aur Rendering ---
 
         /**
-         * Shows the specified page and hides others.
-         * @param {string} pageName - The name of the page to show ('home', 'profile', 'search', 'people').
+         * Nirdisht page dikhata hai aur dusron ko chhupata hai.
+         * @param {string} pageName - Dikhane wale page ka naam ('home', 'profile', 'search', 'people').
          */
         function showPage(pageName) {
             currentPage = pageName;
@@ -661,7 +661,7 @@
             const footerButtons = {
                 'home': document.getElementById('home-footer-button'),
                 'people': document.getElementById('people-footer-button'),
-                'upload': document.getElementById('upload-footer-button'), // Note: Upload is a modal, but button is here
+                'upload': document.getElementById('upload-footer-button'), // Dhyaan dein: Upload ek modal hai, lekin button yahaan hai
                 'profile': document.getElementById('profile-footer-button')
             };
 
@@ -673,7 +673,7 @@
             });
 
             if (!authReady || !currentUserId) {
-                console.log("Auth not ready or user not logged in, showing auth modal.");
+                console.log("Auth taiyar nahi ya user login nahi hai, auth modal dikha rahe hain.");
                 authModal.classList.remove('hidden');
                 homeLoading.classList.add('hidden');
                 return;
@@ -684,13 +684,13 @@
                     homePage.classList.remove('hidden');
                     footerButtons['home'].classList.add('text-orange-500', 'bg-gray-800');
                     footerButtons['home'].classList.remove('text-gray-400', 'hover:bg-gray-700');
-                    updateVideoFeed(); // Load videos when home is shown
+                    updateVideoFeed(); // Home dikhane par videos load karein
                     break;
                 case 'profile':
                     profilePage.classList.remove('hidden');
                     footerButtons['profile'].classList.add('text-orange-500', 'bg-gray-800');
                     footerButtons['profile'].classList.remove('text-gray-400', 'hover:bg-gray-700');
-                    updateProfilePage(); // Load profile data when profile is shown
+                    updateProfilePage(); // Profile dikhane par profile data load karein
                     break;
                 case 'search':
                     searchPage.classList.remove('hidden');
@@ -701,7 +701,7 @@
                     footerButtons['people'].classList.remove('text-gray-400', 'hover:bg-gray-700');
                     break;
                 default:
-                    homePage.classList.remove('hidden'); // Fallback to home
+                    homePage.classList.remove('hidden'); // Home par fallback
                     footerButtons['home'].classList.add('text-orange-500', 'bg-gray-800');
                     footerButtons['home'].classList.remove('text-gray-400', 'hover:bg-gray-700');
                     updateVideoFeed();
@@ -710,13 +710,13 @@
         }
 
         /**
-         * Updates the video feed on the home page.
+         * Home page par video feed ko update karta hai.
          */
         async function updateVideoFeed() {
             if (!authReady || !db) {
-                console.warn("Firebase not ready for video feed. Aborting updateVideoFeed.");
+                console.warn("Firebase video feed ke liye taiyar nahi. updateVideoFeed ko rok rahe hain.");
                 homeLoading.classList.add('hidden');
-                homeError.textContent = "App not ready. Please wait or refresh.";
+                homeError.textContent = "App taiyar nahi. Kripya intezaar karein ya refresh karein.";
                 homeError.classList.remove('hidden');
                 return;
             }
@@ -724,11 +724,11 @@
             homeLoading.classList.remove('hidden');
             homeError.classList.add('hidden');
             noVideosMessage.classList.add('hidden');
-            videoFeedContainer.innerHTML = ''; // Clear previous videos
+            videoFeedContainer.innerHTML = ''; // Pichle videos clear karein
 
-            console.log("Fetching videos from Firestore...");
+            console.log("Firestore se videos fetch kar rahe hain...");
             try {
-                // Path for public videos: /artifacts/{appId}/public/data/videos
+                // Public videos ke liye path: /artifacts/{appId}/public/data/videos
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
                 const q = query(videosColRef);
 
@@ -738,7 +738,7 @@
                         ...doc.data()
                     }));
 
-                    // Client-side sort by timestamp (descending)
+                    // Client-side par timestamp (ghatate kram) se sort karein
                     videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
                     console.log("Fetched videos:", videoList);
@@ -749,7 +749,7 @@
                         return;
                     }
 
-                    videoFeedContainer.innerHTML = ''; // Clear existing videos before re-rendering
+                    videoFeedContainer.innerHTML = ''; // Existing videos ko re-rendering se pehle clear karein
                     for (const video of videoList) {
                         const videoCard = createVideoCardElement(video);
                         videoFeedContainer.appendChild(videoCard);
@@ -758,27 +758,27 @@
                     noVideosMessage.classList.add('hidden');
 
                 }, (err) => {
-                    console.error("Error in onSnapshot for videos:", err);
-                    homeError.textContent = `Failed to load videos: ${err.message}. Check Firebase security rules.`;
+                    console.error("Videos ke liye onSnapshot mein error:", err);
+                    homeError.textContent = `Videos load karne mein asafal: ${err.message}. Firebase security rules check karein.`;
                     homeError.classList.remove('hidden');
                     homeLoading.classList.add('hidden');
                 });
 
             } catch (error) {
-                console.error("Error setting up video feed listener:", error);
-                homeError.textContent = `Error: ${error.message}. Could not set up real-time listener.`;
+                console.error("Video feed listener set up karne mein error:", error);
+                homeError.textContent = `Error: ${error.message}. Real-time listener set up nahi ho paya.`;
                 homeError.classList.remove('hidden');
                 homeLoading.classList.add('hidden');
             }
         }
 
         /**
-         * Creates an HTML element for a single video card.
-         * @param {object} video - The video data.
-         * @returns {HTMLElement} The video card element.
+         * Ek single video card ke liye HTML element banata hai.
+         * @param {object} video - Video data.
+         * @returns {HTMLElement} Video card element.
          */
         function createVideoCardElement(video) {
-            console.log("Creating video card for:", video.id, "Title:", video.title);
+            console.log("Video card bana rahe hain:", video.id, "Title:", video.title);
             const videoCard = document.createElement('div');
             videoCard.id = `video-card-${video.id}`;
             videoCard.className = 'relative flex-shrink-0 w-full h-full snap-center bg-gray-900 rounded-lg overflow-hidden border border-gray-800 shadow-xl';
@@ -786,26 +786,25 @@
             const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
             const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/1280x720/000000/FFFFFF?text=Invalid+Video+URL';
 
-            // Using template literals here. The issue with $(...) in screenshot might be a local file alteration.
             videoCard.innerHTML = `
                 <!-- Video Player Container -->
                 <div id="player-container-${video.id}" class="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-                    <!-- Thumbnail placeholder for ad loading -->
+                    <!-- Ad load hone ke liye thumbnail placeholder -->
                     <img id="thumbnail-${video.id}" src="${thumbnailUrl}" alt="Video Thumbnail" class="absolute inset-0 w-full h-full object-cover z-10" />
                     <!-- Ad Overlay -->
                     <div id="ad-overlay-${video.id}" class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-40 text-white text-lg font-bold hidden">
                         <svg class="animate-pulse h-6 w-6 mr-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                        <span class="text-gray-300">Ad playing...</span>
+                        <span class="text-gray-300">Ad chal raha hai...</span>
                     </div>
-                    <!-- Ad message after ad finishes -->
+                    <!-- Ad khatm hone ke baad ad message -->
                     <div id="ad-message-${video.id}" class="absolute top-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold animate-fade-in-out z-40 hidden">
-                        Video playing soon!
+                        Video jald hi chalega!
                     </div>
-                    <!-- Actual YouTube iframe will be dynamically added here -->
+                    <!-- Asal YouTube iframe yahaan dynamically add kiya jayega -->
                     <div id="youtube-iframe-wrapper-${video.id}" class="w-full h-full hidden"></div>
                 </div>
 
-                <!-- Video Info and Controls -->
+                <!-- Video ki jaankari aur Controls -->
                 <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent flex flex-col justify-end text-white z-10">
                     <!-- Adstreaa Banner 468x60 -->
                     <div class="mb-4 w-full flex justify-center">
@@ -835,7 +834,7 @@
                             <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.516 3.832a3 3 0 00.512-1.632V12c0-.36-.062-.716-.184-1.049m0 2.098L8.684 10.658m10.158-1.342a3 3 0 110-2.684m0 2.684l-6.516-3.832a3 3 0 00-.512 1.632V12c0 .36.062.716.184 1.049m0-2.098L18.842 8.658"></path>
                             </svg>
-                            <span class="text-sm">Share</span>
+                            <span class="text-sm">Share Karein</span>
                         </button>
                     </div>
 
@@ -848,11 +847,11 @@
                 </div>
             `;
 
-            // Attach event listeners after element is in DOM
+            // DOM mein element hone ke baad event listeners attach karein
             videoCard.querySelector(`#like-button-${video.id}`).addEventListener('click', () => handleLike(video.id));
             videoCard.querySelector(`#comment-button-${video.id}`).addEventListener('click', () => openCommentModal(video.id));
 
-            // Set up real-time like count listener
+            // Real-time like count listener set up karein
             const likeCountSpan = videoCard.querySelector(`#like-button-${video.id} .like-count`);
             const likeIcon = videoCard.querySelector(`#like-button-${video.id} .like-icon`);
             const videoRef = doc(db, `artifacts/${appId}/public/data/videos/${video.id}`);
@@ -863,27 +862,27 @@
                 }
             });
 
-            // Check initial like status
-            if (currentUserId && db) { // Ensure db is available
+            // Shuruaati like status check karein
+            if (currentUserId && db) { // Sunischit karein ki db available hai
                 const userLikeRef = doc(db, `artifacts/${appId}/public/data/likes/${video.id}_${currentUserId}`);
                 getDoc(userLikeRef).then(docSnap => {
                     if (docSnap.exists()) {
                         likeIcon.classList.remove('text-gray-300');
                         likeIcon.classList.add('text-red-500', 'fill-current');
-                        // Replace SVG path for filled heart
+                        // Bhare hue heart ke liye SVG path replace karein
                         likeIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.64a5.5 5.5 0 000-7.78z" fill="currentColor"></path>';
                     }
-                }).catch(error => console.error("Error checking initial like status:", error));
+                }).catch(error => console.error("Shuruaati like status check karne mein error:", error));
             }
 
-            // Play ad then video
+            // Ad ke baad video chalayein
             const playerContainer = videoCard.querySelector(`#player-container-${video.id}`);
             const adOverlay = videoCard.querySelector(`#ad-overlay-${video.id}`);
             const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
             const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
             const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
 
-            // Inject inline ad scripts into their respective containers
+            // Inline ad scripts ko unke respective containers mein inject karein
             const adstreaaBanner468x60Div = videoCard.querySelector(`#adstreaa-banner-468x60-${video.id}`);
             if (adstreaaBanner468x60Div) {
                 const scriptText = `
@@ -932,13 +931,13 @@
         }
 
         /**
-         * Updates the profile page with user-specific data.
+         * Profile page ko user-specific data ke saath update karta hai.
          */
         async function updateProfilePage() {
             if (!authReady || !db || !currentUserId) {
-                console.warn("Firebase or user not ready for profile page. Aborting updateProfilePage.");
+                console.warn("Firebase ya user profile page ke liye taiyar nahi. updateProfilePage ko rok rahe hain.");
                 profileLoading.classList.add('hidden');
-                profileError.textContent = "Please sign in to view your profile.";
+                profileError.textContent = "Kripya apni profile dekhne ke liye sign in karein.";
                 profileError.classList.remove('hidden');
                 return;
             }
@@ -946,11 +945,11 @@
             profileLoading.classList.remove('hidden');
             profileError.classList.add('hidden');
             noUserVideosMessage.classList.add('hidden');
-            userVideosContainer.innerHTML = ''; // Clear previous videos
+            userVideosContainer.innerHTML = ''; // Pichle videos clear karein
 
-            console.log("Updating profile page for user:", currentUserId);
+            console.log("User ke liye profile page update kar rahe hain:", currentUserId);
             try {
-                // Fetch user details
+                // User details fetch karein
                 const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
                 const userDoc = await getDoc(userProfileRef);
                 const username = userDoc.exists() ? userDoc.data().username : `User: ${currentUserId.substring(0, 8)}...`;
@@ -959,7 +958,7 @@
                 document.getElementById('profile-avatar').src = `https://placehold.co/100x100/374151/E5E7EB?text=${username.charAt(0)}`;
 
 
-                // Fetch videos uploaded by this user
+                // Is user dwara upload kiye gaye videos fetch karein
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
                 const q = query(videosColRef, where('userId', '==', currentUserId));
 
@@ -969,11 +968,11 @@
                         ...doc.data()
                     }));
 
-                    // Client-side sort by timestamp (descending)
+                    // Client-side par timestamp (ghatate kram) se sort karein
                     userVideos.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
                     profileUploadsCount.textContent = userVideos.length;
-                    userVideosContainer.innerHTML = ''; // Clear previous
+                    userVideosContainer.innerHTML = ''; // Pichla clear karein
 
                     if (userVideos.length === 0) {
                         noUserVideosMessage.classList.remove('hidden');
@@ -996,14 +995,14 @@
                     }
                     profileLoading.classList.add('hidden');
                 }, (err) => {
-                    console.error("Error in onSnapshot for user videos:", err);
-                    profileError.textContent = `Failed to load user videos: ${err.message}. Check Firebase security rules.`;
+                    console.error("User videos ke liye onSnapshot mein error:", err);
+                    profileError.textContent = `User videos load karne mein asafal: ${err.message}. Firebase security rules check karein.`;
                     profileError.classList.remove('hidden');
                     profileLoading.classList.add('hidden');
                 });
 
             } catch (error) {
-                console.error("Error updating profile page:", error);
+                console.error("Profile page update karne mein error:", error);
                 profileError.textContent = `Error: ${error.message}`;
                 profileError.classList.remove('hidden');
                 profileLoading.classList.add('hidden');
@@ -1014,40 +1013,40 @@
         // --- VAST Ad Integration Logic (Google IMA SDK) ---
 
         let currentAdManager = null;
-        let isAdPlaying = false; // Global flag to indicate if an ad is currently playing
+        let isAdPlaying = false; // Global flag batane ke liye ki ek ad chal raha hai
 
         /**
-         * Plays a VAST ad using Google IMA SDK before showing the video.
-         * @param {object} video - The video data.
-         * @param {HTMLElement} playerContainer - The main container for video/ad.
-         * @param {HTMLElement} adOverlay - The element to show during ad playback.
-         * @param {HTMLElement} thumbnail - The thumbnail element.
-         * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
-         * @param {HTMLElement} adMessageElement - The element to show message after ad.
+         * Video dikhane se pehle Google IMA SDK ka upyog karke VAST ad chalata hai.
+         * @param {object} video - Video data.
+         * @param {HTMLElement} playerContainer - Video/ad ke liye mukhy container.
+         * @param {HTMLElement} adOverlay - Ad chalte samay dikhane wala element.
+         * @param {HTMLElement} thumbnail - Thumbnail element.
+         * @param {HTMLElement} youtubeIframeWrapper - YouTube iframe ke liye wrapper.
+         * @param {HTMLElement} adMessageElement - Ad ke baad message dikhane wala element.
          */
         function playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessageElement) {
-            console.log("Attempting to play ad for video:", video.id);
+            console.log("Video ke liye ad chalane ka prayas kar rahe hain:", video.id);
 
-            // Ensure IMA SDK is loaded
+            // Sunischit karein ki IMA SDK load ho gaya hai
             if (typeof google === 'undefined' || !google.ima) {
-                console.error("Google IMA SDK not loaded. Skipping ad, playing video directly.");
-                showCustomModal('Ad Error', 'Ad service not available. Playing video directly.', false);
+                console.error("Google IMA SDK load nahi hua. Ad chhod rahe hain, seedhe video chala rahe hain.");
+                showCustomModal('Ad Error', 'Ad service available nahi hai. Seedhe video chala rahe hain.', false);
                 cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true);
                 return;
             }
 
-            // Ensure any previous ad manager is destroyed
+            // Sunischit karein ki koi pichla ad manager destroy ho gaya hai
             if (currentAdManager) {
                 currentAdManager.destroy();
                 currentAdManager = null;
             }
 
-            // Show global IMA ad container and hide local video player elements temporarily
-            imaAdContainer.style.display = 'flex'; // Show the global ad container
-            playerContainer.style.display = 'none'; // Hide current video card's player container during global ad
+            // Global IMA ad container dikhayein aur local video player elements ko temporarily chhupayein
+            imaAdContainer.style.display = 'flex'; // Global ad container dikhayein
+            playerContainer.style.display = 'none'; // Global ad ke dauraan current video card ka player container chhupayein
 
             isAdPlaying = true;
-            adOverlay.classList.remove('hidden'); // Show local ad overlay too, as a visual indicator
+            adOverlay.classList.remove('hidden'); // Local ad overlay bhi dikhayein, ek visual indicator ke roop mein
             thumbnail.classList.remove('hidden');
             youtubeIframeWrapper.classList.add('hidden');
             adMessageElement.classList.add('hidden');
@@ -1056,86 +1055,86 @@
             const adDisplayContainer = new google.ima.AdDisplayContainer(imaAdContainer);
             const adsLoader = new google.ima.AdsLoader(adDisplayContainer);
 
-            // Listen for ad errors
+            // Ad errors ke liye sunein
             adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
-                console.error("Ad error from adsLoader:", adErrorEvent.getError().getMessage());
-                showCustomModal('Ad Playback Error', 'Failed to play ad. Continuing to video.', false);
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
+                console.error("adsLoader se Ad error:", adErrorEvent.getError().getMessage());
+                showCustomModal('Ad Playback Error', 'Ad chalane mein asafal. Video par jaari rakh rahe hain.', false);
+                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True ad chhodne ke liye
             }, false);
 
-            // Listen for ads loaded event
+            // Ads loaded event ke liye sunein
             adsLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, (adsManagerLoadedEvent) => {
-                console.log("AdsManager Loaded event fired.");
+                console.log("AdsManager Loaded event fire ho gaya.");
                 const adsManager = adsManagerLoadedEvent.getAdsManager();
                 currentAdManager = adsManager;
 
                 adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
                     console.error("Ad manager error:", adErrorEvent.getError().getMessage());
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True ad chhodne ke liye
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, () => {
-                    console.log("VAST ad completed.");
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, false); // False to indicate ad completed
+                    console.log("VAST ad poora ho gaya.");
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, false); // False batane ke liye ki ad poora ho gaya
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, () => {
-                    console.log("Ad LOADED event (before start)");
+                    console.log("Ad LOADED event (start hone se pehle)");
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.AD_BREAK_READY, () => {
-                    console.log("Ad break ready. Starting ad playback.");
+                    console.log("Ad break taiyar hai. Ad playback shuru kar rahe hain.");
                 }, false);
 
 
                 try {
                     adsManager.init(imaAdContainer.offsetWidth, imaAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
                     adsManager.start();
-                    console.log("VAST ad playback initiated.");
+                    console.log("VAST ad playback shuru kiya gaya.");
                 } catch (adError) {
-                    console.error("AdsManager could not be started:", adError);
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
+                    console.error("AdsManager shuru nahi kiya ja saka:", adError);
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True ad chhodne ke liye
                 }
             }, false);
 
-            // Request ads
+            // Ads ka anurodh karein
             const adsRequest = new google.ima.AdsRequest();
             adsRequest.adTagUrl = vastAdTagUrl;
             adsRequest.linearAdSlotWidth = imaAdContainer.offsetWidth;
             adsRequest.linearAdSlotHeight = imaAdContainer.offsetHeight;
             adsRequest.nonLinearAdSlotWidth = imaAdContainer.offsetWidth;
             adsRequest.nonLinearAdSlotHeight = imaAdContainer.offsetHeight;
-            adsRequest.setAdWillAutoPlay(true); // Indicate that ads will autoplay
+            adsRequest.setAdWillAutoPlay(true); // Indicate karein ki ads autoplay honge
 
-            adDisplayContainer.initialize(); // Initialize ad container before requesting ads
+            adDisplayContainer.initialize(); // Ads anurodh karne se pehle ad container ko initialize karein
             adsLoader.requestAds(adsRequest);
-            console.log("Ad request sent for:", video.id);
+            console.log("Ad request bheja gaya:", video.id);
         }
 
         /**
-         * Cleans up ad manager and reveals the video player.
-         * @param {object} video - The video data.
-         * @param {HTMLElement} playerContainer - The main container for video/ad.
-         * @param {HTMLElement} thumbnail - The thumbnail element.
-         * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
-         * @param {HTMLElement} adMessageElement - The element to show message after ad.
-         * @param {boolean} skipAd - If true, implies ad was skipped or failed, just show video.
+         * Ad manager ko saaf karta hai aur video player dikhata hai.
+         * @param {object} video - Video data.
+         * @param {HTMLElement} playerContainer - Video/ad ke liye mukhy container.
+         * @param {HTMLElement} thumbnail - Thumbnail element.
+         * @param {HTMLElement} youtubeIframeWrapper - YouTube iframe ke liye wrapper.
+         * @param {HTMLElement} adMessageElement - Ad ke baad message dikhane wala element.
+         * @param {boolean} skipAd - Agar true, toh ad chhod diya gaya ya asafal raha, bas video dikhayein.
          */
         function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, skipAd = false) {
-            console.log("Cleaning up ad and showing video for:", video.id, "Skip Ad:", skipAd);
+            console.log("Ad saaf kar rahe hain aur video dikha rahe hain:", video.id, "Ad Chhoda:", skipAd);
             if (currentAdManager) {
                 currentAdManager.destroy();
                 currentAdManager = null;
             }
-            imaAdContainer.style.display = 'none'; // Hide the global ad container
-            playerContainer.style.display = 'flex'; // Show the video card's player container
+            imaAdContainer.style.display = 'none'; // Global ad container chhupayein
+            playerContainer.style.display = 'flex'; // Video card ka player container dikhayein
 
             isAdPlaying = false;
-            adOverlay.classList.add('hidden'); // Hide local ad overlay
-            thumbnail.classList.add('hidden'); // Hide thumbnail
-            youtubeIframeWrapper.classList.remove('hidden'); // Show iframe wrapper
+            adOverlay.classList.add('hidden'); // Local ad overlay chhupayein
+            thumbnail.classList.add('hidden'); // Thumbnail chhupayein
+            youtubeIframeWrapper.classList.remove('hidden'); // Iframe wrapper dikhayein
 
-            // Add YouTube iframe if not already present or if ad was skipped/failed
+            // YouTube iframe add karein agar pehle se maujood nahi hai ya ad chhod diya gaya/asafal raha
             let iframe = youtubeIframeWrapper.querySelector('iframe');
             if (!iframe) {
                 const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
@@ -1153,13 +1152,10 @@
                     console.error("Invalid YouTube URL for video:", video.id, video.youtubeUrl);
                 }
             } else if (skipAd) {
-                 // If ad was skipped/failed and iframe already exists, ensure it starts playing
-                 // This is a common issue with YouTube embeds: they might not autoplay if the iframe
-                 // existed but was hidden. Reloading or manually triggering play is tricky.
-                 // The autoplay parameter in embedUrl should handle it, but a re-render can help.
+                 // Agar ad chhod diya gaya/asafal raha aur iframe pehle se maujood hai, toh sunischit karein ki woh chalna shuru kare
                  const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
                  if (youTubeInfo) {
-                    iframe.src = youTubeInfo.embedUrl; // Re-set src to force autoplay/reload
+                    iframe.src = youTubeInfo.embedUrl; // Autoplay/reload ko force karne ke liye src ko dobara set karein
                  }
             }
 
@@ -1167,22 +1163,22 @@
             adMessageElement.classList.remove('hidden');
             setTimeout(() => {
                 adMessageElement.classList.add('hidden');
-            }, 3000); // Hide message after 3 seconds
+            }, 3000); // 3 seconds ke baad message chhupayein
         }
 
 
         // --- Social Interactions (Like, Comment) ---
 
         /**
-         * Handles the like/unlike action for a video.
-         * @param {string} videoId - The ID of the video.
+         * Ek video ke liye like/unlike action ko handle karta hai.
+         * @param {string} videoId - Video ki ID.
          */
         async function handleLike(videoId) {
             if (!currentUserId || !db) {
-                showCustomModal('Action Required', 'Please ensure you are signed in to like videos.', false);
+                showCustomModal('Action Zaroori', 'Kripya videos ko like karne ke liye sign in karein.', false);
                 return;
             }
-            console.log(`Liking/unliking video ${videoId} by user ${currentUserId}`);
+            console.log(`Video ${videoId} ko like/unlike kar rahe hain user ${currentUserId} dwara`);
 
             const likeRef = doc(db, `artifacts/${appId}/public/data/likes/${videoId}_${currentUserId}`);
             const videoRef = doc(db, `artifacts/${appId}/public/data/videos/${videoId}`);
@@ -1195,7 +1191,7 @@
                 let currentLikes = parseInt(document.querySelector(`#like-button-${videoId} .like-count`).textContent);
 
                 if (isLiked) {
-                    // Unlike
+                    // Unlike karein
                     await deleteDoc(likeRef);
                     await updateDoc(videoRef, {
                         likesCount: Math.max(0, currentLikes - 1)
@@ -1203,9 +1199,9 @@
                     likeIcon.classList.remove('text-red-500', 'fill-current');
                     likeIcon.classList.add('text-gray-300');
                     likeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>';
-                    console.log(`Video ${videoId} unliked.`);
+                    console.log(`Video ${videoId} unlike ho gaya.`);
                 } else {
-                    // Like
+                    // Like karein
                     await setDoc(likeRef, { videoId: videoId, userId: currentUserId, timestamp: serverTimestamp() });
                     await updateDoc(videoRef, {
                         likesCount: (currentLikes || 0) + 1
@@ -1213,17 +1209,17 @@
                     likeIcon.classList.remove('text-gray-300');
                     likeIcon.classList.add('text-red-500', 'fill-current');
                     likeIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.64a5.5 5.5 0 000-7.78z" fill="currentColor"></path>';
-                    console.log(`Video ${videoId} liked.`);
+                    console.log(`Video ${videoId} like ho gaya.`);
                 }
             } catch (error) {
-                console.error("Error toggling like:", error);
-                showCustomModal('Error', `Failed to update like: ${error.message}`, false);
+                console.error("Like toggle karne mein error:", error);
+                showCustomModal('Error', `Like update karne mein asafal: ${error.message}`, false);
             }
         }
 
         /**
-         * Opens the comment modal for a specific video.
-         * @param {string} videoId - The ID of the video to comment on.
+         * Ek specific video ke liye comment modal kholta hai.
+         * @param {string} videoId - Comment karne ke liye video ki ID.
          */
         function openCommentModal(videoId) {
             currentVideoIdForComments = videoId;
@@ -1232,17 +1228,17 @@
         }
 
         /**
-         * Loads and displays comments for a given video.
-         * @param {string} videoId - The ID of the video.
+         * Ek diye gaye video ke liye comments load aur display karta hai.
+         * @param {string} videoId - Video ki ID.
          */
         async function loadComments(videoId) {
-            commentList.innerHTML = ''; // Clear previous comments
+            commentList.innerHTML = ''; // Pichle comments clear karein
             commentLoading.classList.remove('hidden');
             noCommentsMessage.classList.add('hidden');
 
             if (!db) {
-                console.error("Firestore DB not available for comments.");
-                commentList.innerHTML = `<p class="text-red-500 text-center">App database not ready.</p>`;
+                console.error("Firestore DB comments ke liye available nahi.");
+                commentList.innerHTML = `<p class="text-red-500 text-center">App database taiyar nahi.</p>`;
                 commentLoading.classList.add('hidden');
                 return;
             }
@@ -1254,7 +1250,7 @@
                 onSnapshot(q, async (snapshot) => {
                     let fetchedComments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                    // Fetch usernames for comments
+                    // Comments ke liye usernames fetch karein
                     const commentsWithUsernames = await Promise.all(fetchedComments.map(async (comment) => {
                         const userProfileRef = doc(db, `artifacts/${appId}/users/${comment.userId}/profile/${comment.userId}`);
                         try {
@@ -1262,15 +1258,15 @@
                             const username = userDoc.exists() ? userDoc.data().username : 'Anonymous';
                             return { ...comment, username };
                         } catch (profileFetchError) {
-                            console.warn("Could not fetch username for comment:", comment.userId, profileFetchError);
+                            console.warn("Comment ke liye username fetch nahi kar saka:", comment.userId, profileFetchError);
                             return { ...comment, username: 'Anonymous' }; // Fallback
                         }
                     }));
 
-                    // Sort by timestamp descending
+                    // Timestamp (ghatate kram) se sort karein
                     commentsWithUsernames.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
-                    commentList.innerHTML = ''; // Clear again to prevent duplicates from multiple snapshots
+                    commentList.innerHTML = ''; // Dubara clear karein taki multiple snapshots se duplicates na aayein
                     if (commentsWithUsernames.length === 0) {
                         noCommentsMessage.classList.remove('hidden');
                     } else {
@@ -1289,33 +1285,33 @@
                     }
                     commentLoading.classList.add('hidden');
                 }, (err) => {
-                    console.error("Error in onSnapshot for comments:", err);
-                    commentList.innerHTML = `<p class="text-red-500 text-center">Failed to load comments: ${err.message}. Check Firebase security rules.</p>`;
+                    console.error("Comments ke liye onSnapshot mein error:", err);
+                    commentList.innerHTML = `<p class="text-red-500 text-center">Comments load karne mein asafal: ${err.message}. Firebase security rules check karein.</p>`;
                     commentLoading.classList.add('hidden');
                 });
             } catch (error) {
-                console.error("Error setting up comment listener:", error);
-                commentList.innerHTML = `<p class="text-red-500 text-center">Error fetching comments: ${error.message}.</p>`;
+                console.error("Comment listener set up karne mein error:", error);
+                commentList.innerHTML = `<p class="text-red-500 text-center">Comments fetch karne mein error: ${error.message}.</p>`;
                 commentLoading.classList.add('hidden');
             }
         }
 
         /**
-         * Adds a new comment to a video.
+         * Ek video mein naya comment add karta hai.
          */
         async function addComment() {
             if (!currentUserId || !db) {
-                showCustomModal('Action Required', 'Please ensure you are signed in to add comments.', false);
+                showCustomModal('Action Zaroori', 'Kripya comments add karne ke liye sign in karein.', false);
                 return;
             }
             const commentText = newCommentInput.value.trim();
             if (!commentText) {
-                showCustomModal('Input Required', 'Please enter a comment.', false);
+                showCustomModal('Input Zaroori', 'Kripya ek comment enter karein.', false);
                 return;
             }
             if (!currentVideoIdForComments) {
-                console.error("No video ID specified for comment.");
-                showCustomModal('Error', 'Could not add comment: No video selected.', false);
+                console.error("Comment ke liye koi video ID nirdisht nahi.");
+                showCustomModal('Error', 'Comment add nahi kar saka: Koi video chuna nahi gaya.', false);
                 return;
             }
 
@@ -1327,72 +1323,72 @@
                     text: commentText,
                     timestamp: serverTimestamp()
                 });
-                newCommentInput.value = ''; // Clear input
-                console.log("Comment added successfully.");
+                newCommentInput.value = ''; // Input clear karein
+                console.log("Comment safaltaapoorvak add ho gaya.");
             } catch (error) {
-                console.error("Error adding comment:", error);
-                showCustomModal('Error', `Failed to add comment: ${error.message}`, false);
+                console.error("Comment add karne mein error:", error);
+                showCustomModal('Error', `Comment add karne mein asafal: ${error.message}`, false);
             }
         }
 
 
-        // --- Upload Video Modal Logic ---
+        // --- Video Upload Modal Logic ---
 
         /**
-         * Opens the upload video modal.
+         * Video upload modal kholta hai.
          */
         function openUploadModal() {
             if (!currentUserId) {
-                showCustomModal('Action Required', 'Please sign in or continue as guest to upload videos.', false);
+                showCustomModal('Action Zaroori', 'Videos upload karne ke liye kripya sign in karein ya guest ke roop mein jaari rakhein.', false);
                 return;
             }
             uploadVideoModal.classList.remove('hidden');
         }
 
         /**
-         * Handles video upload form submission.
-         * @param {Event} e - The form submission event.
+         * Video upload form submission ko handle karta hai.
+         * @param {Event} e - Form submission event.
          */
         async function handleUploadSubmit(e) {
             e.preventDefault();
             uploadErrorMessage.classList.add('hidden');
             uploadSubmitButton.disabled = true;
-            uploadButtonText.textContent = 'Uploading...';
+            uploadButtonText.textContent = 'Upload ho raha hai...';
             uploadLoadingSpinner.classList.remove('hidden');
 
             const videoUrl = videoUrlInput.value.trim();
             const videoTitle = videoTitleInput.value.trim();
 
             if (!videoUrl || !videoTitle) {
-                uploadErrorMessage.textContent = "Please enter both video URL and title.";
+                uploadErrorMessage.textContent = "Kripya video URL aur title dono enter karein.";
                 uploadErrorMessage.classList.remove('hidden');
                 uploadSubmitButton.disabled = false;
-                uploadButtonText.textContent = 'Upload Video';
+                uploadButtonText.textContent = 'Video Upload Karein';
                 uploadLoadingSpinner.classList.add('hidden');
                 return;
             }
 
             const youTubeInfo = getYouTubeInfo(videoUrl);
             if (!youTubeInfo) {
-                uploadErrorMessage.textContent = "Please enter a valid YouTube video URL.";
+                uploadErrorMessage.textContent = "Kripya ek valid YouTube video URL enter karein.";
                 uploadErrorMessage.classList.remove('hidden');
                 uploadSubmitButton.disabled = false;
-                uploadButtonText.textContent = 'Upload Video';
+                uploadButtonText.textContent = 'Video Upload Karein';
                 uploadLoadingSpinner.classList.add('hidden');
                 return;
             }
 
             if (!currentUserId || !db) {
-                uploadErrorMessage.textContent = "App not ready or user not logged in.";
+                uploadErrorMessage.textContent = "App taiyar nahi ya user login nahi hai.";
                 uploadErrorMessage.classList.remove('hidden');
                 uploadSubmitButton.disabled = false;
-                uploadButtonText.textContent = 'Upload Video';
+                uploadButtonText.textContent = 'Video Upload Karein';
                 uploadLoadingSpinner.classList.add('hidden');
                 return;
             }
 
             try {
-                // Fetch current user's username
+                // Current user ka username fetch karein
                 const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
                 const userDoc = await getDoc(userProfileRef);
                 const username = userDoc.exists() ? userDoc.data().username : 'Anonymous';
@@ -1409,17 +1405,17 @@
                     timestamp: serverTimestamp()
                 });
 
-                showCustomModal('Success!', 'Video uploaded successfully. It will appear in the feed shortly.', false, null, () => {
+                showCustomModal('Safalta!', 'Video safaltaapoorvak upload ho gaya. Yeh jald hi feed mein dikhega.', false, null, () => {
                     closeModal('upload');
                 });
-                uploadVideoForm.reset(); // Clear form
+                uploadVideoForm.reset(); // Form clear karein
             } catch (error) {
-                console.error("Error uploading video:", error);
-                uploadErrorMessage.textContent = `Failed to upload video: ${error.message}. Check Firebase security rules.`;
+                console.error("Video upload karne mein error:", error);
+                uploadErrorMessage.textContent = `Video upload karne mein asafal: ${error.message}. Firebase security rules check karein.`;
                 uploadErrorMessage.classList.remove('hidden');
             } finally {
                 uploadSubmitButton.disabled = false;
-                uploadButtonText.textContent = 'Upload Video';
+                uploadButtonText.textContent = 'Video Upload Karein';
                 uploadLoadingSpinner.classList.add('hidden');
             }
         }
@@ -1428,89 +1424,89 @@
         // --- Withdraw Modal Logic (Simulated) ---
 
         /**
-         * Opens the withdraw modal.
+         * Withdraw modal kholta hai.
          */
         function openWithdrawModal() {
             if (!currentUserId) {
-                showCustomModal('Action Required', 'Please sign in to request withdrawal.', false);
+                showCustomModal('Action Zaroori', 'Nikasi ka anurodh karne ke liye kripya sign in karein.', false);
                 return;
             }
             withdrawModal.classList.remove('hidden');
         }
 
         /**
-         * Handles withdrawal form submission (simulated).
-         * @param {Event} e - The form submission event.
+         * Nikasi form submission ko handle karta hai (simulated).
+         * @param {Event} e - Form submission event.
          */
         async function handleWithdrawSubmit(e) {
             e.preventDefault();
             withdrawErrorMessage.classList.add('hidden');
             withdrawSubmitButton.disabled = true;
-            withdrawButtonText.textContent = 'Submitting...';
+            withdrawButtonText.textContent = 'Submit ho raha hai...';
             withdrawLoadingSpinner.classList.remove('hidden');
 
             const amount = parseFloat(withdrawAmountInput.value);
             const upiId = upiIdInput.value.trim();
 
             if (!amount || !upiId) {
-                withdrawErrorMessage.textContent = 'Please fill all fields.';
+                withdrawErrorMessage.textContent = 'Kripya sabhi fields bharein.';
                 withdrawErrorMessage.classList.remove('hidden');
                 withdrawSubmitButton.disabled = false;
-                withdrawButtonText.textContent = 'Request Withdrawal';
+                withdrawButtonText.textContent = 'Nikasi Ka Anurodh Karein';
                 withdrawLoadingSpinner.classList.add('hidden');
                 return;
             }
             if (amount < 100) {
-                withdrawErrorMessage.textContent = 'Minimum withdrawal amount is ₹100.';
+                withdrawErrorMessage.textContent = 'Minimum nikasi rashi ₹100 hai.';
                 withdrawErrorMessage.classList.remove('hidden');
                 withdrawSubmitButton.disabled = false;
-                withdrawButtonText.textContent = 'Request Withdrawal';
+                withdrawButtonText.textContent = 'Nikasi Ka Anurodh Karein';
                 withdrawLoadingSpinner.classList.add('hidden');
                 return;
             }
              if (!currentUserId) {
-                withdrawErrorMessage.textContent = "User not logged in. Cannot process withdrawal.";
+                withdrawErrorMessage.textContent = "User login nahi hai. Nikasi prakriya nahi kar sakte.";
                 withdrawErrorMessage.classList.remove('hidden');
                 withdrawSubmitButton.disabled = false;
-                withdrawButtonText.textContent = 'Request Withdrawal';
+                withdrawButtonText.textContent = 'Nikasi Ka Anurodh Karein';
                 withdrawLoadingSpinner.classList.add('hidden');
                 return;
             }
 
 
             try {
-                // Simulate API call for withdrawal request
-                console.log(`Withdrawal Request: User ${currentUserId}, Amount: ₹${amount}, UPI ID: ${upiId}`);
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2-second delay
+                // Nikasi anurodh ke liye API call simulate karein
+                console.log(`Nikasi Anurodh: User ${currentUserId}, Rashi: ₹${amount}, UPI ID: ${upiId}`);
+                await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay simulate karein
 
-                showCustomModal('Request Sent!', 'Withdrawal request submitted successfully! Payment will be sent manually via UPI.', false, null, () => {
+                showCustomModal('Anurodh Bhej Diya!', 'Nikasi ka anurodh safaltaapoorvak bhej diya gaya! Payment UPI ke madhyam se manually bheja jayega.', false, null, () => {
                     closeModal('withdraw');
                 });
-                withdrawForm.reset(); // Clear form
+                withdrawForm.reset(); // Form clear karein
             } catch (error) {
-                console.error("Withdrawal error:", error);
-                withdrawErrorMessage.textContent = `Failed to submit withdrawal request: ${error.message}`;
+                console.error("Nikasi mein error:", error);
+                withdrawErrorMessage.textContent = `Nikasi ka anurodh submit karne mein asafal: ${error.message}`;
                 withdrawErrorMessage.classList.remove('hidden');
             } finally {
                 withdrawSubmitButton.disabled = false;
-                withdrawButtonText.textContent = 'Request Withdrawal';
+                withdrawButtonText.textContent = 'Nikasi Ka Anurodh Karein';
                 withdrawLoadingSpinner.classList.add('hidden');
             }
         }
 
         /**
-         * Handles user sign out.
+         * User sign out ko handle karta hai.
          */
         async function handleSignOut() {
             try {
                 await signOut(auth);
-                console.log("Signed out successfully.");
-                currentUserId = null; // Clear userId after sign out
-                showPage('home'); // Redirect to home page
-                showCustomModal('Signed Out', 'You have been signed out successfully.', false);
+                console.log("Safaltaapoorvak sign out ho gaye.");
+                currentUserId = null; // Sign out ke baad userId clear karein
+                showPage('home'); // Home page par redirect karein
+                showCustomModal('Sign Out Ho Gaye', 'Aap safaltaapoorvak sign out ho gaye hain.', false);
             } catch (error) {
-                console.error("Error signing out:", error);
-                showCustomModal('Sign Out Error', `Failed to sign out: ${error.message}`, false);
+                console.error("Sign out karne mein error:", error);
+                showCustomModal('Sign Out Error', `Sign out karne mein asafal: ${error.message}`, false);
             }
         }
 
@@ -1518,8 +1514,8 @@
         // --- Authentication Modal Functions ---
 
         /**
-         * Switches the active tab in the auth modal between Login and Sign Up.
-         * @param {string} type - 'login' or 'signup'.
+         * Auth modal mein active tab ko Login aur Sign Up ke beech switch karta hai.
+         * @param {string} type - 'login' ya 'signup'.
          */
         function switchAuthTab(type) {
             if (type === 'login') {
@@ -1542,32 +1538,32 @@
         }
 
         /**
-         * Handles Email/Password Sign Up.
-         * @param {Event} e - The form submission event.
+         * Email/Password Sign Up ko handle karta hai.
+         * @param {Event} e - Form submission event.
          */
         async function handleEmailSignup(e) {
             e.preventDefault();
             signupErrorMessage.classList.add('hidden');
             signupSubmitButton.disabled = true;
-            signupButtonText.textContent = 'Signing Up...';
+            signupButtonText.textContent = 'Sign Up ho raha hai...';
             signupLoadingSpinner.classList.remove('hidden');
 
             const email = signupEmailInput.value.trim();
             const password = signupPasswordInput.value.trim();
 
             if (!email || !password) {
-                signupErrorMessage.textContent = "Please enter both email and password.";
+                signupErrorMessage.textContent = "Kripya email aur password dono enter karein.";
                 signupErrorMessage.classList.remove('hidden');
                 signupSubmitButton.disabled = false;
-                signupButtonText.textContent = 'Sign Up';
+                signupButtonText.textContent = 'Sign Up Karein';
                 signupLoadingSpinner.classList.add('hidden');
                 return;
             }
             if (password.length < 6) {
-                signupErrorMessage.textContent = "Password must be at least 6 characters long.";
+                signupErrorMessage.textContent = "Password kam se kam 6 akshar lamba hona chahiye.";
                 signupErrorMessage.classList.remove('hidden');
                 signupSubmitButton.disabled = false;
-                signupButtonText.textContent = 'Sign Up';
+                signupButtonText.textContent = 'Sign Up Karein';
                 signupLoadingSpinner.classList.add('hidden');
                 return;
             }
@@ -1577,47 +1573,47 @@
                 const user = userCredential.user;
                 console.log("User signed up:", user.uid);
 
-                // Send email verification
+                // Email verification bhej de
                 await sendEmailVerification(user);
-                showCustomModal('Verification Sent', `A verification email has been sent to ${user.email}. Please verify your email before logging in.`, false, null, () => {
-                    closeModal('auth'); // Close auth modal on successful signup and email sent
+                showCustomModal('Verification Bhej Diya', `Ek verification email ${user.email} par bhej diya gaya hai. Kripya login karne se pehle apna email verify karein.`, false, null, () => {
+                    closeModal('auth'); // Safal signup aur email bhejne par auth modal band karein
                 });
                 signupForm.reset();
             } catch (error) {
                 console.error("Signup error:", error);
-                let errorMessage = "Failed to sign up.";
+                let errorMessage = "Sign up karne mein asafal.";
                 if (error.code === 'auth/email-already-in-use') {
-                    errorMessage = "This email is already in use. Try logging in.";
+                    errorMessage = "Yeh email pehle se hi upyog mein hai. Login karne ka prayas karein.";
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = "Invalid email address.";
                 } else if (error.code === 'auth/weak-password') {
-                    errorMessage = "Password is too weak.";
+                    errorMessage = "Password bahut kamzor hai.";
                 }
                 signupErrorMessage.textContent = errorMessage;
                 signupErrorMessage.classList.remove('hidden');
             } finally {
                 signupSubmitButton.disabled = false;
-                signupButtonText.textContent = 'Sign Up';
+                signupButtonText.textContent = 'Sign Up Karein';
                 signupLoadingSpinner.classList.add('hidden');
             }
         }
 
         /**
-         * Handles Email/Password Login.
-         * @param {Event} e - The form submission event.
+         * Email/Password Login ko handle karta hai.
+         * @param {Event} e - Form submission event.
          */
         async function handleEmailLogin(e) {
             e.preventDefault();
             loginErrorMessage.classList.add('hidden');
             loginSubmitButton.disabled = true;
-            loginButtonText.textContent = 'Logging In...';
+            loginButtonText.textContent = 'Login ho raha hai...';
             loginLoadingSpinner.classList.remove('hidden');
 
             const email = loginEmailInput.value.trim();
             const password = loginPasswordInput.value.trim();
 
             if (!email || !password) {
-                loginErrorMessage.textContent = "Please enter both email and password.";
+                loginErrorMessage.textContent = "Kripya email aur password dono enter karein.";
                 loginErrorMessage.classList.remove('hidden');
                 loginSubmitButton.disabled = false;
                 loginButtonText.textContent = 'Login';
@@ -1628,25 +1624,25 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
-                console.log("User logged in:", user.uid);
+                console.log("User login ho gaya:", user.uid);
 
                 if (!user.emailVerified) {
-                    showCustomModal('Email Not Verified', 'Your email is not verified. Please check your inbox for a verification link. Or click Ok to resend email.', true, async () => {
+                    showCustomModal('Email Verified Nahi', 'Aapka email verified nahi hai. Kripya apne inbox mein verification link check karein. Ya link ko dobara bhejne ke liye Ok par click karein.', true, async () => {
                         await sendEmailVerification(user);
-                        showCustomModal('Email Sent', 'Verification email resent!', false);
+                        showCustomModal('Email Bhej Diya', 'Verification email dobara bhej diya gaya!', false);
                     });
-                    await signOut(auth); // Sign out if email is not verified
+                    await signOut(auth); // Agar email verified nahi hai toh sign out karein
                 } else {
-                    // Success, onAuthStateChanged will handle UI update
-                    console.log("User logged in and email verified.");
+                    // Safalta, onAuthStateChanged UI update ko handle karega
+                    console.log("User login ho gaya aur email verified hai.");
                     loginForm.reset();
                     closeModal('auth');
                 }
             } catch (error) {
                 console.error("Login error:", error);
-                let errorMessage = "Failed to log in.";
+                let errorMessage = "Login karne mein asafal.";
                 if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-                    errorMessage = "Invalid email or password.";
+                    errorMessage = "Invalid email ya password.";
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = "Invalid email address.";
                 }
@@ -1660,11 +1656,11 @@
         }
 
         /**
-         * Handles Google Sign-in.
+         * Google Sign-in ko handle karta hai.
          */
         async function handleGoogleSignIn() {
             googleSignInButton.disabled = true;
-            guestLoginButton.disabled = true; // Disable other buttons during sign-in
+            guestLoginButton.disabled = true; // Sign-in ke dauraan dusre buttons ko disable karein
             loginSubmitButton.disabled = true;
             signupSubmitButton.disabled = true;
 
@@ -1672,15 +1668,15 @@
                 const provider = new GoogleAuthProvider();
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
-                console.log("Google signed in user:", user.uid);
-                // onAuthStateChanged will handle UI update and profile creation
+                console.log("Google se sign in kiya gaya user:", user.uid);
+                // onAuthStateChanged UI update aur profile creation ko handle karega
                 closeModal('auth');
             } catch (error) {
                 console.error("Google Sign-in error:", error);
                 if (error.code === 'auth/popup-closed-by-user') {
-                    console.log("Google Sign-in popup closed by user.");
+                    console.log("Google Sign-in popup user dwara band kiya gaya.");
                 } else {
-                    showCustomModal('Google Sign-in Error', `Failed to sign in with Google: ${error.message}`, false);
+                    showCustomModal('Google Sign-in Error', `Google se sign in karne mein asafal: ${error.message}`, false);
                 }
             } finally {
                 googleSignInButton.disabled = false;
@@ -1691,24 +1687,24 @@
         }
 
         /**
-         * Handles Forgot Password flow.
+         * Password Bhool Gaye flow ko handle karta hai.
          */
         async function handleForgotPassword() {
             const email = loginEmailInput.value.trim();
             if (!email) {
-                loginErrorMessage.textContent = "Please enter your email to reset password.";
+                loginErrorMessage.textContent = "Password reset karne ke liye apna email enter karein.";
                 loginErrorMessage.classList.remove('hidden');
                 return;
             }
             try {
                 await sendPasswordResetEmail(auth, email);
-                showCustomModal('Password Reset', `Password reset email sent to ${email}. Check your inbox.`, false);
+                showCustomModal('Password Reset', `${email} par password reset email bhej diya gaya hai. Apna inbox check karein.`, false);
                 loginErrorMessage.classList.add('hidden');
             } catch (error) {
-                console.error("Forgot password error:", error);
-                let errorMessage = "Failed to send password reset email.";
+                console.error("Password bhool gaye error:", error);
+                let errorMessage = "Password reset email bhejne mein asafal.";
                 if (error.code === 'auth/user-not-found') {
-                    errorMessage = "No user found with this email.";
+                    errorMessage = "Is email se koi user nahi mila.";
                 } else if (error.code === 'auth/invalid-email') {
                     errorMessage = "Invalid email address.";
                 }
@@ -1718,11 +1714,11 @@
         }
 
         /**
-         * Handles "Continue as Guest" (anonymous login).
+         * "Guest ke roop mein jaari rakhein" (anonymous login) ko handle karta hai.
          */
         async function handleGuestLogin() {
             guestLoginButton.disabled = true;
-            guestLoginButtonText.textContent = 'Logging In...';
+            guestLoginButtonText.textContent = 'Login ho raha hai...';
             guestLoginLoadingSpinner.classList.remove('hidden');
             googleSignInButton.disabled = true;
             loginSubmitButton.disabled = true;
@@ -1730,14 +1726,14 @@
 
             try {
                 await signInAnonymously(auth);
-                // onAuthStateChanged will handle UI update and profile creation
+                // onAuthStateChanged UI update aur profile creation ko handle karega
                 closeModal('auth');
             } catch (error) {
                 console.error("Guest login error:", error);
-                showCustomModal('Guest Login Error', `Failed to sign in as guest: ${error.message}. Please try again.`, false);
+                showCustomModal('Guest Login Error', `Guest ke roop mein sign in karne mein asafal: ${error.message}. Kripya dobara prayas karein.`, false);
             } finally {
                 guestLoginButton.disabled = false;
-                guestLoginButtonText.textContent = 'Continue as Guest';
+                guestLoginButtonText.textContent = 'Guest ke roop mein jaari rakhein';
                 guestLoginLoadingSpinner.classList.add('hidden');
                 googleSignInButton.disabled = false;
                 loginSubmitButton.disabled = false;
@@ -1747,7 +1743,7 @@
 
 
         // --- Ad Script Injection (Global) ---
-        // Dynamically create and append script elements for third-party ads.
+        // Third-party ads ke liye dynamically script elements banayein aur append karein.
 
         function loadScript(src, type = 'text/javascript', parent = document.body) {
             return new Promise((resolve, reject) => {
@@ -1755,125 +1751,89 @@
                 script.src = src;
                 script.type = type;
                 script.async = true;
-                script.referrerPolicy = 'no-referrer-when-downgrade'; // For some ad networks
+                script.referrerPolicy = 'no-referrer-when-downgrade'; // Kuch ad networks ke liye
 
                 script.onload = () => {
-                    console.log(`Script loaded: ${src}`);
+                    console.log(`Script load ho gaya: ${src}`);
                     resolve(script);
                 };
                 script.onerror = (e) => {
-                    console.error(`Error loading script: ${src}`, e);
-                    reject(new Error(`Failed to load script ${src}`));
+                    console.error(`Script load karne mein error: ${src}`, e);
+                    reject(new Error(`Script load karne mein asafal ${src}`));
                 };
                 parent.appendChild(script);
             });
         }
 
         function injectExternalAdScripts() {
-            console.log("Injecting external ad scripts...");
-
-            // Hilltops Popunder (Triggered after a delay)
-            const hilltopsPopunderTrigger = `
-                if (!window._hilltopsPopunderLoaded) {
-                    setTimeout(function() {
-                        window.open('https://assured-sandwich.com/bV3fV.0WPv3/pSvrb/m/VsJQZ/DR0/2XN/D/In0JNVTzMU3MLVThYo0-MvjeQB1/Mgz/gT', '_blank');
-                        window._hilltopsPopunderLoaded = true;
-                    }, 15000); // Trigger popunder after 15 seconds
-                }
-            `;
-            const hilltopsPopunderScript = document.createElement('script');
-            hilltopsPopunderScript.textContent = hilltopsPopunderTrigger;
-            document.body.appendChild(hilltopsPopunderScript);
-            console.log("Hilltops Popunder script trigger injected.");
-
-            // Adstreaa Popunder Ad
-            loadScript('//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js');
-
-            // Adstreaa Native Ads
-            // Needs a div to invoke into
-            const nativeAdDiv = document.createElement('div');
-            nativeAdDiv.id = "container-39628927897b21d6c45567203000ccc6";
-            // Ensure this div is placed where you want the native ad to appear.
-            // For a full-page app like this, it might appear at the bottom or require a dedicated spot.
-            // For now, appending to body for execution.
-            document.body.appendChild(nativeAdDiv);
-            loadScript('//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js', 'text/javascript', document.head)
-                .then(() => {
-                    console.log("Adstreaa Native Ads script loaded and div ready.");
-                });
-
+            console.log("External ad scripts inject kar rahe hain...");
 
             // Adstreaa Social Bar
             loadScript('//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js');
 
-            // Adstreaa Banner 320x50 & 160x300 (These are global and can be added, but might need specific positioning)
-            // They require 'atOptions' global variable.
-            // It's better to isolate these or only load one per distinct zone.
-            // For now, loading them sequentially.
+            // Adstreaa Native Ads
+            // Iske invoke hone ke liye div ki zaroorat hai
+            const nativeAdDiv = document.createElement('div');
+            nativeAdDiv.id = "container-39628927897b21d6c45567203000ccc6";
+            nativeAdDiv.className = "my-4 p-4 bg-gray-900 rounded-lg text-center text-gray-400"; // Styling for visibility
+            nativeAdDiv.textContent = "Native Ad (Placeholder)"; // Placeholder text
+            document.body.appendChild(nativeAdDiv);
+            loadScript('//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js', 'text/javascript', document.head)
+                .then(() => {
+                    console.log("Adstreaa Native Ads script load ho gaya aur div taiyar hai.");
+                });
 
-            // Adstreaa Banner 320x50
-            const scriptBanner320x50 = document.createElement('script');
-            scriptBanner320x50.type = 'text/javascript';
-            scriptBanner320x50.textContent = `
-                var atOptions_320x50 = {
-                    'key' : 'f4fd46187fcf3a252df23d7277e02fd7',
-                    'format' : 'iframe',
-                    'height' : 50,
-                    'width' : 320,
-                    'params' : {}
-                };
-                window.atOptions = atOptions_320x50; // Set global
-            `;
-            document.body.appendChild(scriptBanner320x50);
-            loadScript('//www.highperformanceformat.com/f4fd46187fcf3a252df23d7277e02fd7/invoke.js');
+            // Hilltops Popunder (bahut invasive, isse hattana behtar hai ya bahut kam use karna)
+            // Agar aap ise zaroor rakhna chahte hain, toh yahaan uncomment karein.
+            // Main ise abhi comment hi rakunga user experience ke liye.
+            // const hilltopsPopunderTrigger = `
+            //     if (!window._hilltopsPopunderLoaded) {
+            //         setTimeout(function() {
+            //             window.open('https://assured-sandwich.com/bV3fV.0WPv3/pSvrb/m/VsJQZ/DR0/2XN/D/In0JNVTzMU3MLVThYo0-MvjeQB1/Mgz/gT', '_blank');
+            //             window._hilltopsPopunderLoaded = true;
+            //         }, 15000); // 15 seconds ke baad popunder trigger karein
+            //     }
+            // `;
+            // const hilltopsPopunderScript = document.createElement('script');
+            // hilltopsPopunderScript.textContent = hilltopsPopunderTrigger;
+            // document.body.appendChild(hilltopsPopunderScript);
+            // console.log("Hilltops Popunder script trigger inject kiya gaya.");
 
-
-            // Adstreaa Banner 160x300
-            const scriptBanner160x300 = document.createElement('script');
-            scriptBanner160x300.type = 'text/javascript';
-            scriptBanner160x300.textContent = `
-                var atOptions_160x300 = {
-                    'key' : 'bc56d12282cadec7b8753ae823c22319',
-                    'format' : 'iframe',
-                    'height' : 300,
-                    'width' : 160,
-                    'params' : {}
-                };
-                window.atOptions = atOptions_160x300; // Overwrites previous 'atOptions' for next invoke.
-            `;
-            document.body.appendChild(scriptBanner160x300);
-            loadScript('//www.highperformanceformat.com/bc56d12282cadec7b8753ae823c22319/invoke.js');
+            // Adstreaa Popunder Ad (bhi invasive)
+            // loadScript('//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js');
 
 
-            // Hilltops Banner 300x100
+            // Hilltops Banner 300x100 (yeh bhi global, agar aap isse global footer mein rakhna chahte hain toh)
+            // Maine isse abhi comment rakha hai, kyunki video cards mein specific banners hain.
+            /*
             const hilltopsBanner300x100Fn = `
-                (function(ahzkl){     
-                var d = document,     
-                s = d.createElement('script'),     
-                l = d.scripts[d.scripts.length - 1];     
-                s.settings = ahzkl || {};     
-                s.src = "//definitive-priority.com/brX/VEs/d.GRlA0BY_Wicn/behmh9xu/ZeUrlXkDPKTFY/0wMxjKQC1KNtTGM_tpNpjwQGyMN/DdUR1HNjAm";     
-                s.async = true;     
-                s.referrerPolicy = 'no-referrer-when-downgrade';     
-                l.parentNode.insertBefore(s, l);     
-                })({});     
+                (function(ahzkl){
+                var d = document,
+                s = d.createElement('script'),
+                l = d.scripts[d.scripts.length - 1];
+                s.settings = ahzkl || {};
+                s.src = "//definitive-priority.com/brX/VEs/d.GRlA0BY_Wicn/behmh9xu/ZeUrlXkDPKTFY/0wMxjKQC1KNtTGM_tpNpjwQGyMN/DdUR1HNjAm";
+                s.async = true;
+                s.referrerPolicy = 'no-referrer-when-downgrade';
+                l.parentNode.insertBefore(s, l);
+                })({});
             `;
             const hilltopsBannerScript = document.createElement('script');
             hilltopsBannerScript.textContent = hilltopsBanner300x100Fn;
             document.body.appendChild(hilltopsBannerScript);
+            */
 
-
-            console.log("All external ad scripts initiated for injection.");
+            console.log("Sabhi external ad scripts inject karne ke liye shuru kiye gaye.");
         }
 
 
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM Content Loaded. Starting app initialization.");
-            // Initialize Firebase when DOM is ready
+            console.log("DOM Content Load ho gaya. App initialization shuru kar rahe hain.");
+            // Jab DOM taiyar ho jaye tab Firebase ko initialize karein
             initializeFirebase();
 
-            // Inject global ad scripts
+            // Global ad scripts inject karein
             injectExternalAdScripts();
 
             // Header Button Listeners
@@ -1889,9 +1849,9 @@
             document.getElementById('upload-footer-button').addEventListener('click', openUploadModal);
             document.getElementById('profile-footer-button').addEventListener('click', () => showPage('profile'));
 
-            // Custom Modal Listeners (delegated as modal is shown/hidden)
+            // Custom Modal Listeners (modal dikhane/chhupane par delegate kiye gaye)
             customModalCloseButton.addEventListener('click', () => closeModal('custom'));
-            // The confirm button's listener is set dynamically in showCustomModal
+            // Confirm button ka listener showCustomModal mein dynamically set kiya jata hai
 
             // Comment Modal Listeners
             commentModalCloseButton.addEventListener('click', () => closeModal('comment'));
@@ -1920,11 +1880,11 @@
             forgotPasswordButton.addEventListener('click', handleForgotPassword);
         });
 
-        // Ensure window resize updates IMA ad container size if needed,
-        // though the global container should handle it fairly well with CSS.
+        // Window resize hone par IMA ad container size update karein,
+        // halanki global container CSS ke saath achhe se handle karega.
         window.addEventListener('resize', () => {
             if (currentAdManager && imaAdContainer.style.display !== 'none') {
-                 // Important: Re-init or resize ad manager if container dimensions change while ad is active
+                 // Zaroori: Agar container dimensions badalte hain jab ad active hai toh ad manager ko re-init ya resize karein
                 currentAdManager.resize(imaAdContainer.offsetWidth, imaAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
             }
         });
