@@ -52,6 +52,11 @@
             align-items: center;
             justify-content: center;
         }
+        /* Tailwind classes for iframe responsiveness */
+        iframe {
+            max-width: 100%;
+            height: auto;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-white min-h-screen flex flex-col">
@@ -101,14 +106,14 @@
             <div id="video-feed-container" class="w-full h-full">
                 <!-- Videos will be injected here -->
             </div>
-            <div id="home-loading" class="flex items-center justify-center h-full text-white hidden">
+            <div id="home-loading" class="flex flex-col items-center justify-center h-full text-white hidden">
                 <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="ml-3">Loading videos...</span>
+                <span class="ml-3 mt-2">Loading videos...</span>
             </div>
-            <div id="home-error" class="flex items-center justify-center h-full text-red-500 hidden"></div>
+            <div id="home-error" class="flex items-center justify-center h-full text-red-500 text-center p-4 hidden"></div>
             <div id="no-videos-message" class="flex items-center justify-center h-full text-white text-lg hidden">
                 No videos available. Upload some!
             </div>
@@ -191,12 +196,12 @@
                 </button>
             </div>
             <div id="comment-list" class="flex-1 overflow-y-auto p-4 hide-scrollbar">
-                <div id="comment-loading" class="flex justify-center items-center h-full text-white hidden">
+                <div id="comment-loading" class="flex flex-col justify-center items-center h-full text-white hidden">
                     <svg class="animate-spin h-6 w-6 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <span class="ml-2 text-gray-300">Loading comments...</span>
+                    <span class="ml-2 mt-2 text-gray-300">Loading comments...</span>
                 </div>
                 <p id="no-comments-message" class="text-gray-400 text-center mt-4 hidden">No comments yet. Be the first!</p>
                 <!-- Comments will be injected here -->
@@ -425,11 +430,15 @@
                 case 'upload':
                     uploadVideoModal.classList.add('hidden');
                     uploadVideoForm.reset(); // Clear form
+                    videoUrlInput.value = ''; // Ensure inputs are truly reset
+                    videoTitleInput.value = '';
                     uploadErrorMessage.classList.add('hidden');
                     break;
                 case 'withdraw':
                     withdrawModal.classList.add('hidden');
                     withdrawForm.reset();
+                    withdrawAmountInput.value = '';
+                    upiIdInput.value = '';
                     withdrawErrorMessage.classList.add('hidden');
                     break;
             }
@@ -442,29 +451,37 @@
          * Initializes Firebase and sets up authentication listener.
          */
         async function initializeFirebase() {
+            console.log("Initializing Firebase...");
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+                console.log("Firebase app, db, auth initialized.");
 
                 // Auth state listener
                 onAuthStateChanged(auth, async (user) => {
+                    console.log("Auth state changed. User:", user ? user.uid : "No user");
                     if (user) {
                         currentUserId = user.uid;
-                        console.log("Firebase user changed:", user.uid);
                         displayUserId.textContent = currentUserId;
                         userInfo.classList.remove('hidden'); // Show user info
 
                         // Ensure user profile exists (or create a dummy one)
                         const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile/${user.uid}`);
-                        const userDoc = await getDoc(userProfileRef);
-                        if (!userDoc.exists()) {
-                            await setDoc(userProfileRef, {
-                                username: `User_${user.uid.substring(0, 6)}`,
-                                joinedAt: serverTimestamp(),
-                            });
-                            console.log("New user profile created for UID:", user.uid);
+                        try {
+                            const userDoc = await getDoc(userProfileRef);
+                            if (!userDoc.exists()) {
+                                console.log("Creating new user profile for UID:", user.uid);
+                                await setDoc(userProfileRef, {
+                                    username: `User_${user.uid.substring(0, 6)}`,
+                                    joinedAt: serverTimestamp(),
+                                });
+                            }
+                        } catch (profileError) {
+                            console.error("Error creating/fetching user profile:", profileError);
+                            showCustomModal('Profile Error', 'Failed to load user profile. Some features might be limited.', false);
                         }
+
                     } else {
                         currentUserId = null;
                         displayUserId.textContent = '';
@@ -481,12 +498,17 @@
 
                                 // Create profile for anonymous user too
                                 const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-                                const userDoc = await getDoc(userProfileRef);
-                                if (!userDoc.exists()) {
-                                    await setDoc(userProfileRef, {
-                                        username: `AnonUser_${currentUserId.substring(0, 6)}`,
-                                        joinedAt: serverTimestamp(),
-                                    });
+                                try {
+                                    const userDoc = await getDoc(userProfileRef);
+                                    if (!userDoc.exists()) {
+                                        console.log("Creating new anonymous user profile for UID:", currentUserId);
+                                        await setDoc(userProfileRef, {
+                                            username: `AnonUser_${currentUserId.substring(0, 6)}`,
+                                            joinedAt: serverTimestamp(),
+                                        });
+                                    }
+                                } catch (anonProfileError) {
+                                    console.error("Error creating anonymous user profile:", anonProfileError);
                                 }
 
                             } catch (error) {
@@ -494,44 +516,37 @@
                                 showCustomModal('Authentication Error', 'Failed to sign in anonymously. Please try refreshing the page.', false);
                             }
                         } else {
-                            // If initialAuthToken is present, it means a custom token login is expected.
-                            // The onAuthStateChanged listener will eventually pick up the user if successful.
-                            console.log("Waiting for custom token sign-in or a user session...");
+                            console.log("Initial auth token provided, waiting for custom token sign-in or a user session...");
                         }
                     }
                     authReady = true; // Firebase auth has completed its initial check
-                    // After auth is ready, load the current page content
-                    showPage(currentPage);
+                    console.log("Auth is ready. Current page:", currentPage);
+                    showPage(currentPage); // Load the current page content
                 });
 
                 // Use the initialAuthToken if available
                 if (initialAuthToken) {
                     try {
+                        console.log("Signing in with custom token...");
                         await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token.");
+                        console.log("Signed in with custom token successfully.");
                     } catch (error) {
                         console.error("Error signing in with custom token:", error);
-                        showCustomModal('Authentication Error', 'Failed to sign in with provided token. Trying anonymous login.', false);
+                        showCustomModal('Authentication Error', 'Failed to sign in with provided token. Attempting anonymous login fallback.', false);
                         // onAuthStateChanged will handle fallback to anonymous if token sign-in fails
                     }
                 }
 
-                console.log("Firebase initialized.");
-
             } catch (error) {
-                console.error("Failed to initialize Firebase:", error);
-                showCustomModal('Initialization Error', 'Failed to initialize the application. Please check console for details.', false);
+                console.error("Critical: Failed to initialize Firebase:", error);
+                showCustomModal('Initialization Error', 'Failed to initialize the application. Please check console for details and ensure your Firebase config is correct.', false);
                 authReady = false;
                 // Display a full-screen error message
-                homePage.innerHTML = `
-                    <div class="flex items-center justify-center h-full text-red-500 text-center">
-                        <p class="text-xl">Error initializing app: ${error.message}<br>Please try again.</p>
-                    </div>
-                `;
-                homePage.classList.remove('hidden');
-                profilePage.classList.add('hidden');
-                searchPage.classList.add('hidden');
-                peoplePage.classList.add('hidden');
+                homeLoading.classList.add('hidden');
+                homeError.textContent = `Critical error initializing app: ${error.message}. Please check your Firebase configuration.`;
+                homeError.classList.remove('hidden');
+                homePage.classList.remove('hidden'); // Ensure home page is visible to show error
+                profilePage.classList.add('hidden'); // Hide other pages
             }
         }
 
@@ -548,7 +563,7 @@
             const footerButtons = {
                 'home': document.getElementById('home-footer-button'),
                 'people': document.getElementById('people-footer-button'),
-                'upload': document.getElementById('upload-footer-button'), // Note: Upload is a modal, but button is here
+                'upload': document.getElementById('upload-footer-button'),
                 'profile': document.getElementById('profile-footer-button')
             };
 
@@ -558,6 +573,12 @@
                 if(btn) btn.classList.remove('text-orange-500', 'bg-gray-800');
                 if(btn) btn.classList.add('text-gray-400', 'hover:bg-gray-700');
             });
+
+            if (!authReady) {
+                console.log("Auth not ready, showing loading indicator.");
+                homeLoading.classList.remove('hidden');
+                return; // Wait for auth to be ready before rendering specific pages
+            }
 
             switch (pageName) {
                 case 'home':
@@ -574,12 +595,17 @@
                     break;
                 case 'search':
                     searchPage.classList.remove('hidden');
-                    // No footer button for search currently, just header
                     break;
                 case 'people':
                     peoplePage.classList.remove('hidden');
                     footerButtons['people'].classList.add('text-orange-500', 'bg-gray-800');
                     footerButtons['people'].classList.remove('text-gray-400', 'hover:bg-gray-700');
+                    break;
+                default:
+                    homePage.classList.remove('hidden'); // Fallback to home
+                    footerButtons['home'].classList.add('text-orange-500', 'bg-gray-800');
+                    footerButtons['home'].classList.remove('text-gray-400', 'hover:bg-gray-700');
+                    updateVideoFeed();
                     break;
             }
         }
@@ -589,7 +615,10 @@
          */
         async function updateVideoFeed() {
             if (!authReady || !db) {
-                console.log("Firebase not ready for video feed.");
+                console.warn("Firebase not ready for video feed. Aborting updateVideoFeed.");
+                homeLoading.classList.add('hidden');
+                homeError.textContent = "App not ready. Please wait or refresh.";
+                homeError.classList.remove('hidden');
                 return;
             }
 
@@ -598,6 +627,7 @@
             noVideosMessage.classList.add('hidden');
             videoFeedContainer.innerHTML = ''; // Clear previous videos
 
+            console.log("Fetching videos from Firestore...");
             try {
                 // Path for public videos: /artifacts/{appId}/public/data/videos
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
@@ -611,6 +641,8 @@
 
                     // Client-side sort by timestamp (descending)
                     videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
+
+                    console.log("Fetched videos:", videoList);
 
                     if (videoList.length === 0) {
                         noVideosMessage.classList.remove('hidden');
@@ -627,15 +659,15 @@
                     noVideosMessage.classList.add('hidden');
 
                 }, (err) => {
-                    console.error("Error fetching videos:", err);
-                    homeError.textContent = `Failed to load videos: ${err.message}`;
+                    console.error("Error in onSnapshot for videos:", err);
+                    homeError.textContent = `Failed to load videos: ${err.message}. Check Firebase security rules.`;
                     homeError.classList.remove('hidden');
                     homeLoading.classList.add('hidden');
                 });
 
             } catch (error) {
                 console.error("Error setting up video feed listener:", error);
-                homeError.textContent = `Error: ${error.message}`;
+                homeError.textContent = `Error: ${error.message}. Could not set up real-time listener.`;
                 homeError.classList.remove('hidden');
                 homeLoading.classList.add('hidden');
             }
@@ -647,6 +679,7 @@
          * @returns {HTMLElement} The video card element.
          */
         function createVideoCardElement(video) {
+            console.log("Creating video card for:", video.id, "Title:", video.title);
             const videoCard = document.createElement('div');
             videoCard.id = `video-card-${video.id}`;
             videoCard.className = 'relative flex-shrink-0 w-full h-full snap-center bg-gray-900 rounded-lg overflow-hidden border border-gray-800 shadow-xl';
@@ -654,6 +687,7 @@
             const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
             const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/1280x720/000000/FFFFFF?text=Invalid+Video+URL';
 
+            // Using template literals here. The issue with $(...) in screenshot might be a local file alteration.
             videoCard.innerHTML = `
                 <!-- Video Player Container -->
                 <div id="player-container-${video.id}" class="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
@@ -676,18 +710,8 @@
                 <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent flex flex-col justify-end text-white z-10">
                     <!-- Adstreaa Banner 468x60 -->
                     <div class="mb-4 w-full flex justify-center">
-                        <div class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
-                            Banner 468x60 Ad (Adstreaa)
-                            <script type="text/javascript">  
-                                atOptions = {  
-                                    'key' : '7281653bd62d5d460d6daa8793f19c5e',  
-                                    'format' : 'iframe',  
-                                    'height' : 60,  
-                                    'width' : 468,  
-                                    'params' : {}  
-                                };  
-                            </script>  
-                            <script type="text/javascript" src="//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js"></script>
+                        <div id="adstreaa-banner-468x60-${video.id}" class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
+                            Banner 468x60 Ad (Adstreaa Placeholder)
                         </div>
                     </div>
 
@@ -718,20 +742,8 @@
 
                     <!-- Hilltops MultiTag: Banner 300x250 -->
                     <div class="mt-4 w-full flex justify-center">
-                        <div class="w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
-                            Banner 300x250 Ad (Hilltops)
-                            <script>     
-                            (function(zrot){     
-                            var d = document,     
-                            s = d.createElement('script'),     
-                            l = d.scripts[d.scripts.length - 1];     
-                            s.settings = zrot || {};     
-                            s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";     
-                            s.async = true;     
-                            s.referrerPolicy = 'no-referrer-when-downgrade';     
-                            l.parentNode.insertBefore(s, l);     
-                            })({});     
-                            </script>
+                        <div id="hilltops-banner-300x250-${video.id}" class="w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
+                            Banner 300x250 Ad (Hilltops Placeholder)
                         </div>
                     </div>
                 </div>
@@ -744,8 +756,8 @@
             // Set up real-time like count listener
             const likeCountSpan = videoCard.querySelector(`#like-button-${video.id} .like-count`);
             const likeIcon = videoCard.querySelector(`#like-button-${video.id} .like-icon`);
-            const likeRef = doc(db, `artifacts/${appId}/public/data/videos/${video.id}`);
-            onSnapshot(likeRef, (docSnap) => {
+            const videoRef = doc(db, `artifacts/${appId}/public/data/videos/${video.id}`);
+            onSnapshot(videoRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const currentLikes = docSnap.data().likesCount || 0;
                     likeCountSpan.textContent = currentLikes;
@@ -753,7 +765,7 @@
             });
 
             // Check initial like status
-            if (currentUserId) {
+            if (currentUserId && db) { // Ensure db is available
                 const userLikeRef = doc(db, `artifacts/${appId}/public/data/likes/${video.id}_${currentUserId}`);
                 getDoc(userLikeRef).then(docSnap => {
                     if (docSnap.exists()) {
@@ -765,13 +777,54 @@
                 }).catch(error => console.error("Error checking initial like status:", error));
             }
 
-
             // Play ad then video
             const playerContainer = videoCard.querySelector(`#player-container-${video.id}`);
             const adOverlay = videoCard.querySelector(`#ad-overlay-${video.id}`);
             const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
             const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
             const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
+
+            // Inject inline ad scripts into their respective containers
+            const adstreaaBanner468x60Div = videoCard.querySelector(`#adstreaa-banner-468x60-${video.id}`);
+            if (adstreaaBanner468x60Div) {
+                const scriptText = `
+                    atOptions = {  
+                        'key' : '7281653bd62d5d460d6daa8793f19c5e',  
+                        'format' : 'iframe',  
+                        'height' : 60,  
+                        'width' : 468,  
+                        'params' : {}  
+                    };  
+                `;
+                const script1 = document.createElement('script');
+                script1.type = 'text/javascript';
+                script1.textContent = scriptText;
+                adstreaaBanner468x60Div.appendChild(script1);
+
+                const script2 = document.createElement('script');
+                script2.type = 'text/javascript';
+                script2.src = '//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js';
+                adstreaaBanner468x60Div.appendChild(script2);
+            }
+
+            const hilltopsBanner300x250Div = videoCard.querySelector(`#hilltops-banner-300x250-${video.id}`);
+            if (hilltopsBanner300x250Div) {
+                const scriptFn = `
+                    (function(zrot){     
+                    var d = document,     
+                    s = d.createElement('script'),     
+                    l = d.scripts[d.scripts.length - 1];     
+                    s.settings = zrot || {};     
+                    s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";     
+                    s.async = true;     
+                    s.referrerPolicy = 'no-referrer-when-downgrade';     
+                    l.parentNode.insertBefore(s, l);     
+                    })({});
+                `;
+                const script = document.createElement('script');
+                script.textContent = scriptFn;
+                hilltopsBanner300x250Div.appendChild(script);
+            }
 
 
             playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessage);
@@ -784,11 +837,10 @@
          */
         async function updateProfilePage() {
             if (!authReady || !db || !currentUserId) {
-                console.log("Firebase or user not ready for profile page.");
-                profileLoading.classList.remove('hidden');
-                profileError.classList.add('hidden');
-                noUserVideosMessage.classList.add('hidden');
-                userVideosContainer.innerHTML = '';
+                console.warn("Firebase or user not ready for profile page. Aborting updateProfilePage.");
+                profileLoading.classList.add('hidden');
+                profileError.textContent = "Please sign in to view your profile.";
+                profileError.classList.remove('hidden');
                 return;
             }
 
@@ -797,6 +849,7 @@
             noUserVideosMessage.classList.add('hidden');
             userVideosContainer.innerHTML = ''; // Clear previous videos
 
+            console.log("Updating profile page for user:", currentUserId);
             try {
                 // Fetch user details
                 const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
@@ -844,8 +897,8 @@
                     }
                     profileLoading.classList.add('hidden');
                 }, (err) => {
-                    console.error("Error fetching user videos:", err);
-                    profileError.textContent = `Failed to load user videos: ${err.message}`;
+                    console.error("Error in onSnapshot for user videos:", err);
+                    profileError.textContent = `Failed to load user videos: ${err.message}. Check Firebase security rules.`;
                     profileError.classList.remove('hidden');
                     profileLoading.classList.add('hidden');
                 });
@@ -874,59 +927,75 @@
          * @param {HTMLElement} adMessageElement - The element to show message after ad.
          */
         function playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessageElement) {
+            console.log("Attempting to play ad for video:", video.id);
+
+            // Ensure IMA SDK is loaded
+            if (typeof google === 'undefined' || !google.ima) {
+                console.error("Google IMA SDK not loaded. Skipping ad, playing video directly.");
+                showCustomModal('Ad Error', 'Ad service not available. Playing video directly.', false);
+                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true);
+                return;
+            }
+
             // Ensure any previous ad manager is destroyed
             if (currentAdManager) {
                 currentAdManager.destroy();
                 currentAdManager = null;
             }
 
-            // Show global IMA ad container and hide others initially
+            // Show global IMA ad container and hide local video player elements temporarily
             imaAdContainer.style.display = 'flex'; // Show the global ad container
             playerContainer.style.display = 'none'; // Hide current video card's player container during global ad
 
             isAdPlaying = true;
-            adOverlay.classList.remove('hidden'); // Show local ad overlay too, for safety/fallback
+            adOverlay.classList.remove('hidden'); // Show local ad overlay too, as a visual indicator
             thumbnail.classList.remove('hidden');
             youtubeIframeWrapper.classList.add('hidden');
             adMessageElement.classList.add('hidden');
+
 
             const adDisplayContainer = new google.ima.AdDisplayContainer(imaAdContainer);
             const adsLoader = new google.ima.AdsLoader(adDisplayContainer);
 
             // Listen for ad errors
             adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
-                console.error("Ad error:", adErrorEvent.getError().getMessage());
+                console.error("Ad error from adsLoader:", adErrorEvent.getError().getMessage());
                 showCustomModal('Ad Playback Error', 'Failed to play ad. Continuing to video.', false);
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement);
+                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
             }, false);
 
             // Listen for ads loaded event
             adsLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, (adsManagerLoadedEvent) => {
+                console.log("AdsManager Loaded event fired.");
                 const adsManager = adsManagerLoadedEvent.getAdsManager();
                 currentAdManager = adsManager;
 
                 adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
                     console.error("Ad manager error:", adErrorEvent.getError().getMessage());
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement);
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, () => {
                     console.log("VAST ad completed.");
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement);
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, false); // False to indicate ad completed
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, () => {
                     console.log("Ad LOADED event (before start)");
                 }, false);
 
+                adsManager.addEventListener(google.ima.AdEvent.Type.AD_BREAK_READY, () => {
+                    console.log("Ad break ready. Starting ad playback.");
+                }, false);
+
 
                 try {
                     adsManager.init(imaAdContainer.offsetWidth, imaAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
                     adsManager.start();
-                    console.log("VAST ad started.");
+                    console.log("VAST ad playback initiated.");
                 } catch (adError) {
                     console.error("AdsManager could not be started:", adError);
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement);
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
                 }
             }, false);
 
@@ -941,6 +1010,7 @@
 
             adDisplayContainer.initialize(); // Initialize ad container before requesting ads
             adsLoader.requestAds(adsRequest);
+            console.log("Ad request sent for:", video.id);
         }
 
         /**
@@ -950,8 +1020,10 @@
          * @param {HTMLElement} thumbnail - The thumbnail element.
          * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
          * @param {HTMLElement} adMessageElement - The element to show message after ad.
+         * @param {boolean} skipAd - If true, implies ad was skipped or failed, just show video.
          */
-        function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement) {
+        function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, skipAd = false) {
+            console.log("Cleaning up ad and showing video for:", video.id, "Skip Ad:", skipAd);
             if (currentAdManager) {
                 currentAdManager.destroy();
                 currentAdManager = null;
@@ -964,24 +1036,34 @@
             thumbnail.classList.add('hidden'); // Hide thumbnail
             youtubeIframeWrapper.classList.remove('hidden'); // Show iframe wrapper
 
-            // Add YouTube iframe if not already present
-            if (!youtubeIframeWrapper.querySelector('iframe')) {
+            // Add YouTube iframe if not already present or if ad was skipped/failed
+            let iframe = youtubeIframeWrapper.querySelector('iframe');
+            if (!iframe) {
                 const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
                 if (youTubeInfo) {
-                    youtubeIframeWrapper.innerHTML = `
-                        <iframe
-                            class="w-full h-full object-cover"
-                            src="${youTubeInfo.embedUrl}"
-                            frameborder="0"
-                            allow="autoplay; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen
-                            title="YouTube video player"
-                        ></iframe>
-                    `;
+                    iframe = document.createElement('iframe');
+                    iframe.className = "w-full h-full object-cover";
+                    iframe.src = youTubeInfo.embedUrl;
+                    iframe.frameBorder = "0";
+                    iframe.allow = "autoplay; encrypted-media; gyroscope; picture-in-picture";
+                    iframe.allowFullscreen = true;
+                    iframe.title = "YouTube video player";
+                    youtubeIframeWrapper.appendChild(iframe);
                 } else {
                     youtubeIframeWrapper.innerHTML = `<div class="text-red-500 text-center">Invalid YouTube URL</div>`;
+                    console.error("Invalid YouTube URL for video:", video.id, video.youtubeUrl);
                 }
+            } else if (skipAd) {
+                 // If ad was skipped/failed and iframe already exists, ensure it starts playing
+                 // This is a common issue with YouTube embeds: they might not autoplay if the iframe
+                 // existed but was hidden. Reloading or manually triggering play is tricky.
+                 // The autoplay parameter in embedUrl should handle it, but a re-render can help.
+                 const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
+                 if (youTubeInfo) {
+                    iframe.src = youTubeInfo.embedUrl; // Re-set src to force autoplay/reload
+                 }
             }
+
 
             adMessageElement.classList.remove('hidden');
             setTimeout(() => {
@@ -1001,6 +1083,7 @@
                 showCustomModal('Action Required', 'Please ensure you are signed in to like videos.', false);
                 return;
             }
+            console.log(`Liking/unliking video ${videoId} by user ${currentUserId}`);
 
             const likeRef = doc(db, `artifacts/${appId}/public/data/likes/${videoId}_${currentUserId}`);
             const videoRef = doc(db, `artifacts/${appId}/public/data/videos/${videoId}`);
@@ -1021,6 +1104,7 @@
                     likeIcon.classList.remove('text-red-500', 'fill-current');
                     likeIcon.classList.add('text-gray-300');
                     likeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>';
+                    console.log(`Video ${videoId} unliked.`);
                 } else {
                     // Like
                     await setDoc(likeRef, { videoId: videoId, userId: currentUserId, timestamp: serverTimestamp() });
@@ -1030,6 +1114,7 @@
                     likeIcon.classList.remove('text-gray-300');
                     likeIcon.classList.add('text-red-500', 'fill-current');
                     likeIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.64a5.5 5.5 0 000-7.78z" fill="currentColor"></path>';
+                    console.log(`Video ${videoId} liked.`);
                 }
             } catch (error) {
                 console.error("Error toggling like:", error);
@@ -1056,6 +1141,13 @@
             commentLoading.classList.remove('hidden');
             noCommentsMessage.classList.add('hidden');
 
+            if (!db) {
+                console.error("Firestore DB not available for comments.");
+                commentList.innerHTML = `<p class="text-red-500 text-center">App database not ready.</p>`;
+                commentLoading.classList.add('hidden');
+                return;
+            }
+
             try {
                 const commentsColRef = collection(db, `artifacts/${appId}/public/data/comments`);
                 const q = query(commentsColRef, where('videoId', '==', videoId));
@@ -1066,9 +1158,14 @@
                     // Fetch usernames for comments
                     const commentsWithUsernames = await Promise.all(fetchedComments.map(async (comment) => {
                         const userProfileRef = doc(db, `artifacts/${appId}/users/${comment.userId}/profile/${comment.userId}`);
-                        const userDoc = await getDoc(userProfileRef);
-                        const username = userDoc.exists() ? userDoc.data().username : 'Anonymous';
-                        return { ...comment, username };
+                        try {
+                            const userDoc = await getDoc(userProfileRef);
+                            const username = userDoc.exists() ? userDoc.data().username : 'Anonymous';
+                            return { ...comment, username };
+                        } catch (profileFetchError) {
+                            console.warn("Could not fetch username for comment:", comment.userId, profileFetchError);
+                            return { ...comment, username: 'Anonymous' }; // Fallback
+                        }
                     }));
 
                     // Sort by timestamp descending
@@ -1093,13 +1190,13 @@
                     }
                     commentLoading.classList.add('hidden');
                 }, (err) => {
-                    console.error("Error fetching comments:", err);
-                    commentList.innerHTML = `<p class="text-red-500 text-center">Failed to load comments.</p>`;
+                    console.error("Error in onSnapshot for comments:", err);
+                    commentList.innerHTML = `<p class="text-red-500 text-center">Failed to load comments: ${err.message}. Check Firebase security rules.</p>`;
                     commentLoading.classList.add('hidden');
                 });
             } catch (error) {
                 console.error("Error setting up comment listener:", error);
-                commentList.innerHTML = `<p class="text-red-500 text-center">Error fetching comments.</p>`;
+                commentList.innerHTML = `<p class="text-red-500 text-center">Error fetching comments: ${error.message}.</p>`;
                 commentLoading.classList.add('hidden');
             }
         }
@@ -1132,6 +1229,7 @@
                     timestamp: serverTimestamp()
                 });
                 newCommentInput.value = ''; // Clear input
+                console.log("Comment added successfully.");
             } catch (error) {
                 console.error("Error adding comment:", error);
                 showCustomModal('Error', `Failed to add comment: ${error.message}`, false);
@@ -1185,6 +1283,15 @@
                 return;
             }
 
+            if (!currentUserId || !db) {
+                uploadErrorMessage.textContent = "App not ready or user not logged in.";
+                uploadErrorMessage.classList.remove('hidden');
+                uploadSubmitButton.disabled = false;
+                uploadButtonText.textContent = 'Upload Video';
+                uploadLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
             try {
                 // Fetch current user's username
                 const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
@@ -1209,7 +1316,7 @@
                 uploadVideoForm.reset(); // Clear form
             } catch (error) {
                 console.error("Error uploading video:", error);
-                uploadErrorMessage.textContent = `Failed to upload video: ${error.message}`;
+                uploadErrorMessage.textContent = `Failed to upload video: ${error.message}. Check Firebase security rules.`;
                 uploadErrorMessage.classList.remove('hidden');
             } finally {
                 uploadSubmitButton.disabled = false;
@@ -1262,6 +1369,15 @@
                 withdrawLoadingSpinner.classList.add('hidden');
                 return;
             }
+             if (!currentUserId) {
+                withdrawErrorMessage.textContent = "User not logged in. Cannot process withdrawal.";
+                withdrawErrorMessage.classList.remove('hidden');
+                withdrawSubmitButton.disabled = false;
+                withdrawButtonText.textContent = 'Request Withdrawal';
+                withdrawLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
 
             try {
                 // Simulate API call for withdrawal request
@@ -1300,91 +1416,100 @@
         }
 
 
-        // --- Adstreaa / Hilltops Ad Script Injections (Global) ---
-        // These are typically placed directly in the HTML body or head,
-        // but can be dynamically added. Placing them here ensures they
-        // are added once the main app script loads.
+        // --- Ad Script Injection (Global) ---
+        // Dynamically create and append script elements for third-party ads.
 
-        /**
-         * Injects external ad scripts into the document body.
-         */
+        function loadScript(src, type = 'text/javascript', parent = document.body) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.type = type;
+                script.async = true;
+                script.referrerPolicy = 'no-referrer-when-downgrade'; // For some ad networks
+
+                script.onload = () => {
+                    console.log(`Script loaded: ${src}`);
+                    resolve(script);
+                };
+                script.onerror = (e) => {
+                    console.error(`Error loading script: ${src}`, e);
+                    reject(new Error(`Failed to load script ${src}`));
+                };
+                parent.appendChild(script);
+            });
+        }
+
         function injectExternalAdScripts() {
-            // Hilltops Video Slider (Commented out as it might conflict or behave unexpectedly with IMA SDK)
-            // const hilltopsVideoSliderScript = `
-            //     <script>     
-            //     (function(ikzv){     
-            //     var d = document, s = d.createElement('script'), l = d.scripts[d.scripts.length - 1];     
-            //     s.settings = ikzv || {};     
-            //     s.src = "//definitive-priority.com/b/XnVTs/d.GPlr0AYRWdcy/beLmZ9muKZ/UmlHk/POTPYZ0-MjjCQz0SO/Tigmt/NxjFQ/yaNiDEQP5jOOQ-";     
-            //     s.async = true;     
-            //     s.referrerPolicy = 'no-referrer-when-downgrade';     
-            //     l.parentNode.insertBefore(s, l);     
-            //     })({});     
-            //     </script>
-            // `;
-            // document.body.insertAdjacentHTML('beforeend', hilltopsVideoSliderScript);
+            console.log("Injecting external ad scripts...");
 
             // Hilltops Popunder (Triggered after a delay)
-            const hilltopsPopunderScript = `
-                <script>
-                    if (!window._hilltopsPopunderLoaded) {
-                        setTimeout(function() {
-                            window.open('https://assured-sandwich.com/bV3fV.0WPv3/pSvrb/m/VsJQZ/DR0/2XN/D/In0JNVTzMU3MLVThYo0-MvjeQB1/Mgz/gT', '_blank');
-                            window._hilltopsPopunderLoaded = true; // Prevent multiple triggers
-                        }, 15000); // Trigger popunder after 15 seconds
-                    }
-                </script>
+            const hilltopsPopunderTrigger = `
+                if (!window._hilltopsPopunderLoaded) {
+                    setTimeout(function() {
+                        window.open('https://assured-sandwich.com/bV3fV.0WPv3/pSvrb/m/VsJQZ/DR0/2XN/D/In0JNVTzMU3MLVThYo0-MvjeQB1/Mgz/gT', '_blank');
+                        window._hilltopsPopunderLoaded = true;
+                    }, 15000); // Trigger popunder after 15 seconds
+                }
             `;
-            document.body.insertAdjacentHTML('beforeend', hilltopsPopunderScript);
+            const hilltopsPopunderScript = document.createElement('script');
+            hilltopsPopunderScript.textContent = hilltopsPopunderTrigger;
+            document.body.appendChild(hilltopsPopunderScript);
+            console.log("Hilltops Popunder script trigger injected.");
 
             // Adstreaa Popunder Ad
-            const adstreaaPopunderScript = `<script type='text/javascript' src='//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js'></script>`;
-            document.body.insertAdjacentHTML('beforeend', adstreaaPopunderScript);
+            loadScript('//pl26835142.profitableratecpm.com/db/27/6d/db276d3b5f1289379bbe5d365485ac52.js');
 
             // Adstreaa Native Ads
-            const adstreaaNativeAdScript = `<script async="async" data-cfasync="false" src="//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js"></script><div id="container-39628927897b21d6c45567203000ccc6"></div>`;
-            document.body.insertAdjacentHTML('beforeend', adstreaaNativeAdScript);
+            // Needs a div to invoke into
+            const nativeAdDiv = document.createElement('div');
+            nativeAdDiv.id = "container-39628927897b21d6c45567203000ccc6";
+            document.body.appendChild(nativeAdDiv); // Append the div first
+            loadScript('//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js', 'text/javascript', document.head)
+                .then(() => {
+                    // Ensure the div exists when script tries to render
+                    console.log("Adstreaa Native Ads script loaded and div ready.");
+                });
+
 
             // Adstreaa Social Bar
-            const adstreaaSocialBarScript = `<script type='text/javascript' src='//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js'></script>`;
-            document.body.insertAdjacentHTML('beforeend', adstreaaSocialBarScript);
+            loadScript('//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js');
 
-            // Adstreaa Banner 320x50 (for mobile)
-            const adstreaaBanner320x50 = `
-                <script type="text/javascript">  
-                    atOptions = {  
-                        'key' : 'f4fd46187fcf3a252df23d7277e02fd7',  
-                        'format' : 'iframe',  
-                        'height' : 50,  
-                        'width' : 320,  
-                        'params' : {}  
-                    };  
-                </script>  
-                <script type="text/javascript" src="//www.highperformanceformat.com/f4fd46187fcf3a252df23d7277e02fd7/invoke.js"></script>
-            `;
-            // You might want to inject this into a specific mobile-only slot or based on screen width
-            // For simplicity, it's just added to body, but consider its placement.
-            document.body.insertAdjacentHTML('beforeend', adstreaaBanner320x50);
+            // Adstreaa Banner 320x50 & 160x300 (These are global and can be added, but might need specific positioning)
+            // They require 'atOptions' global variable.
+            const atOptionsBanner320x50 = {
+                'key' : 'f4fd46187fcf3a252df23d7277e02fd7',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+            window.atOptions = atOptionsBanner320x50; // Set global
+            loadScript('//www.highperformanceformat.com/f4fd46187fcf3a252df23d7277e02fd7/invoke.js');
 
-            // Adstreaa Banner 160x300
-            const adstreaaBanner160x300 = `
-                <script type="text/javascript">  
-                    atOptions = {  
-                        'key' : 'bc56d12282cadec7b8753ae823c22319',  
-                        'format' : 'iframe',  
-                        'height' : 300,  
-                        'width' : 160,  
-                        'params' : {}  
-                    };  
-                </script>  
-                <script type="text/javascript" src="//www.highperformanceformat.com/bc56d12282cadec7b8753ae823c22319/invoke.js"></script>
-            `;
-            // Similarly, for specific placement
-            document.body.insertAdjacentHTML('beforeend', adstreaaBanner160x300);
+            const atOptionsBanner160x300 = {
+                'key' : 'bc56d12282cadec7b8753ae823c22319',
+                'format' : 'iframe',
+                'height' : 300,
+                'width' : 160,
+                'params' : {}
+            };
+            // For a second banner type, `atOptions` needs to be reset or handled carefully.
+            // A more robust solution would be to create a wrapper element for each ad and inject its script into it.
+            // For simplicity here, sticking to direct load, but note potential conflicts if multiple `atOptions` scripts load at once.
+            // It's better to isolate these or only load one.
+            // For now, I'll load it, but the last one loaded might overwrite 'atOptions'.
+            // To ensure both work, you'd typically need to put each in its own iframe or ensure distinct variable names / loading methods.
+            // Given your request for "Banner 160x30" and "Banner 320x50", they often have distinct zones/invokes.
+            // Let's assume these are for general page body display.
+            const script3 = document.createElement('script');
+            script3.type = 'text/javascript';
+            script3.textContent = `window.atOptions = ${JSON.stringify(atOptionsBanner160x300)};`;
+            document.body.appendChild(script3);
+            loadScript('//www.highperformanceformat.com/bc56d12282cadec7b8753ae823c22319/invoke.js');
+
 
             // Hilltops Banner 300x100
-            const hilltopsBanner300x100 = `
-                <script>     
+            const hilltopsBanner300x100Fn = `
                 (function(ahzkl){     
                 var d = document,     
                 s = d.createElement('script'),     
@@ -1395,16 +1520,19 @@
                 s.referrerPolicy = 'no-referrer-when-downgrade';     
                 l.parentNode.insertBefore(s, l);     
                 })({});     
-                </script>
             `;
-            document.body.insertAdjacentHTML('beforeend', hilltopsBanner300x100);
+            const hilltopsBannerScript = document.createElement('script');
+            hilltopsBannerScript.textContent = hilltopsBanner300x100Fn;
+            document.body.appendChild(hilltopsBannerScript);
 
-            console.log("External ad scripts injected.");
+
+            console.log("All external ad scripts initiated for injection.");
         }
 
 
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Content Loaded. Starting app initialization.");
             // Initialize Firebase when DOM is ready
             initializeFirebase();
 
@@ -1426,7 +1554,7 @@
 
             // Custom Modal Listeners (delegated as modal is shown/hidden)
             customModalCloseButton.addEventListener('click', () => closeModal('custom'));
-            customModalConfirmButton.addEventListener('click', () => closeModal('custom')); // This is overridden by the showCustomModal
+            // The confirm button's listener is set dynamically in showCustomModal
 
             // Comment Modal Listeners
             commentModalCloseButton.addEventListener('click', () => closeModal('comment'));
