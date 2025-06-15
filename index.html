@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -278,11 +278,89 @@
         </div>
     </div>
 
+    <!-- Authentication Modal Structure -->
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[1100] p-4 hidden">
+        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700 text-center">
+            <h2 id="auth-modal-title" class="text-2xl font-bold text-orange-400 mb-6">Login / Sign Up</h2>
+
+            <div class="flex justify-center mb-6">
+                <button id="auth-tab-login" class="px-6 py-3 rounded-l-lg font-semibold transition duration-200" style="background-color: #f97316; color: white;">Login</button>
+                <button id="auth-tab-signup" class="px-6 py-3 rounded-r-lg font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition duration-200">Sign Up</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <input type="email" id="login-email" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Email" required />
+                <input type="password" id="login-password" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Password" required />
+                <p id="login-error-message" class="text-red-500 text-sm hidden"></p>
+                <button type="submit" id="login-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="login-button-text">Login</span>
+                    <svg id="login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+                <button type="button" id="forgot-password-button" class="text-gray-400 hover:text-orange-400 text-sm mt-2">Forgot Password?</button>
+            </form>
+
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="space-y-4 hidden">
+                <input type="email" id="signup-email" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Email" required />
+                <input type="password" id="signup-password" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Password (min 6 characters)" required />
+                <p id="signup-error-message" class="text-red-500 text-sm hidden"></p>
+                <button type="submit" id="signup-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="signup-button-text">Sign Up</span>
+                    <svg id="signup-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="relative flex items-center justify-center my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-700"></div>
+                </div>
+                <div class="relative z-10 px-4 bg-gray-800 text-gray-400 text-sm">OR</div>
+            </div>
+
+            <button id="google-sign-in-button" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.0001 4.54518C14.1561 4.54518 15.9321 5.26718 17.2791 6.55418L20.0241 3.80918C18.1081 1.86818 15.2891 0.72718 12.0001 0.72718C7.68313 0.72718 4.02013 3.03718 2.05413 6.44418L6.08213 9.47918C6.96713 7.21818 9.38713 5.45418 12.0001 5.45418V4.54518ZM23.0901 12.0002C23.0901 11.2332 23.0231 10.4792 22.8981 9.73918H12.0001V14.2612H18.4141C18.1751 15.6362 17.3871 16.7902 16.2051 17.5842L20.2331 20.6192C22.2001 17.1852 23.0901 13.9162 23.0901 12.0002Z" fill="#4285F4"/>
+                    <path d="M12.0001 23.2732C15.2891 23.2732 18.1081 22.1322 20.0241 20.1912L17.2791 17.4462C15.9321 18.7332 14.1561 19.4552 12.0001 19.4552C9.38713 19.4552 6.96713 17.6912 6.08213 15.4302L2.05413 18.4652C4.02013 21.8722 7.68313 23.2732 12.0001 23.2732Z" fill="#34A853"/>
+                    <path d="M4.05404 15.4302L0.0259998 18.4652C0.603003 19.4202 1.34304 20.2792 2.22804 20.9702L6.25604 17.9352C5.37104 17.2442 4.63104 16.3852 4.05404 15.4302Z" fill="#F9BC05"/>
+                    <path d="M2.05404 6.44418L6.08204 9.47918C6.96704 7.21818 9.38704 5.45418 12.0001 5.45418V0.72718C7.68313 0.72718 4.02013 3.03718 2.05404 6.44418Z" fill="#EA4335"/>
+                </svg>
+                <span>Sign in with Google</span>
+            </button>
+
+            <button id="guest-login-button" class="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition duration-200 mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span id="guest-login-button-text">Continue as Guest</span>
+                <svg id="guest-login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
 
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import {
+            getAuth,
+            signInAnonymously,
+            signInWithCustomToken,
+            onAuthStateChanged,
+            signOut,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            sendPasswordResetEmail,
+            sendEmailVerification,
+            GoogleAuthProvider,
+            signInWithPopup
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Global Variables ---
@@ -369,6 +447,33 @@
         const userInfo = document.getElementById('user-info');
         const signOutButton = document.getElementById('sign-out-button');
 
+        // Auth Modal Elements
+        const authModal = document.getElementById('auth-modal');
+        const authTabLogin = document.getElementById('auth-tab-login');
+        const authTabSignup = document.getElementById('auth-tab-signup');
+
+        const loginForm = document.getElementById('login-form');
+        const loginEmailInput = document.getElementById('login-email');
+        const loginPasswordInput = document.getElementById('login-password');
+        const loginErrorMessage = document.getElementById('login-error-message');
+        const loginSubmitButton = document.getElementById('login-submit-button');
+        const loginButtonText = document.getElementById('login-button-text');
+        const loginLoadingSpinner = document.getElementById('login-loading-spinner');
+        const forgotPasswordButton = document.getElementById('forgot-password-button');
+
+        const signupForm = document.getElementById('signup-form');
+        const signupEmailInput = document.getElementById('signup-email');
+        const signupPasswordInput = document.getElementById('signup-password');
+        const signupErrorMessage = document.getElementById('signup-error-message');
+        const signupSubmitButton = document.getElementById('signup-submit-button');
+        const signupButtonText = document.getElementById('signup-button-text');
+        const signupLoadingSpinner = document.getElementById('signup-loading-spinner');
+
+        const googleSignInButton = document.getElementById('google-sign-in-button');
+        const guestLoginButton = document.getElementById('guest-login-button');
+        const guestLoginButtonText = document.getElementById('guest-login-button-text');
+        const guestLoginLoadingSpinner = document.getElementById('guest-login-loading-spinner');
+
 
         // --- Utility Functions ---
 
@@ -416,7 +521,7 @@
 
         /**
          * Closes a specific modal.
-         * @param {string} modalName - The name of the modal ('custom', 'comment', 'upload', 'withdraw').
+         * @param {string} modalName - The name of the modal ('custom', 'comment', 'upload', 'withdraw', 'auth').
          */
         function closeModal(modalName) {
             switch (modalName) {
@@ -441,6 +546,13 @@
                     upiIdInput.value = '';
                     withdrawErrorMessage.classList.add('hidden');
                     break;
+                case 'auth':
+                    authModal.classList.add('hidden');
+                    loginForm.reset();
+                    signupForm.reset();
+                    loginErrorMessage.classList.add('hidden');
+                    signupErrorMessage.classList.add('hidden');
+                    break;
             }
         }
 
@@ -463,8 +575,9 @@
                     console.log("Auth state changed. User:", user ? user.uid : "No user");
                     if (user) {
                         currentUserId = user.uid;
-                        displayUserId.textContent = currentUserId;
+                        displayUserId.textContent = currentUserId.substring(0, 8) + '...';
                         userInfo.classList.remove('hidden'); // Show user info
+                        closeModal('auth'); // Close auth modal if user logs in
 
                         // Ensure user profile exists (or create a dummy one)
                         const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile/${user.uid}`);
@@ -473,9 +586,17 @@
                             if (!userDoc.exists()) {
                                 console.log("Creating new user profile for UID:", user.uid);
                                 await setDoc(userProfileRef, {
-                                    username: `User_${user.uid.substring(0, 6)}`,
+                                    username: user.email ? user.email.split('@')[0] : `User_${user.uid.substring(0, 6)}`,
+                                    email: user.email || null,
                                     joinedAt: serverTimestamp(),
+                                    isEmailVerified: user.emailVerified || false,
                                 });
+                            } else {
+                                // Update profile with latest info if email is verified
+                                const userData = userDoc.data();
+                                if (user.emailVerified && !userData.isEmailVerified) {
+                                    await updateDoc(userProfileRef, { isEmailVerified: true });
+                                }
                             }
                         } catch (profileError) {
                             console.error("Error creating/fetching user profile:", profileError);
@@ -486,42 +607,17 @@
                         currentUserId = null;
                         displayUserId.textContent = '';
                         userInfo.classList.add('hidden'); // Hide user info
-                        // Attempt anonymous sign-in if no user and no initial custom token
-                        if (!initialAuthToken) {
-                            try {
-                                console.log("Attempting anonymous sign-in...");
-                                const anonUserCredential = await signInAnonymously(auth);
-                                currentUserId = anonUserCredential.user.uid;
-                                console.log("Signed in anonymously. User ID:", currentUserId);
-                                displayUserId.textContent = currentUserId;
-                                userInfo.classList.remove('hidden');
-
-                                // Create profile for anonymous user too
-                                const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-                                try {
-                                    const userDoc = await getDoc(userProfileRef);
-                                    if (!userDoc.exists()) {
-                                        console.log("Creating new anonymous user profile for UID:", currentUserId);
-                                        await setDoc(userProfileRef, {
-                                            username: `AnonUser_${currentUserId.substring(0, 6)}`,
-                                            joinedAt: serverTimestamp(),
-                                        });
-                                    }
-                                } catch (anonProfileError) {
-                                    console.error("Error creating anonymous user profile:", anonProfileError);
-                                }
-
-                            } catch (error) {
-                                console.error("Error signing in anonymously:", error);
-                                showCustomModal('Authentication Error', 'Failed to sign in anonymously. Please try refreshing the page.', false);
-                            }
-                        } else {
-                            console.log("Initial auth token provided, waiting for custom token sign-in or a user session...");
-                        }
+                        authModal.classList.remove('hidden'); // Show auth modal if no user is logged in
                     }
                     authReady = true; // Firebase auth has completed its initial check
                     console.log("Auth is ready. Current page:", currentPage);
-                    showPage(currentPage); // Load the current page content
+                    // Only show page if auth is ready and user is logged in (or explicitly a guest)
+                    if (user || initialAuthToken) { // If user is logged in or custom token was attempted
+                        showPage(currentPage);
+                    } else if (!user && !authModal.classList.contains('hidden')) {
+                         // If no user and auth modal is shown, do nothing (wait for user action)
+                         homeLoading.classList.add('hidden'); // Hide loading if auth modal is shown
+                    }
                 });
 
                 // Use the initialAuthToken if available
@@ -532,10 +628,12 @@
                         console.log("Signed in with custom token successfully.");
                     } catch (error) {
                         console.error("Error signing in with custom token:", error);
-                        showCustomModal('Authentication Error', 'Failed to sign in with provided token. Attempting anonymous login fallback.', false);
-                        // onAuthStateChanged will handle fallback to anonymous if token sign-in fails
+                        // showCustomModal('Authentication Error', 'Failed to sign in with provided token. Please try manual login.', false);
+                        // The onAuthStateChanged listener will handle the case of no user after this attempt.
                     }
                 }
+
+                console.log("Firebase initialized.");
 
             } catch (error) {
                 console.error("Critical: Failed to initialize Firebase:", error);
@@ -563,7 +661,7 @@
             const footerButtons = {
                 'home': document.getElementById('home-footer-button'),
                 'people': document.getElementById('people-footer-button'),
-                'upload': document.getElementById('upload-footer-button'),
+                'upload': document.getElementById('upload-footer-button'), // Note: Upload is a modal, but button is here
                 'profile': document.getElementById('profile-footer-button')
             };
 
@@ -574,10 +672,11 @@
                 if(btn) btn.classList.add('text-gray-400', 'hover:bg-gray-700');
             });
 
-            if (!authReady) {
-                console.log("Auth not ready, showing loading indicator.");
-                homeLoading.classList.remove('hidden');
-                return; // Wait for auth to be ready before rendering specific pages
+            if (!authReady || !currentUserId) {
+                console.log("Auth not ready or user not logged in, showing auth modal.");
+                authModal.classList.remove('hidden');
+                homeLoading.classList.add('hidden');
+                return;
             }
 
             switch (pageName) {
@@ -1244,7 +1343,7 @@
          */
         function openUploadModal() {
             if (!currentUserId) {
-                showCustomModal('Action Required', 'Please ensure you are signed in to upload videos.', false);
+                showCustomModal('Action Required', 'Please sign in or continue as guest to upload videos.', false);
                 return;
             }
             uploadVideoModal.classList.remove('hidden');
@@ -1333,7 +1432,7 @@
          */
         function openWithdrawModal() {
             if (!currentUserId) {
-                showCustomModal('Action Required', 'Please ensure you are signed in to request withdrawal.', false);
+                showCustomModal('Action Required', 'Please sign in to request withdrawal.', false);
                 return;
             }
             withdrawModal.classList.remove('hidden');
@@ -1416,6 +1515,237 @@
         }
 
 
+        // --- Authentication Modal Functions ---
+
+        /**
+         * Switches the active tab in the auth modal between Login and Sign Up.
+         * @param {string} type - 'login' or 'signup'.
+         */
+        function switchAuthTab(type) {
+            if (type === 'login') {
+                authTabLogin.style.backgroundColor = '#f97316';
+                authTabLogin.style.color = 'white';
+                authTabSignup.style.backgroundColor = 'rgb(75 85 99)'; // gray-700
+                authTabSignup.style.color = 'rgb(209 213 219)'; // gray-300
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+            } else { // type === 'signup'
+                authTabSignup.style.backgroundColor = '#f97316';
+                authTabSignup.style.color = 'white';
+                authTabLogin.style.backgroundColor = 'rgb(75 85 99)'; // gray-700
+                authTabLogin.style.color = 'rgb(209 213 219)'; // gray-300
+                signupForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+            }
+            loginErrorMessage.classList.add('hidden');
+            signupErrorMessage.classList.add('hidden');
+        }
+
+        /**
+         * Handles Email/Password Sign Up.
+         * @param {Event} e - The form submission event.
+         */
+        async function handleEmailSignup(e) {
+            e.preventDefault();
+            signupErrorMessage.classList.add('hidden');
+            signupSubmitButton.disabled = true;
+            signupButtonText.textContent = 'Signing Up...';
+            signupLoadingSpinner.classList.remove('hidden');
+
+            const email = signupEmailInput.value.trim();
+            const password = signupPasswordInput.value.trim();
+
+            if (!email || !password) {
+                signupErrorMessage.textContent = "Please enter both email and password.";
+                signupErrorMessage.classList.remove('hidden');
+                signupSubmitButton.disabled = false;
+                signupButtonText.textContent = 'Sign Up';
+                signupLoadingSpinner.classList.add('hidden');
+                return;
+            }
+            if (password.length < 6) {
+                signupErrorMessage.textContent = "Password must be at least 6 characters long.";
+                signupErrorMessage.classList.remove('hidden');
+                signupSubmitButton.disabled = false;
+                signupButtonText.textContent = 'Sign Up';
+                signupLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log("User signed up:", user.uid);
+
+                // Send email verification
+                await sendEmailVerification(user);
+                showCustomModal('Verification Sent', `A verification email has been sent to ${user.email}. Please verify your email before logging in.`, false, null, () => {
+                    closeModal('auth'); // Close auth modal on successful signup and email sent
+                });
+                signupForm.reset();
+            } catch (error) {
+                console.error("Signup error:", error);
+                let errorMessage = "Failed to sign up.";
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = "This email is already in use. Try logging in.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Invalid email address.";
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = "Password is too weak.";
+                }
+                signupErrorMessage.textContent = errorMessage;
+                signupErrorMessage.classList.remove('hidden');
+            } finally {
+                signupSubmitButton.disabled = false;
+                signupButtonText.textContent = 'Sign Up';
+                signupLoadingSpinner.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles Email/Password Login.
+         * @param {Event} e - The form submission event.
+         */
+        async function handleEmailLogin(e) {
+            e.preventDefault();
+            loginErrorMessage.classList.add('hidden');
+            loginSubmitButton.disabled = true;
+            loginButtonText.textContent = 'Logging In...';
+            loginLoadingSpinner.classList.remove('hidden');
+
+            const email = loginEmailInput.value.trim();
+            const password = loginPasswordInput.value.trim();
+
+            if (!email || !password) {
+                loginErrorMessage.textContent = "Please enter both email and password.";
+                loginErrorMessage.classList.remove('hidden');
+                loginSubmitButton.disabled = false;
+                loginButtonText.textContent = 'Login';
+                loginLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                console.log("User logged in:", user.uid);
+
+                if (!user.emailVerified) {
+                    showCustomModal('Email Not Verified', 'Your email is not verified. Please check your inbox for a verification link. Or click Ok to resend email.', true, async () => {
+                        await sendEmailVerification(user);
+                        showCustomModal('Email Sent', 'Verification email resent!', false);
+                    });
+                    await signOut(auth); // Sign out if email is not verified
+                } else {
+                    // Success, onAuthStateChanged will handle UI update
+                    console.log("User logged in and email verified.");
+                    loginForm.reset();
+                    closeModal('auth');
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                let errorMessage = "Failed to log in.";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorMessage = "Invalid email or password.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Invalid email address.";
+                }
+                loginErrorMessage.textContent = errorMessage;
+                loginErrorMessage.classList.remove('hidden');
+            } finally {
+                loginSubmitButton.disabled = false;
+                loginButtonText.textContent = 'Login';
+                loginLoadingSpinner.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Handles Google Sign-in.
+         */
+        async function handleGoogleSignIn() {
+            googleSignInButton.disabled = true;
+            guestLoginButton.disabled = true; // Disable other buttons during sign-in
+            loginSubmitButton.disabled = true;
+            signupSubmitButton.disabled = true;
+
+            try {
+                const provider = new GoogleAuthProvider();
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                console.log("Google signed in user:", user.uid);
+                // onAuthStateChanged will handle UI update and profile creation
+                closeModal('auth');
+            } catch (error) {
+                console.error("Google Sign-in error:", error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    console.log("Google Sign-in popup closed by user.");
+                } else {
+                    showCustomModal('Google Sign-in Error', `Failed to sign in with Google: ${error.message}`, false);
+                }
+            } finally {
+                googleSignInButton.disabled = false;
+                guestLoginButton.disabled = false;
+                loginSubmitButton.disabled = false;
+                signupSubmitButton.disabled = false;
+            }
+        }
+
+        /**
+         * Handles Forgot Password flow.
+         */
+        async function handleForgotPassword() {
+            const email = loginEmailInput.value.trim();
+            if (!email) {
+                loginErrorMessage.textContent = "Please enter your email to reset password.";
+                loginErrorMessage.classList.remove('hidden');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showCustomModal('Password Reset', `Password reset email sent to ${email}. Check your inbox.`, false);
+                loginErrorMessage.classList.add('hidden');
+            } catch (error) {
+                console.error("Forgot password error:", error);
+                let errorMessage = "Failed to send password reset email.";
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = "No user found with this email.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = "Invalid email address.";
+                }
+                loginErrorMessage.textContent = errorMessage;
+                loginErrorMessage.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * Handles "Continue as Guest" (anonymous login).
+         */
+        async function handleGuestLogin() {
+            guestLoginButton.disabled = true;
+            guestLoginButtonText.textContent = 'Logging In...';
+            guestLoginLoadingSpinner.classList.remove('hidden');
+            googleSignInButton.disabled = true;
+            loginSubmitButton.disabled = true;
+            signupSubmitButton.disabled = true;
+
+            try {
+                await signInAnonymously(auth);
+                // onAuthStateChanged will handle UI update and profile creation
+                closeModal('auth');
+            } catch (error) {
+                console.error("Guest login error:", error);
+                showCustomModal('Guest Login Error', `Failed to sign in as guest: ${error.message}. Please try again.`, false);
+            } finally {
+                guestLoginButton.disabled = false;
+                guestLoginButtonText.textContent = 'Continue as Guest';
+                guestLoginLoadingSpinner.classList.add('hidden');
+                googleSignInButton.disabled = false;
+                loginSubmitButton.disabled = false;
+                signupSubmitButton.disabled = false;
+            }
+        }
+
+
         // --- Ad Script Injection (Global) ---
         // Dynamically create and append script elements for third-party ads.
 
@@ -1463,10 +1793,12 @@
             // Needs a div to invoke into
             const nativeAdDiv = document.createElement('div');
             nativeAdDiv.id = "container-39628927897b21d6c45567203000ccc6";
-            document.body.appendChild(nativeAdDiv); // Append the div first
+            // Ensure this div is placed where you want the native ad to appear.
+            // For a full-page app like this, it might appear at the bottom or require a dedicated spot.
+            // For now, appending to body for execution.
+            document.body.appendChild(nativeAdDiv);
             loadScript('//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js', 'text/javascript', document.head)
                 .then(() => {
-                    // Ensure the div exists when script tries to render
                     console.log("Adstreaa Native Ads script loaded and div ready.");
                 });
 
@@ -1476,35 +1808,40 @@
 
             // Adstreaa Banner 320x50 & 160x300 (These are global and can be added, but might need specific positioning)
             // They require 'atOptions' global variable.
-            const atOptionsBanner320x50 = {
-                'key' : 'f4fd46187fcf3a252df23d7277e02fd7',
-                'format' : 'iframe',
-                'height' : 50,
-                'width' : 320,
-                'params' : {}
-            };
-            window.atOptions = atOptionsBanner320x50; // Set global
+            // It's better to isolate these or only load one per distinct zone.
+            // For now, loading them sequentially.
+
+            // Adstreaa Banner 320x50
+            const scriptBanner320x50 = document.createElement('script');
+            scriptBanner320x50.type = 'text/javascript';
+            scriptBanner320x50.textContent = `
+                var atOptions_320x50 = {
+                    'key' : 'f4fd46187fcf3a252df23d7277e02fd7',
+                    'format' : 'iframe',
+                    'height' : 50,
+                    'width' : 320,
+                    'params' : {}
+                };
+                window.atOptions = atOptions_320x50; // Set global
+            `;
+            document.body.appendChild(scriptBanner320x50);
             loadScript('//www.highperformanceformat.com/f4fd46187fcf3a252df23d7277e02fd7/invoke.js');
 
-            const atOptionsBanner160x300 = {
-                'key' : 'bc56d12282cadec7b8753ae823c22319',
-                'format' : 'iframe',
-                'height' : 300,
-                'width' : 160,
-                'params' : {}
-            };
-            // For a second banner type, `atOptions` needs to be reset or handled carefully.
-            // A more robust solution would be to create a wrapper element for each ad and inject its script into it.
-            // For simplicity here, sticking to direct load, but note potential conflicts if multiple `atOptions` scripts load at once.
-            // It's better to isolate these or only load one.
-            // For now, I'll load it, but the last one loaded might overwrite 'atOptions'.
-            // To ensure both work, you'd typically need to put each in its own iframe or ensure distinct variable names / loading methods.
-            // Given your request for "Banner 160x30" and "Banner 320x50", they often have distinct zones/invokes.
-            // Let's assume these are for general page body display.
-            const script3 = document.createElement('script');
-            script3.type = 'text/javascript';
-            script3.textContent = `window.atOptions = ${JSON.stringify(atOptionsBanner160x300)};`;
-            document.body.appendChild(script3);
+
+            // Adstreaa Banner 160x300
+            const scriptBanner160x300 = document.createElement('script');
+            scriptBanner160x300.type = 'text/javascript';
+            scriptBanner160x300.textContent = `
+                var atOptions_160x300 = {
+                    'key' : 'bc56d12282cadec7b8753ae823c22319',
+                    'format' : 'iframe',
+                    'height' : 300,
+                    'width' : 160,
+                    'params' : {}
+                };
+                window.atOptions = atOptions_160x300; // Overwrites previous 'atOptions' for next invoke.
+            `;
+            document.body.appendChild(scriptBanner160x300);
             loadScript('//www.highperformanceformat.com/bc56d12282cadec7b8753ae823c22319/invoke.js');
 
 
@@ -1572,6 +1909,15 @@
             // Withdraw Modal Listeners
             withdrawModalCloseButton.addEventListener('click', () => closeModal('withdraw'));
             withdrawForm.addEventListener('submit', handleWithdrawSubmit);
+
+            // Authentication Modal Listeners
+            authTabLogin.addEventListener('click', () => switchAuthTab('login'));
+            authTabSignup.addEventListener('click', () => switchAuthTab('signup'));
+            loginForm.addEventListener('submit', handleEmailLogin);
+            signupForm.addEventListener('submit', handleEmailSignup);
+            googleSignInButton.addEventListener('click', handleGoogleSignIn);
+            guestLoginButton.addEventListener('click', handleGuestLogin);
+            forgotPasswordButton.addEventListener('click', handleForgotPassword);
         });
 
         // Ensure window resize updates IMA ad container size if needed,
