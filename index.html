@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -312,30 +312,151 @@
             z-index: 10;
         }
 
-        /* Slider ad inside video player */
+        /* Full screen video player page */
+        #video-player-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d0d;
+            z-index: 150; /* Above main content, below modals */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        #video-player-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        #video-player-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Slider Ad within video player */
         .in-player-slider-ad {
             position: absolute;
-            bottom: 10px; /* Adjust as needed */
-            right: 10px; /* Adjust as needed */
+            bottom: 10px;
+            right: 10px;
             width: 120px; /* Small size */
-            height: 90px; /* Small size */
+            height: 60px; /* Small size */
             background-color: rgba(0, 0, 0, 0.7);
-            border: 1px solid #f97316;
             border-radius: 8px;
             overflow: hidden;
+            z-index: 20;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 0.7rem;
-            text-align: center;
-            z-index: 50; /* Above player, below IMA container */
-            animation: slideInLeft 0.5s forwards; /* Animation for appearing */
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(150%); /* Start off-screen */
+        }
+        .in-player-slider-ad.active {
+            transform: translateX(0); /* Slide in */
+        }
+        .in-player-slider-ad iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        @media (min-width: 768px) { /* Adjust for larger screens */
+            #video-player-container {
+                padding-bottom: 400px; /* Fixed height for player on desktop, or calculate based on aspect ratio */
+                height: auto; /* Allow height to adjust for desktop */
+                max-width: 900px; /* Max width for player */
+                margin: 0 auto;
+            }
         }
 
-        @keyframes slideInLeft {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        /* Layout for video player page (video, details, recommended) */
+        .player-page-content {
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .recommended-videos-sidebar {
+            flex-shrink: 0;
+            width: 100%; /* Full width on mobile */
+            margin-top: 1rem;
+        }
+
+        @media (min-width: 1024px) {
+            .player-page-content {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+            .video-details-section {
+                flex-grow: 1;
+                margin-right: 1.5rem;
+            }
+            .recommended-videos-sidebar {
+                width: 350px; /* Fixed width sidebar on desktop */
+                margin-top: 0;
+            }
+        }
+        .recommended-video-item {
+            display: flex;
+            margin-bottom: 1rem;
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.5rem;
+            overflow: hidden;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .recommended-video-item:hover {
+            background-color: #374151; /* gray-700 */
+        }
+        .recommended-video-item img {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            flex-shrink: 0;
+        }
+        .recommended-video-info {
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+        }
+        .recommended-video-info h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #f97316; /* orange-500 */
+            margin-bottom: 0.25rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .recommended-video-info p {
+            font-size: 0.75rem;
+            color: #9ca3af; /* gray-400 */
+        }
+
+        /* People page styling */
+        #people-page #people-feed-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 1rem;
         }
     </style>
 </head>
@@ -360,17 +481,17 @@
             <img src="https://placehold.co/40x40/FF7F50/FFFFFF?text=VF" alt="Video Fire Logo" class="rounded-full shadow-md" />
             <span class="text-2xl font-extrabold text-orange-500 drop-shadow-lg">Video Fire</span>
         </div>
-        <!-- Search bar in header (hidden by default) -->
-        <div id="header-search-container" class="search-bar-container hidden sm:flex">
-            <input type="text" id="header-search-input" placeholder="Search by title, tags, or channel..." />
+        <!-- Search bar in header (always visible, responsive sizing) -->
+        <div id="header-search-container" class="search-bar-container flex-grow max-w-sm mx-4 sm:mx-0">
+            <input type="text" id="header-search-input" class="flex-grow min-w-0" placeholder="Search..." />
             <button id="clear-search-button" class="text-gray-400 hover:text-white">
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-        </div>
-        <div id="header-buttons-container" class="flex items-center space-x-4">
-            <button id="search-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200 hidden sm:block" title="Search">
+            <button id="perform-search-button" class="ml-2 p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200" title="Search">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
+        </div>
+        <div id="header-buttons-container" class="flex items-center space-x-4">
             <button id="withdraw-header-button" class="p-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition duration-200 shadow-md" title="Withdraw">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             </button>
@@ -387,9 +508,9 @@
     <!-- Main Content Area -->
     <main class="flex-1 w-full flex justify-center items-center overflow-hidden">
         <!-- Home Page (Main Video Feed for Long and Shorts) -->
-        <div id="home-page" class="w-full h-full overflow-y-scroll snap-y snap-mandatory bg-gray-950 hide-scrollbar">
-            <div id="video-feed-container" class="w-full h-full">
-                <!-- Videos will be dynamically injected here -->
+        <div id="home-page" class="w-full h-full overflow-y-scroll snap-y bg-gray-950 hide-scrollbar">
+            <div id="video-feed-container" class="w-full h-full flex flex-col items-center">
+                <!-- Videos and in-feed ads will be dynamically injected here -->
             </div>
             <div id="home-loading" class="flex flex-col items-center justify-center h-full text-white text-lg hidden">
                 <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -404,6 +525,50 @@
             </div>
         </div>
 
+        <!-- Video Player Page (New Screen for playing individual videos) -->
+        <div id="video-player-page" class="hidden">
+            <button id="video-player-back-button" class="p-2 text-white absolute top-4 left-4 z-10 bg-gray-800 rounded-full hover:bg-gray-700">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </button>
+            <div id="video-player-container" class="relative">
+                <!-- YouTube iframe will be loaded here dynamically -->
+                <div id="in-player-slider-ad" class="in-player-slider-ad"></div>
+            </div>
+            <div class="player-page-content">
+                <div class="video-details-section flex-grow">
+                    <h1 id="player-video-title" class="text-2xl sm:text-3xl font-bold text-orange-300 mb-2"></h1>
+                    <p id="player-video-description" class="text-gray-300 text-sm mb-3"></p>
+                    <div id="player-video-meta" class="text-gray-400 text-xs mb-4"></div>
+                    <div class="flex items-center space-x-6 text-xl mb-4">
+                        <button id="player-like-button" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
+                            <svg class="h-6 w-6 text-gray-300 like-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            <span class="text-sm like-count">0</span>
+                        </button>
+                        <button id="player-comment-button" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
+                            <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            <span class="text-sm">Comments</span>
+                        </button>
+                        <button id="player-share-button" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
+                            <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.516 3.832a3 3 0 00.512-1.632V12c0-.36-.062-.716-.184-1.049m0 2.098L8.684 10.658m10.158-1.342a3 3 0 110-2.684m0 2.684l-6.516-3.832a3 3 0 00-.512 1.632V12c0 .36.062.716.184 1.049m0-2.098L18.842 8.658"></path>
+                            </svg>
+                            <span class="text-sm">Share</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="recommended-videos-sidebar">
+                    <h3 class="text-xl font-bold text-orange-300 mb-4">Up Next</h3>
+                    <div id="recommended-videos-container" class="flex flex-col">
+                        <!-- Recommended videos will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Profile Page -->
         <div id="profile-page" class="hidden p-6 bg-gray-950 w-full h-full overflow-y-auto hide-scrollbar">
             <div class="max-w-4xl mx-auto">
@@ -413,7 +578,7 @@
                         <h1 id="profile-username" class="text-3xl font-extrabold text-orange-400 mb-1"></h1>
                         <p class="text-gray-400">User ID: <span id="profile-user-id" class="break-all text-sm"></span></p>
                         <p class="text-gray-300 mt-2">Total Uploads: <span id="profile-uploads-count" class="font-semibold">0</span></p>
-                        <p class="text-gray-300 mt-2">Ads Viewed: <span id="user-ad-views" class="font-semibold">0</span> / 10000 (for withdrawal eligibility)</p>
+                        <p class="text-gray-300 mt-2">Ads Viewed (for withdrawal): <span id="user-ad-views" class="font-semibold">0</span> / 10000</p>
                     </div>
                 </div>
 
@@ -437,16 +602,14 @@
 
         <!-- Search Page (Placeholder - Actual search handled by updateVideoFeed) -->
         <div id="search-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
-            Search Functionality Activated in Header!
-            <!-- Search results are shown on the home page feed based on search input -->
+            Search Results will appear on Home Page based on your search query in Header!
         </div>
-
-        <!-- People Page -->
+        <!-- People Page (Follow Functionality) -->
         <div id="people-page" class="hidden p-6 bg-gray-950 w-full h-full overflow-y-auto hide-scrollbar">
             <div class="max-w-xl mx-auto">
                 <h2 class="text-2xl font-bold mb-6 text-orange-300">Discover People</h2>
-                <div id="people-feed-container" class="space-y-4">
-                    <!-- People profiles will be injected here -->
+                <div id="people-feed-container">
+                    <!-- People to follow will be loaded here -->
                 </div>
                 <div id="people-loading" class="flex flex-col items-center justify-center h-48 text-white text-lg hidden">
                     <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -456,9 +619,9 @@
                     <span class="ml-3 mt-4">Loading people...</span>
                 </div>
                 <div id="people-error" class="text-red-500 text-center mt-8 hidden text-lg"></div>
-                <p id="no-people-message" class="text-gray-400 text-center py-8 bg-gray-900 rounded-lg border border-gray-800 hidden">
+                <div id="no-people-message" class="text-gray-400 text-center mt-8 hidden text-lg">
                     No other users found.
-                </p>
+                </div>
             </div>
         </div>
 
@@ -753,13 +916,15 @@
         let auth;
         let currentUserId = null;
         let authReady = false; // Flag to indicate if Firebase auth is initialized
-        let currentPage = 'home'; // 'home', 'profile', 'search', 'people', 'shorts'
+        let currentPage = 'home'; // 'home', 'profile', 'search', 'people', 'shorts', 'player'
         let currentVideoIdForComments = null;
         let profileVideoTypeFilter = 'long'; // For profile page: 'long' or 'short'
         let allVideosCache = []; // Cache for search functionality
-        let shortsAdCounter = 0; // Counter for shorts ads viewed to trigger VAST ad
+        let shortsAdCounter = 0; // Counter for shorts ads viewed
+        let currentPlayingVideo = null; // Stores details of the video currently playing on the player page
 
-        // Firebase Configuration (DO NOT CHANGE - these are environment specific)
+
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",
             authDomain: "videofire-268ff.firebaseapp.com",
@@ -773,17 +938,30 @@
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // VAST Ad Tag URL - Using a Google sample ad pod tag that should provide skippable ads.
-        // This tag generally provides 2 linear ads in a pod.
-        // The skip button and its timing are controlled by the ad server and Google IMA SDK, not directly by the app.
-        const vastAdTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_video&correlator=";
+        // VAST Ad Tag URL - Using Adstreaa VAST URL
+        const vastAdTagUrl = "https://assured-sandwich.com/d.mpF/zZdzGnNHvfZMGcUH/WeLmK9juvZyULlVk/PgTgYR0/MMjyQS0YOdT_YHtmN/jwQ/yGNBDGQH5nNRygZJs/aKWN1/pSdQDX0Wxp";
+        // Using Hilltopads VAST for Video Ad
+        const hilltopAdsVastUrl = "https://assured-sandwich.com/d/mvF.z-dsGQN/vpZ/G/UG/RebmY9-uOZmU/lbkuPWTGYr0TMdj/Qd0mOtTJYRtdNXjfQQyMNID/Q/5jNFwb";
+
 
         // --- DOM Elements ---
         const homePage = document.getElementById('home-page');
         const profilePage = document.getElementById('profile-page');
-        const searchPage = document.getElementById('search-page');
-        const peoplePage = document.getElementById('people-page');
+        const searchPage = document.getElementById('search-page'); // Placeholder now but remains
+        const peoplePage = document.getElementById('people-page'); // Placeholder now but remains
         const videoFeedContainer = document.getElementById('video-feed-container');
+        const videoPlayerPage = document.getElementById('video-player-page'); // New video player screen
+        const videoPlayerContainer = document.getElementById('video-player-container');
+        const videoPlayerBackButton = document.getElementById('video-player-back-button');
+        const inPlayerSliderAd = document.getElementById('in-player-slider-ad');
+        const playerVideoTitle = document.getElementById('player-video-title');
+        const playerVideoDescription = document.getElementById('player-video-description');
+        const playerVideoMeta = document.getElementById('player-video-meta');
+        const playerLikeButton = document.getElementById('player-like-button');
+        const playerCommentButton = document.getElementById('player-comment-button');
+        const playerShareButton = document.getElementById('player-share-button');
+        const recommendedVideosContainer = document.getElementById('recommended-videos-container');
+
 
         const homeLoading = document.getElementById('home-loading');
         const homeError = document.getElementById('home-error');
@@ -792,13 +970,13 @@
         const profileUsername = document.getElementById('profile-username');
         const profileUserId = document.getElementById('profile-user-id');
         const profileUploadsCount = document.getElementById('profile-uploads-count');
-        const userAdViewsCounter = document.getElementById('user-ad-views'); // For total ads viewed
         const userVideosContainer = document.getElementById('user-videos-container');
         const noUserVideosMessage = document.getElementById('no-user-videos-message');
         const profileLoading = document.getElementById('profile-loading');
         const profileError = document.getElementById('profile-error');
         const profileTabVideos = document.getElementById('profile-tab-videos');
         const profileTabShorts = document.getElementById('profile-tab-shorts');
+        const userAdViewsCounter = document.getElementById('user-ad-views'); // New element for ad view count
 
         const customModal = document.getElementById('custom-modal');
         const customModalTitle = document.getElementById('custom-modal-title');
@@ -880,11 +1058,12 @@
         // Header Search Elements
         const headerSearchContainer = document.getElementById('header-search-container');
         const headerSearchInput = document.getElementById('header-search-input');
+        const performSearchButton = document.getElementById('perform-search-button'); // New search button
         const headerButtonsContainer = document.getElementById('header-buttons-container');
         const clearSearchButton = document.getElementById('clear-search-button');
 
-        // People page elements
-        const peopleFeedContainer = document.getElementById('people-feed-container');
+        // People page elements (new)
+        const peopleFeedContainer = document.getElementById('people-feed-container'); // Container for people to follow
         const peopleLoading = document.getElementById('people-loading');
         const peopleError = document.getElementById('people-error');
         const noPeopleMessage = document.getElementById('no-people-message');
@@ -1052,9 +1231,13 @@
                     console.log("Auth is ready. Current page:", currentPage);
                     // Only show page if auth is ready and user is logged in (or explicitly a guest)
                     if (user || initialAuthToken) { // If user is logged in or custom token was attempted
+                        // If auth modal is open and user logs in, close it
+                        if (!authModal.classList.contains('hidden')) {
+                             closeModal('auth');
+                        }
                         showPage(currentPage);
-                    } else if (!user && !authModal.classList.contains('hidden')) {
-                         // If no user and auth modal is shown, hide loading as auth modal is already visible
+                    } else if (!user) {
+                         // If no user and auth modal is shown, make sure home loading is hidden
                          homeLoading.classList.add('hidden');
                     }
                 });
@@ -1084,6 +1267,8 @@
                 homeError.classList.remove('hidden');
                 homePage.classList.remove('hidden'); // Ensure home page is visible to show error
                 profilePage.classList.add('hidden'); // Hide other pages
+                videoPlayerPage.classList.add('hidden'); // Hide player page
+                peoplePage.classList.add('hidden'); // Hide people page
             }
         }
 
@@ -1092,12 +1277,13 @@
 
         /**
          * Shows the specified page and hides others.
-         * @param {string} pageName - The name of the page to show ('home', 'profile', 'search', 'people', 'shorts').
+         * @param {string} pageName - The name of the page to show ('home', 'profile', 'search', 'people', 'shorts', 'player').
          * @param {string} [videoType='long'] - Optional: video type to load for home/shorts feeds.
+         * @param {object} [videoData=null] - Optional: video data for 'player' page.
          */
-        function showPage(pageName, videoType = 'long') {
+        function showPage(pageName, videoType = 'long', videoData = null) {
             currentPage = pageName;
-            const pages = [homePage, profilePage, searchPage, peoplePage];
+            const pages = [homePage, profilePage, searchPage, peoplePage, videoPlayerPage];
             const footerButtons = {
                 'home': document.getElementById('home-footer-button'),
                 'shorts': document.getElementById('shorts-footer-button'),
@@ -1117,23 +1303,15 @@
             });
 
             // Handle header elements visibility based on page
-            // Search bar only shows in header when on 'search' page OR when the search icon is explicitly clicked
-            if (pageName === 'search' || headerSearchContainer.classList.contains('active')) { // 'active' class used for manual toggle
-                headerSearchContainer.classList.remove('hidden');
-                headerButtonsContainer.classList.add('hidden');
-                headerSearchInput.focus();
-            } else {
-                headerSearchContainer.classList.add('hidden');
-                headerButtonsContainer.classList.remove('hidden');
-                headerSearchInput.value = ''; // Clear search on navigation away
-                headerSearchContainer.classList.remove('active'); // Remove active state
-            }
-
+            // Search bar is always visible in header now, remove old toggle logic
+            headerSearchContainer.classList.remove('hidden');
+            headerButtonsContainer.classList.remove('hidden'); // Always show header buttons
+            headerSearchInput.value = ''; // Clear search on navigation away unless explicitly searching
 
             if (!authReady || !currentUserId) {
                 console.log("Auth not ready or user not logged in, showing auth modal.");
                 authModal.classList.remove('hidden');
-                homeLoading.classList.add('hidden'); // Hide loading spinner if auth modal is shown
+                homeLoading.classList.add('hidden');
                 return;
             }
 
@@ -1169,6 +1347,16 @@
                     peoplePage.classList.remove('hidden');
                     loadPeople(); // Load people to follow
                     break;
+                case 'player':
+                    if (videoData) {
+                        videoPlayerPage.classList.remove('hidden');
+                        loadVideoPlayer(videoData);
+                    } else {
+                        console.error("No video data provided for player page.");
+                        showCustomModal('Error', 'Could not load video player. No video selected.', false);
+                        showPage('home'); // Fallback to home
+                    }
+                    break;
                 default:
                     homePage.classList.remove('hidden'); // Fallback to home
                     homePage.classList.remove('shorts-mode');
@@ -1199,6 +1387,8 @@
             console.log(`Fetching ${videoType} videos from Firestore with search query: "${searchQuery}"`);
             try {
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
+                // Firestore queries do not support OR conditions directly across different fields
+                // We fetch all public videos of the requested type and filter client-side for search
                 const q = query(videosColRef, where('videoType', '==', videoType));
 
                 onSnapshot(q, async (snapshot) => {
@@ -1206,6 +1396,9 @@
                         id: doc.id,
                         ...doc.data()
                     }));
+
+                    // Client-side sort by timestamp (descending)
+                    videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
                     // Filter videos based on visibility: only public videos from others, or private videos if current user is uploader
                     let filteredVideoList = videoList.filter(video => {
@@ -1215,12 +1408,13 @@
                         return true; // Public videos are visible to everyone
                     });
 
-                    // Implement recommendation logic: prioritize videos from followed users for 'home' (long videos)
+                    // Implement recommendation logic: prioritize videos from followed users
                     if (currentUserId && currentPage === 'home' && videoType === 'long') {
                         const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
                         const userDoc = await getDoc(userProfileRef);
                         const userFollowing = userDoc.exists() ? (userDoc.data().following || []) : [];
 
+                        // Separate videos into followed and non-followed
                         let followedVideos = [];
                         let otherVideos = [];
 
@@ -1232,8 +1426,6 @@
                             }
                         });
 
-                        // Shuffle followed videos to vary their order
-                        followedVideos.sort(() => Math.random() - 0.5);
                         // Shuffle other videos
                         otherVideos.sort(() => Math.random() - 0.5);
 
@@ -1241,8 +1433,8 @@
                         filteredVideoList = [...followedVideos, ...otherVideos];
                         console.log("Videos reordered based on following:", filteredVideoList);
                     } else {
-                        // For shorts or if not on home page, just shuffle all videos
-                        filteredVideoList.sort(() => Math.random() - 0.5); // Randomize order
+                        // For shorts or if not following anyone, just shuffle all videos for variety
+                        filteredVideoList.sort(() => Math.random() - 0.5);
                     }
 
 
@@ -1282,13 +1474,12 @@
                         const videoCard = createVideoCardElement(video);
                         videoFeedContainer.appendChild(videoCard);
 
-                        // Inject a banner ad after every N shorts videos IF monetization is ON for banner300x250
-                        // This serves as the "in-feed" ad.
-                        if (video.videoType === 'short' && video.monetization?.banner300x250) {
+                        // Inject a banner ad after every N long videos OR a VAST ad for shorts
+                        if (video.videoType === 'short') {
                             shortsAdCounter++;
-                            if (shortsAdCounter % 7 === 0) { // Every 7 shorts, insert a VAST ad (simulated)
+                            if (video.monetization?.vast && shortsAdCounter % 7 === 0) { // Every 7 shorts, insert a VAST ad (simulated)
                                 const adDiv = document.createElement('div');
-                                adDiv.className = 'w-full h-full bg-black flex flex-col items-center justify-center text-white flex-shrink-0 snap-center';
+                                adDiv.className = 'w-full h-full bg-black flex items-center justify-center text-white flex-shrink-0 snap-center';
                                 adDiv.id = `shorts-vast-ad-${video.id}-${i}`;
                                 adDiv.innerHTML = `
                                     <div class="flex flex-col items-center justify-center text-center">
@@ -1334,7 +1525,7 @@
                                         }
                                     }
                                 }, 1000);
-                            } else { // In-feed banner ad for other shorts
+                            } else if (video.monetization?.banner300x250) { // In-feed banner ad for other shorts
                                 const adDiv = document.createElement('div');
                                 adDiv.className = 'w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 flex-shrink-0 snap-center my-4 text-center p-4';
                                 adDiv.id = `shorts-banner-ad-${video.id}-${i}`;
@@ -1342,10 +1533,22 @@
                                 videoFeedContainer.appendChild(adDiv);
                                 injectSpecificAdScript(adDiv.id, 'banner300x250'); // Use 300x250 for in-feed
                             }
+                        } else if (video.videoType === 'long' && video.monetization?.banner468x60 && (i + 1) % 4 === 0) { // In-feed banner for long videos
+                            const adDiv = document.createElement('div');
+                            adDiv.className = 'w-full max-w-lg bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 my-4 p-4 text-center mx-auto';
+                            adDiv.id = `long-banner-ad-${video.id}-${i}`;
+                            adDiv.innerHTML = `<span class="block">Home Feed Ad</span><span class="block text-orange-400 mt-2 text-sm">Ad by highperformanceformat.com</span>`;
+                            videoFeedContainer.appendChild(adDiv);
+                            injectSpecificAdScript(adDiv.id, 'banner468x60');
                         }
                     }
                     homeLoading.classList.add('hidden');
                     noVideosMessage.classList.add('hidden');
+
+                    // If shorts mode is active, set up autoplay
+                    if (videoType === 'short') {
+                         setupShortsAutoplay();
+                    }
 
                 }, (err) => {
                     console.error("Error in onSnapshot for videos:", err);
@@ -1362,6 +1565,41 @@
                 homeLoading.classList.add('hidden');
             }
         }
+
+        /**
+         * Sets up autoplay for shorts videos in the feed.
+         */
+        let currentShortPlayer = null;
+        function setupShortsAutoplay() {
+            const videoElements = videoFeedContainer.querySelectorAll('video');
+            const observerOptions = {
+                root: videoFeedContainer,
+                rootMargin: '0px',
+                threshold: 0.75 // Video is 75% visible
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const video = entry.target;
+                        if (currentShortPlayer && currentShortPlayer !== video) {
+                            currentShortPlayer.pause();
+                            currentShortPlayer.currentTime = 0;
+                        }
+                        video.play().catch(e => console.log("Video autoplay prevented:", e));
+                        currentShortPlayer = video;
+                    } else {
+                        entry.target.pause();
+                        entry.target.currentTime = 0;
+                    }
+                });
+            }, observerOptions);
+
+            videoElements.forEach(video => {
+                observer.observe(video);
+            });
+        }
+
 
         /**
          * Creates an HTML element for a single video card.
@@ -1443,24 +1681,6 @@
                             <span class="text-sm">Share</span>
                         </button>
                     </div>
-
-                    <!-- Conditional Ads (banners below video details) -->
-                    ${video.monetization?.banner468x60 ? `<div class="mt-4 w-full flex justify-center">
-                        <div id="adstreaa-banner-468x60-${video.id}" class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 text-center p-2">
-                             Banner 468x60 Ad <br> (by HighPerformanceFormat.com)
-                        </div>
-                    </div>` : ''}
-
-                    ${video.monetization?.native ? `<div class="mt-4 w-full flex justify-center">
-                        <div id="adstreaa-native-${video.id}" class="w-full max-w-sm bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 p-2 min-h-[100px] text-center">
-                            Native Ad <br> (Content will load if configured by ad network)
-                        </div>
-                    </div>` : ''}
-                </div>
-
-                <!-- In-Player Slider Ad (simulated) -->
-                <div id="in-player-slider-ad-${video.id}" class="in-player-slider-ad hidden">
-                    <img src="https://placehold.co/120x90/FF7F50/FFFFFF?text=Slider+Ad" alt="Slider Ad" class="w-full h-full object-cover">
                 </div>
             `;
 
@@ -1468,22 +1688,8 @@
             const playButton = videoCard.querySelector(`#play-button-${video.id}`);
             if (playButton) {
                 playButton.addEventListener('click', () => {
-                    const playerContainer = videoCard.querySelector(`#player-container-${video.id}`);
-                    const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
-                    const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
-                    const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
-                    const sliderAd = videoCard.querySelector(`#in-player-slider-ad-${video.id}`);
-
-                    // Hide play button after click
-                    playButton.classList.add('hidden');
-
-                    // If VAST ads are enabled for this video, play ad first
-                    if (video.monetization?.vast) {
-                        playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, sliderAd);
-                    } else {
-                        console.log("VAST ads disabled for video:", video.id, ". Playing video directly.");
-                        cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, sliderAd, true); // Skip ad
-                    }
+                    // Navigate to the new video player page
+                    showPage('player', null, video);
                 });
             }
 
@@ -1514,27 +1720,155 @@
                 }).catch(error => console.error("Error checking initial like status:", error));
             }
 
-            // Inject specific ad scripts into their respective containers conditionally
-            if (video.monetization?.banner468x60) {
-                injectSpecificAdScript(`adstreaa-banner-468x60-${video.id}`, 'banner468x60');
-            }
-            // For shorts in-feed ads, the script is injected in updateVideoFeed.
-            // For long videos, this is a banner below the video details.
-            if (video.monetization?.banner300x250 && video.videoType === 'long') {
-                injectSpecificAdScript(`adstreaa-banner-300x250-${video.id}`, 'banner300x250');
-            }
-            if (video.monetization?.native) {
-                injectSpecificAdScript(`adstreaa-native-${video.id}`, 'native');
-            }
-
             return videoCard;
         }
+
+        /**
+         * Loads the video player page with the given video data.
+         * @param {object} video - The video data to play.
+         */
+        async function loadVideoPlayer(video) {
+            currentPlayingVideo = video;
+            videoPlayerContainer.innerHTML = ''; // Clear previous video
+            recommendedVideosContainer.innerHTML = ''; // Clear previous recommendations
+            inPlayerSliderAd.innerHTML = ''; // Clear previous slider ad
+
+            const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
+            if (!youTubeInfo) {
+                videoPlayerContainer.innerHTML = `<div class="text-red-500 text-center p-4">Invalid YouTube URL</div>`;
+                return;
+            }
+
+            // Update video details on the player page
+            playerVideoTitle.textContent = video.title;
+            playerVideoDescription.textContent = video.description || '';
+            playerVideoMeta.textContent = `By ${video.userName || 'Anonymous User'} | ${video.viewsCount || 0} views | Uploaded: ${new Date(video.timestamp?.toDate()).toLocaleString()}`;
+
+            // Attach event listeners for player page buttons
+            playerLikeButton.onclick = () => handleLike(video.id);
+            playerCommentButton.onclick = () => openCommentModal(video.id);
+            playerShareButton.onclick = () => shareVideo(video.id, video.title, video.youtubeUrl);
+
+            // Set up real-time like count listener for player page
+            const playerLikeCountSpan = playerLikeButton.querySelector('.like-count');
+            const playerLikeIcon = playerLikeButton.querySelector('.like-icon');
+            const videoRef = doc(db, `artifacts/${appId}/public/data/videos/${video.id}`);
+            onSnapshot(videoRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const currentLikes = docSnap.data().likesCount || 0;
+                    playerLikeCountSpan.textContent = currentLikes;
+                }
+            });
+
+            // Check initial like status for player page
+            if (currentUserId && db) {
+                const userLikeRef = doc(db, `artifacts/${appId}/public/data/likes/${video.id}_${currentUserId}`);
+                getDoc(userLikeRef).then(docSnap => {
+                    if (docSnap.exists()) {
+                        playerLikeIcon.classList.remove('text-gray-300');
+                        playerLikeIcon.classList.add('text-red-500', 'fill-current');
+                        playerLikeIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.64a5.5 5.5 0 000-7.78z" fill="currentColor"></path>';
+                    }
+                }).catch(error => console.error("Error checking initial like status on player page:", error));
+            }
+
+
+            // Play VAST ad first if monetization is enabled
+            if (video.monetization?.vast) {
+                playVideoWithAdPlayer(video);
+            } else {
+                console.log("VAST ads disabled for video. Playing video directly.");
+                loadYouTubeIframe(video);
+            }
+
+            // Load recommended videos
+            loadRecommendedVideos(video.id, video.videoType);
+
+            // Start slider ad for player page
+            if (video.monetization?.native) { // Using native ad for slider per your request
+                injectSpecificAdScript('in-player-slider-ad', 'video-slider');
+                inPlayerSliderAd.classList.add('active'); // Slide in the ad
+            }
+        }
+
+        /**
+         * Loads the YouTube iframe into the video player container.
+         * @param {object} video - The video data.
+         */
+        function loadYouTubeIframe(video) {
+            const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
+            if (youTubeInfo) {
+                const iframe = document.createElement('iframe');
+                iframe.src = youTubeInfo.embedUrl;
+                iframe.frameBorder = "0";
+                iframe.allow = "autoplay; encrypted-media; gyroscope; picture-in-picture";
+                iframe.allowFullscreen = true;
+                iframe.title = "YouTube video player";
+                videoPlayerContainer.appendChild(iframe);
+            }
+        }
+
+
+        /**
+         * Loads recommended videos for the player page.
+         * @param {string} currentVideoId - The ID of the currently playing video.
+         * @param {string} videoType - The type of video currently playing ('long' or 'short').
+         */
+        async function loadRecommendedVideos(currentVideoId, videoType) {
+            recommendedVideosContainer.innerHTML = ''; // Clear existing recommendations
+            try {
+                const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
+                // Get other videos of the same type, excluding the current one
+                const q = query(videosColRef, where('videoType', '==', videoType));
+                const snapshot = await getDocs(q);
+
+                let recommendedList = snapshot.docs
+                    .map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(video => video.id !== currentVideoId && video.visibility === 'public'); // Exclude current video and private ones
+
+                // Shuffle recommended videos
+                recommendedList.sort(() => Math.random() - 0.5);
+
+                if (recommendedList.length === 0) {
+                    recommendedVideosContainer.innerHTML = '<p class="text-gray-400 text-center p-4">No recommended videos found.</p>';
+                    return;
+                }
+
+                // Limit to a reasonable number, e.g., 5-10 recommendations
+                const displayCount = Math.min(recommendedList.length, 10);
+
+                for (let i = 0; i < displayCount; i++) {
+                    const video = recommendedList[i];
+                    const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
+                    const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/160x90/000/FFF?text=Video';
+
+                    const recVideoElement = `
+                        <div class="recommended-video-item" data-video-id="${video.id}">
+                            <img src="${thumbnailUrl}" alt="${video.title}" class="rounded-lg mr-3" />
+                            <div class="recommended-video-info">
+                                <h4>${video.title}</h4>
+                                <p>${video.userName || 'Anonymous'} • ${video.viewsCount || 0} views</p>
+                            </div>
+                        </div>
+                    `;
+                    recommendedVideosContainer.insertAdjacentHTML('beforeend', recVideoElement);
+
+                    // Add click listener to recommended videos to load them in the player
+                    const recItem = recommendedVideosContainer.lastElementChild;
+                    recItem.addEventListener('click', () => showPage('player', null, video));
+                }
+            } catch (error) {
+                console.error("Error loading recommended videos:", error);
+                recommendedVideosContainer.innerHTML = `<p class="text-red-500 text-center p-4">Failed to load recommendations.</p>`;
+            }
+        }
+
 
         /**
          * Injects ad scripts into specific div IDs.
          * This is a utility to encapsulate ad script loading.
          * @param {string} divId The ID of the div where the ad should be injected.
-         * @param {string} adType The type of ad ('banner468x60', 'banner300x250', 'native').
+         * @param {string} adType The type of ad ('banner468x60', 'banner300x250', 'native', 'banner300x100', 'video-slider').
          */
         function injectSpecificAdScript(divId, adType) {
             const adDiv = document.getElementById(divId);
@@ -1546,11 +1880,14 @@
             // Clear existing content to prevent duplicate ad loads on re-render
             adDiv.innerHTML = ''; // Clear placeholder text
 
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.async = true;
+            script.referrerPolicy = 'no-referrer-when-downgrade';
+
             if (adType === 'banner468x60') {
-                const script1 = document.createElement('script');
-                script1.type = 'text/javascript';
-                script1.textContent = `
-                    var atOptions = {
+                script.textContent = `
+                    atOptions = {
                         'key' : '7281653bd62d5d460d6daa8793f19c5e',
                         'format' : 'iframe',
                         'height' : 60,
@@ -1559,433 +1896,174 @@
                     };
                     document.write('<scr' + 'ipt type="text/javascript" src="//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js"></scr' + 'ipt>');
                 `;
-                adDiv.appendChild(script1);
-
             } else if (adType === 'banner300x250') {
-                const script = document.createElement('script');
-                script.type = 'text/javascript';
                 script.textContent = `
-                    (function(zrot){
-                        var d = document,
+                    (function(jyihw){
+                    var d = document,
                         s = d.createElement('script'),
                         l = d.scripts[d.scripts.length - 1];
-                        s.settings = zrot || {};
-                        s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";
-                        s.async = true;
-                        s.referrerPolicy = 'no-referrer-when-downgrade';
-                        l.parentNode.insertBefore(s, l);
+                    s.settings = jyihw || {};
+                    s.src = "//definitive-priority.com/b/X/V.sMdCGMlL0tYjW-cG/YezmZ9/uuZaUlldk_P/T/YO0LMEjgQm1/NbjrIgtFNyjxQqy/NgD/Uq2zMewZ";
+                    s.async = true;
+                    s.referrerPolicy = 'no-referrer-when-downgrade';
+                    l.parentNode.insertBefore(s, l);
                     })({});
                 `;
-                adDiv.appendChild(script);
+            } else if (adType === 'banner300x100') {
+                script.textContent = `
+                    (function(wcav){
+                    var d = document,
+                        s = d.createElement('script'),
+                        l = d.scripts[d.scripts.length - 1];
+                    s.settings = wcav || {};
+                    s.src = "//definitive-priority.com/bYX/VVs.dEGFlT0HY/WLcl/neEm/9/u/ZWUqlnkhPDTJY/0sMEj/Qs1/N-TKMJtcNojlQpycNbD/U/1wNIAn";
+                    s.async = true;
+                    s.referrerPolicy = 'no-referrer-when-downgrade';
+                    l.parentNode.insertBefore(s, l);
+                    })({});
+                `;
             } else if (adType === 'native') {
-                // For native ads, the specific ad network's setup would go here.
-                // This is a placeholder.
-                adDiv.textContent = "Native Ad (Content will load if configured by ad network)";
+                // Adstreaa Native ads
+                adDiv.innerHTML = `<div id="container-39628927897b21d6c45567203000ccc6"></div>`;
+                script.src = "//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js";
+            } else if (adType === 'video-slider') {
+                // Adstreaa Video slider
+                script.textContent = `
+                    (function(uwrwh){
+                    var d = document,
+                        s = d.createElement('script'),
+                        l = d.scripts[d.scripts.length - 1];
+                    s.settings = uwrwh || {};
+                    s.src = "//definitive-priority.com/bCX-VCsPd.G/lx0JY/Wecq/HeUmP9jugZEUrlPkJPDT-YW0sMDjjQM0DOlTBgetyN/jMQoyDNBDRQy5sOUQP";
+                    s.async = true;
+                    s.referrerPolicy = 'no-referrer-when-downgrade';
+                    l.parentNode.insertBefore(s, l);
+                    })({});
+                `;
+                 // Add active class to slide in
+                setTimeout(() => {
+                    adDiv.classList.add('active');
+                }, 100); // Small delay to allow CSS transition
+                // Periodically hide and show for "vaar vaat ad chalti raha" effect
+                setInterval(() => {
+                    adDiv.classList.toggle('active');
+                }, 15000); // Toggle every 15 seconds
             }
-        }
-
-
-        /**
-         * Updates the profile page with user-specific data and filters videos by type.
-         * @param {string} videoTypeFilter - 'long' or 'short' to filter user's uploads.
-         */
-        async function updateProfilePage(videoTypeFilter = 'long') {
-            profileVideoTypeFilter = videoTypeFilter; // Store the current filter for future updates
-
-            if (!authReady || !db || !currentUserId) {
-                console.warn("Firebase or user not ready for profile page. Aborting updateProfilePage.");
-                profileLoading.classList.add('hidden');
-                profileError.textContent = "Please sign in to view your profile.";
-                profileError.classList.remove('hidden');
-                return;
-            }
-
-            profileLoading.classList.remove('hidden');
-            profileError.classList.add('hidden');
-            noUserVideosMessage.classList.add('hidden');
-            userVideosContainer.innerHTML = ''; // Clear previous videos
-
-            console.log("Updating profile page for user:", currentUserId);
-            try {
-                // Fetch user details
-                const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-                const userDoc = await getDoc(userProfileRef);
-                const username = userDoc.exists() ? userDoc.data().username : `User: ${currentUserId.substring(0, 8)}...`;
-                profileUsername.textContent = username;
-                profileUserId.textContent = currentUserId;
-                document.getElementById('profile-avatar').src = `https://placehold.co/100x100/374151/E5E7EB?text=${username.charAt(0)}`;
-                userAdViewsCounter.textContent = userDoc.exists() ? (userDoc.data().adsViewed || 0) : 0;
-
-
-                // Update tab active state
-                if (profileVideoTypeFilter === 'long') {
-                    profileTabVideos.classList.add('border-orange-500', 'text-orange-500');
-                    profileTabVideos.classList.remove('border-transparent', 'text-gray-400', 'hover:text-white', 'hover:border-gray-500');
-                    profileTabShorts.classList.remove('border-orange-500', 'text-orange-500');
-                    profileTabShorts.classList.add('border-transparent', 'text-gray-400', 'hover:text-white', 'hover:border-gray-500');
-                } else {
-                    profileTabShorts.classList.add('border-orange-500', 'text-orange-500');
-                    profileTabShorts.classList.remove('border-transparent', 'text-gray-400', 'hover:text-white', 'hover:border-gray-500');
-                    profileTabVideos.classList.remove('border-orange-500', 'text-orange-500');
-                    profileTabVideos.classList.add('border-transparent', 'text-gray-400', 'hover:text-white', 'hover:border-gray-500');
-                }
-
-
-                // Fetch videos uploaded by this user, filtered by videoType
-                const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
-                const q = query(videosColRef, where('userId', '==', currentUserId), where('videoType', '==', profileVideoTypeFilter));
-
-                onSnapshot(q, (snapshot) => {
-                    let userVideos = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-
-                    // Client-side sort by timestamp (descending)
-                    userVideos.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
-
-                    profileUploadsCount.textContent = userVideos.length;
-                    userVideosContainer.innerHTML = ''; // Clear previous
-
-                    if (userVideos.length === 0) {
-                        noUserVideosMessage.classList.remove('hidden');
-                    } else {
-                        noUserVideosMessage.classList.add('hidden');
-                        userVideos.forEach(video => {
-                            const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
-                            const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/480x360/000/FFF?text=Video+Thumbnail';
-                            const videoElement = `
-                                <div class="bg-gray-900 rounded-lg overflow-hidden shadow-md border border-gray-800 transform hover:scale-105 transition-transform duration-200 cursor-pointer">
-                                    <img src="${thumbnailUrl}" alt="${video.title}" class="w-full h-48 object-cover" />
-                                    <div class="p-4">
-                                        <h3 class="text-lg font-semibold text-orange-300 truncate">${video.title}</h3>
-                                        <p class="text-sm text-gray-400 mt-1">${video.viewsCount || 0} views</p>
-                                        <p class="text-xs text-gray-500 mt-1">Visibility: ${video.visibility || 'Public'}</p>
-                                        ${video.videoType === 'short' ? '<span class="inline-block bg-purple-600 text-white text-xs px-2 py-1 rounded-full mt-1">Short</span>' : ''}
-                                    </div>
-                                </div>
-                            `;
-                            userVideosContainer.insertAdjacentHTML('beforeend', videoElement);
-                        });
-                    }
-                    profileLoading.classList.add('hidden');
-                }, (err) => {
-                    console.error("Error in onSnapshot for user videos:", err);
-                    profileError.textContent = `Failed to load user videos: ${err.message}. Check Firebase security rules.`;
-                    profileError.classList.remove('hidden');
-                    profileLoading.classList.add('hidden');
-                });
-
-            } catch (error) {
-                console.error("Error updating profile page:", error);
-                profileError.textContent = `Error: ${error.message}`;
-                profileError.classList.remove('hidden');
-                profileLoading.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Loads and displays other users for the "People" page.
-         */
-        async function loadPeople() {
-            if (!authReady || !db || !currentUserId) {
-                console.warn("Firebase or user not ready for people page. Aborting loadPeople.");
-                peopleLoading.classList.add('hidden');
-                peopleError.textContent = "Please sign in to view other users.";
-                peopleError.classList.remove('hidden');
-                return;
-            }
-
-            peopleLoading.classList.remove('hidden');
-            peopleError.classList.add('hidden');
-            noPeopleMessage.classList.add('hidden');
-            peopleFeedContainer.innerHTML = ''; // Clear previous content
 
             try {
-                // Get current user's following list
-                const currentUserProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-                const currentUserDoc = await getDoc(currentUserProfileRef);
-                const currentUserFollowing = currentUserDoc.exists() ? (currentUserDoc.data().following || []) : [];
-
-                // Fetch all user profiles from the 'profile' subcollection of each user
-                const usersCollection = collection(db, `artifacts/${appId}/users`);
-                const allUsersQuerySnapshot = await getDocs(usersCollection);
-
-                let peopleList = [];
-                for (const userDocRef of allUsersQuerySnapshot.docs) {
-                    const userId = userDocRef.id;
-                    if (userId === currentUserId) continue; // Skip current user
-
-                    const userProfileSubcollectionRef = collection(db, `artifacts/${appId}/users/${userId}/profile`);
-                    const userProfileSnapshot = await getDocs(userProfileSubcollectionRef);
-
-                    if (!userProfileSnapshot.empty) {
-                        const profileDoc = userProfileSnapshot.docs[0]; // Assuming one profile doc per user
-                        peopleList.push({ id: userId, ...profileDoc.data() });
-                    }
+                // For direct script contents, append script and execute
+                if (script.textContent) {
+                    const tempScript = document.createElement('script');
+                    tempScript.type = 'text/javascript';
+                    tempScript.innerHTML = script.textContent;
+                    adDiv.appendChild(tempScript);
+                } else { // For external script src
+                    adDiv.appendChild(script);
                 }
-
-                if (peopleList.length === 0) {
-                    noPeopleMessage.classList.remove('hidden');
-                } else {
-                    peopleList.forEach(person => {
-                        const isFollowing = currentUserFollowing.includes(person.id);
-                        const personElement = `
-                            <div class="flex items-center justify-between bg-gray-900 rounded-lg p-4 mb-4 shadow-md border border-gray-800">
-                                <div class="flex items-center space-x-4">
-                                    <img src="https://placehold.co/60x60/374151/E5E7EB?text=${person.username.charAt(0)}" alt="${person.username} Avatar" class="w-14 h-14 rounded-full border-2 border-orange-500" />
-                                    <div>
-                                        <h3 class="text-lg font-semibold text-orange-300">${person.username}</h3>
-                                        <p class="text-sm text-gray-400 break-all">ID: ${person.id}</p>
-                                    </div>
-                                </div>
-                                <button id="follow-button-${person.id}" class="px-4 py-2 rounded-md font-semibold transition duration-200
-                                    ${isFollowing ? 'bg-gray-600 hover:bg-gray-700 text-gray-300' : 'btn-primary text-white'}">
-                                    ${isFollowing ? 'Following' : 'Follow'}
-                                </button>
-                            </div>
-                        `;
-                        peopleFeedContainer.insertAdjacentHTML('beforeend', personElement);
-
-                        const followButton = document.getElementById(`follow-button-${person.id}`);
-                        if (followButton) {
-                            followButton.addEventListener('click', () => toggleFollow(person.id, isFollowing));
-                        }
-                    });
-                }
-                peopleLoading.classList.add('hidden');
-
             } catch (error) {
-                console.error("Error loading people:", error);
-                peopleError.textContent = `Failed to load users: ${error.message}.`;
-                peopleError.classList.remove('hidden');
-                peopleLoading.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Toggles the follow status of another user.
-         * @param {string} targetUserId - The ID of the user to follow/unfollow.
-         * @param {boolean} isCurrentlyFollowing - True if currently following, false otherwise.
-         */
-        async function toggleFollow(targetUserId, isCurrentlyFollowing) {
-            if (!currentUserId || !db) {
-                showCustomModal('Action Required', 'Please sign in to follow users.', false);
-                return;
-            }
-
-            const currentUserProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-            const targetUserProfileRef = doc(db, `artifacts/${appId}/users/${targetUserId}/profile/${targetUserId}`);
-
-            try {
-                if (isCurrentlyFollowing) {
-                    // Unfollow
-                    await updateDoc(currentUserProfileRef, {
-                        following: arrayRemove(targetUserId)
-                    });
-                    await updateDoc(targetUserProfileRef, {
-                        followers: arrayRemove(currentUserId)
-                    });
-                    showCustomModal('Unfollowed', `You have unfollowed this user.`, false);
-                } else {
-                    // Follow
-                    await updateDoc(currentUserProfileRef, {
-                        following: arrayUnion(targetUserId)
-                    });
-                    await updateDoc(targetUserProfileRef, {
-                        followers: arrayUnion(currentUserId)
-                    });
-                    showCustomModal('Followed', `You are now following this user!`, false);
-                }
-                // Reload people page to update buttons
-                loadPeople();
-            } catch (error) {
-                console.error("Error toggling follow:", error);
-                showCustomModal('Error', `Failed to update follow status: ${error.message}`, false);
+                console.error(`Error injecting ad script for ${adType} into ${divId}:`, error);
+                adDiv.innerHTML = `<p class="text-red-500 text-xs text-center">Ad Load Error</p>`;
             }
         }
 
 
-        // --- VAST Ad Integration Logic (Google IMA SDK) ---
+        // --- VAST Ad Integration Logic (Google IMA SDK) for main player ---
 
-        let currentAdManager = null;
-        let isAdPlaying = false; // Global flag to indicate if an ad is currently playing
-        let sliderAdInterval = null; // Interval for the in-player slider ad
+        let currentIMAAdManager = null; // Renamed to avoid conflict with shorts ad counter
+        let isIMAAdPlaying = false; // Global flag to indicate if an IMA ad is currently playing
 
         /**
-         * Plays a VAST ad using Google IMA SDK before showing the video.
+         * Plays a VAST ad using Google IMA SDK before showing the video on the main player page.
          * @param {object} video - The video data.
-         * @param {HTMLElement} playerContainer - The main container for video/ad (within the card).
-         * @param {HTMLElement} thumbnail - The thumbnail element.
-         * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
-         * @param {HTMLElement} adMessageElement - The element to show message after ad.
-         * @param {HTMLElement} sliderAdElement - The element for the in-player slider ad.
          */
-        function playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement) {
-            console.log("Attempting to play ad for video:", video.id);
+        function playVideoWithAdPlayer(video) {
+            console.log("Attempting to play IMA ad for main player video:", video.id);
 
-            // Ensure IMA SDK is loaded
             if (typeof google === 'undefined' || !google.ima) {
                 console.error("Google IMA SDK not loaded. Skipping ad, playing video directly.");
                 showCustomModal('Ad Error', 'Ad service not available. Playing video directly.', false);
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true);
+                loadYouTubeIframe(video);
                 return;
             }
 
-            // Ensure any previous ad manager is destroyed
-            if (currentAdManager) {
-                currentAdManager.destroy();
-                currentAdManager = null;
+            if (currentIMAAdManager) {
+                currentIMAAdManager.destroy();
+                currentIMAAdManager = null;
             }
 
-            // Show global IMA ad container, covering the entire display for ad playback
-            imaAdContainer.style.display = 'flex';
-            // We need to hide the main content area so that the global ad container covers everything.
-            document.querySelector('main').classList.add('hidden');
-            
-            isAdPlaying = true;
-            thumbnail.classList.add('hidden'); // Hide thumbnail once play button is clicked and ad starts
-            youtubeIframeWrapper.classList.add('hidden');
-            adMessageElement.classList.add('hidden');
-            sliderAdElement.classList.add('hidden'); // Hide slider ad during VAST ad
-
+            imaAdContainer.style.display = 'flex'; // Show global IMA ad container
+            document.querySelector('main').classList.add('hidden'); // Hide main content
+            isIMAAdPlaying = true;
+            videoPlayerContainer.innerHTML = ''; // Clear video player while ad plays
 
             const adDisplayContainer = new google.ima.AdDisplayContainer(imaAdContainer);
             const adsLoader = new google.ima.AdsLoader(adDisplayContainer);
 
-            // Listen for ad errors
             adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
-                console.error("Ad error from adsLoader:", adErrorEvent.getError().getMessage());
+                console.error("IMA Ad error from adsLoader:", adErrorEvent.getError().getMessage());
                 showCustomModal('Ad Playback Error', 'Failed to play ad. Continuing to video.', false);
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true); // True to skip ad
+                loadYouTubeIframe(video); // Play video even if ad fails
+                cleanupIMAAdDisplay();
             }, false);
 
-            // Listen for ads loaded event
             adsLoader.addEventListener(google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED, (adsManagerLoadedEvent) => {
-                console.log("AdsManager Loaded event fired.");
+                console.log("IMA AdsManager Loaded event fired.");
                 const adsManager = adsManagerLoadedEvent.getAdsManager();
-                currentAdManager = adsManager;
+                currentIMAAdManager = adsManager;
 
-                // Add event listeners for the AdsManager itself
                 adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
-                    console.error("Ad manager error:", adErrorEvent.getError().getMessage());
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true); // True to skip ad
+                    console.error("IMA Ad manager error:", adErrorEvent.getError().getMessage());
+                    loadYouTubeIframe(video);
+                    cleanupIMAAdDisplay();
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, () => {
-                    console.log("VAST ad completed.");
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, false); // False to indicate ad completed
-                }, false);
-
-                adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, () => {
-                    console.log("Ad LOADED event (before start)");
-                }, false);
-
-                adsManager.addEventListener(google.ima.AdEvent.Type.AD_BREAK_READY, () => {
-                    console.log("Ad break ready. Starting ad playback.");
+                    console.log("IMA VAST ad completed.");
+                    loadYouTubeIframe(video);
+                    cleanupIMAAdDisplay();
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.AD_SKIPPED, () => {
-                    console.log("Ad SKIPPED event. Proceeding to video.");
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, false); // Ad was skipped, proceed
+                    console.log("IMA Ad SKIPPED event. Proceeding to video.");
+                    loadYouTubeIframe(video);
+                    cleanupIMAAdDisplay();
                 }, false);
 
-
                 try {
-                    // This initializes the AdsManager with the dimensions of the IMA ad container.
                     adsManager.init(imaAdContainer.offsetWidth, imaAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
-                    adsManager.start(); // Start ad playback
-                    console.log("VAST ad playback initiated.");
+                    adsManager.start();
+                    console.log("IMA VAST ad playback initiated.");
                 } catch (adError) {
-                    console.error("AdsManager could not be started:", adError);
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true); // True to skip ad
+                    console.error("IMA AdsManager could not be started:", adError);
+                    loadYouTubeIframe(video);
+                    cleanupIMAAdDisplay();
                 }
             }, false);
 
-            // Request ads
             const adsRequest = new google.ima.AdsRequest();
-            adsRequest.adTagUrl = vastAdTagUrl;
-            // Set linear and non-linear ad slot dimensions to match the global IMA ad container
+            adsRequest.adTagUrl = hilltopAdsVastUrl; // Use Hilltopads VAST URL here
             adsRequest.linearAdSlotWidth = imaAdContainer.offsetWidth;
             adsRequest.linearAdSlotHeight = imaAdContainer.offsetHeight;
             adsRequest.nonLinearAdSlotWidth = imaAdContainer.offsetWidth;
             adsRequest.nonLinearAdSlotHeight = imaAdContainer.offsetHeight;
-            adsRequest.setAdWillAutoPlay(true); // Indicate that ads will autoplay
+            adsRequest.setAdWillAutoPlay(true);
 
-            adDisplayContainer.initialize(); // Initialize ad container before requesting ads
+            adDisplayContainer.initialize();
             adsLoader.requestAds(adsRequest);
-            console.log("Ad request sent for:", video.id);
+            console.log("IMA Ad request sent for:", video.id);
         }
 
         /**
-         * Cleans up ad manager and reveals the video player.
-         * @param {object} video - The video data.
-         * @param {HTMLElement} playerContainer - The main container for video/ad (within the card).
-         * @param {HTMLElement} thumbnail - The thumbnail element.
-         * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
-         * @param {HTMLElement} adMessageElement - The element to show message after ad.
-         * @param {HTMLElement} sliderAdElement - The element for the in-player slider ad.
-         * @param {boolean} skipAd - If true, implies ad was skipped or failed, just show video.
+         * Cleans up the IMA ad display and restores main content.
          */
-        function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, skipAd = false) {
-            console.log("Cleaning up ad and showing video for:", video.id, "Skip Ad (or failed):", skipAd);
-            if (currentAdManager) {
-                currentAdManager.destroy();
-                currentAdManager = null;
+        function cleanupIMAAdDisplay() {
+            if (currentIMAAdManager) {
+                currentIMAAdManager.destroy();
+                currentIMAAdManager = null;
             }
             imaAdContainer.style.display = 'none'; // Hide the global ad container
             document.querySelector('main').classList.remove('hidden'); // Show the main content area again
-
-            isAdPlaying = false;
-            thumbnail.classList.add('hidden'); // Keep thumbnail hidden
-            youtubeIframeWrapper.classList.remove('hidden'); // Show iframe wrapper
-
-            // Add YouTube iframe if not already present or if ad was skipped/failed
-            let iframe = youtubeIframeWrapper.querySelector('iframe');
-            if (!iframe) {
-                const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
-                if (youTubeInfo) {
-                    iframe = document.createElement('iframe');
-                    iframe.className = "w-full h-full object-cover";
-                    iframe.src = youTubeInfo.embedUrl;
-                    iframe.frameBorder = "0";
-                    iframe.allow = "autoplay; encrypted-media; gyroscope; picture-in-picture";
-                    iframe.allowFullscreen = true;
-                    iframe.title = "YouTube video player";
-                    youtubeIframeWrapper.appendChild(iframe);
-                } else {
-                    youtubeIframeWrapper.innerHTML = `<div class="text-red-500 text-center">Invalid YouTube URL</div>`;
-                    console.error("Invalid YouTube URL for video:", video.id, video.youtubeUrl);
-                }
-            } else {
-                 // If iframe already exists, re-set its src to force autoplay/reload in case it was paused or not fully loaded
-                 const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
-                 if (youTubeInfo) {
-                    iframe.src = youTubeInfo.embedUrl;
-                 }
-            }
-
-            // Display "Video playing soon!" message briefly
-            adMessageElement.classList.remove('hidden');
-            setTimeout(() => {
-                adMessageElement.classList.add('hidden');
-            }, 3000); // Hide message after 3 seconds
-
-            // Show and animate slider ad if monetization is enabled for it
-            if (video.monetization?.native && sliderAdElement) { // Using 'native' for simplicity for slider ad monetization check
-                sliderAdElement.classList.remove('hidden');
-                // Clear any existing interval to prevent duplicates
-                if (sliderAdInterval) clearInterval(sliderAdInterval);
-                // Simulate continuous loading/sliding for slider ad
-                sliderAdInterval = setInterval(() => {
-                    if (sliderAdElement.classList.contains('hidden')) {
-                        sliderAdElement.classList.remove('hidden');
-                    } else {
-                        sliderAdElement.classList.add('hidden'); // Briefly hide for a "refresh" effect
-                        setTimeout(() => sliderAdElement.classList.remove('hidden'), 500);
-                    }
-                }, 5000); // Change every 5 seconds
-            }
+            isIMAAdPlaying = false;
         }
 
 
@@ -2009,8 +2087,18 @@
                 const docSnap = await getDoc(likeRef);
                 const isLiked = docSnap.exists();
 
-                const likeIcon = document.querySelector(`#like-button-${videoId} .like-icon`);
-                let currentLikes = parseInt(document.querySelector(`#like-button-${videoId} .like-count`).textContent);
+                // Select the correct like icon and count based on current page
+                let likeIcon;
+                let likeCountSpan;
+                if (currentPage === 'player' && currentPlayingVideo && currentPlayingVideo.id === videoId) {
+                    likeIcon = playerLikeButton.querySelector('.like-icon');
+                    likeCountSpan = playerLikeButton.querySelector('.like-count');
+                } else {
+                    likeIcon = document.querySelector(`#like-button-${videoId} .like-icon`);
+                    likeCountSpan = document.querySelector(`#like-button-${videoId} .like-count`);
+                }
+
+                let currentLikes = parseInt(likeCountSpan.textContent);
 
                 if (isLiked) {
                     // Unlike
@@ -2788,4 +2876,3 @@
     </script>
 </body>
 </html>
-
