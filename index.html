@@ -311,6 +311,32 @@
             color: white;
             z-index: 10;
         }
+
+        /* Slider ad inside video player */
+        .in-player-slider-ad {
+            position: absolute;
+            bottom: 10px; /* Adjust as needed */
+            right: 10px; /* Adjust as needed */
+            width: 120px; /* Small size */
+            height: 90px; /* Small size */
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 1px solid #f97316;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            text-align: center;
+            z-index: 50; /* Above player, below IMA container */
+            animation: slideInLeft 0.5s forwards; /* Animation for appearing */
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-white flex flex-col">
@@ -387,6 +413,7 @@
                         <h1 id="profile-username" class="text-3xl font-extrabold text-orange-400 mb-1"></h1>
                         <p class="text-gray-400">User ID: <span id="profile-user-id" class="break-all text-sm"></span></p>
                         <p class="text-gray-300 mt-2">Total Uploads: <span id="profile-uploads-count" class="font-semibold">0</span></p>
+                        <p class="text-gray-300 mt-2">Ads Viewed: <span id="user-ad-views" class="font-semibold">0</span> / 10000 (for withdrawal eligibility)</p>
                     </div>
                 </div>
 
@@ -411,10 +438,28 @@
         <!-- Search Page (Placeholder - Actual search handled by updateVideoFeed) -->
         <div id="search-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
             Search Functionality Activated in Header!
+            <!-- Search results are shown on the home page feed based on search input -->
         </div>
-        <!-- People Page (Placeholder) -->
-        <div id="people-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
-            People/Follow Functionality Coming Soon!
+
+        <!-- People Page -->
+        <div id="people-page" class="hidden p-6 bg-gray-950 w-full h-full overflow-y-auto hide-scrollbar">
+            <div class="max-w-xl mx-auto">
+                <h2 class="text-2xl font-bold mb-6 text-orange-300">Discover People</h2>
+                <div id="people-feed-container" class="space-y-4">
+                    <!-- People profiles will be injected here -->
+                </div>
+                <div id="people-loading" class="flex flex-col items-center justify-center h-48 text-white text-lg hidden">
+                    <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="ml-3 mt-4">Loading people...</span>
+                </div>
+                <div id="people-error" class="text-red-500 text-center mt-8 hidden text-lg"></div>
+                <p id="no-people-message" class="text-gray-400 text-center py-8 bg-gray-900 rounded-lg border border-gray-800 hidden">
+                    No other users found.
+                </p>
+            </div>
         </div>
 
     </main>
@@ -700,7 +745,7 @@
             GoogleAuthProvider,
             signInWithPopup
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Global Variables ---
         let app;
@@ -712,8 +757,9 @@
         let currentVideoIdForComments = null;
         let profileVideoTypeFilter = 'long'; // For profile page: 'long' or 'short'
         let allVideosCache = []; // Cache for search functionality
+        let shortsAdCounter = 0; // Counter for shorts ads viewed to trigger VAST ad
 
-        // Firebase Configuration
+        // Firebase Configuration (DO NOT CHANGE - these are environment specific)
         const firebaseConfig = {
             apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",
             authDomain: "videofire-268ff.firebaseapp.com",
@@ -735,8 +781,8 @@
         // --- DOM Elements ---
         const homePage = document.getElementById('home-page');
         const profilePage = document.getElementById('profile-page');
-        const searchPage = document.getElementById('search-page'); // Placeholder now but remains
-        const peoplePage = document.getElementById('people-page'); // Placeholder now but remains
+        const searchPage = document.getElementById('search-page');
+        const peoplePage = document.getElementById('people-page');
         const videoFeedContainer = document.getElementById('video-feed-container');
 
         const homeLoading = document.getElementById('home-loading');
@@ -746,6 +792,7 @@
         const profileUsername = document.getElementById('profile-username');
         const profileUserId = document.getElementById('profile-user-id');
         const profileUploadsCount = document.getElementById('profile-uploads-count');
+        const userAdViewsCounter = document.getElementById('user-ad-views'); // For total ads viewed
         const userVideosContainer = document.getElementById('user-videos-container');
         const noUserVideosMessage = document.getElementById('no-user-videos-message');
         const profileLoading = document.getElementById('profile-loading');
@@ -835,6 +882,12 @@
         const headerSearchInput = document.getElementById('header-search-input');
         const headerButtonsContainer = document.getElementById('header-buttons-container');
         const clearSearchButton = document.getElementById('clear-search-button');
+
+        // People page elements
+        const peopleFeedContainer = document.getElementById('people-feed-container');
+        const peopleLoading = document.getElementById('people-loading');
+        const peopleError = document.getElementById('people-error');
+        const noPeopleMessage = document.getElementById('no-people-message');
 
 
         // --- Utility Functions ---
@@ -968,7 +1021,8 @@
                                     joinedAt: serverTimestamp(),
                                     isEmailVerified: user.emailVerified || false,
                                     followers: [],
-                                    following: []
+                                    following: [],
+                                    adsViewed: 0 // Initialize adsViewed counter for new users
                                 });
                             } else {
                                 // Update profile with latest info if email is verified
@@ -979,6 +1033,9 @@
                                 // Ensure new fields exist for existing users (for backward compatibility)
                                 if (!userData.followers) await updateDoc(userProfileRef, { followers: [] });
                                 if (!userData.following) await updateDoc(userProfileRef, { following: [] });
+                                if (typeof userData.adsViewed === 'undefined') {
+                                    await updateDoc(userProfileRef, { adsViewed: 0 });
+                                }
                             }
                         } catch (profileError) {
                             console.error("Error creating/fetching user profile:", profileError);
@@ -997,8 +1054,8 @@
                     if (user || initialAuthToken) { // If user is logged in or custom token was attempted
                         showPage(currentPage);
                     } else if (!user && !authModal.classList.contains('hidden')) {
-                         // If no user and auth modal is shown, do nothing (wait for user action)
-                         homeLoading.classList.add('hidden'); // Hide loading if auth modal is shown
+                         // If no user and auth modal is shown, hide loading as auth modal is already visible
+                         homeLoading.classList.add('hidden');
                     }
                 });
 
@@ -1011,6 +1068,7 @@
                     } catch (error) {
                         console.error("Error signing in with custom token:", error);
                         // The onAuthStateChanged listener will handle the case of no user after this attempt.
+                        // No explicit showPage here, as onAuthStateChanged will handle the state change.
                     }
                 }
 
@@ -1075,7 +1133,7 @@
             if (!authReady || !currentUserId) {
                 console.log("Auth not ready or user not logged in, showing auth modal.");
                 authModal.classList.remove('hidden');
-                homeLoading.classList.add('hidden');
+                homeLoading.classList.add('hidden'); // Hide loading spinner if auth modal is shown
                 return;
             }
 
@@ -1109,6 +1167,7 @@
                     break;
                 case 'people':
                     peoplePage.classList.remove('hidden');
+                    loadPeople(); // Load people to follow
                     break;
                 default:
                     homePage.classList.remove('hidden'); // Fallback to home
@@ -1148,9 +1207,6 @@
                         ...doc.data()
                     }));
 
-                    // Client-side sort by timestamp (descending)
-                    videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
-
                     // Filter videos based on visibility: only public videos from others, or private videos if current user is uploader
                     let filteredVideoList = videoList.filter(video => {
                         if (video.visibility === 'private') {
@@ -1158,6 +1214,37 @@
                         }
                         return true; // Public videos are visible to everyone
                     });
+
+                    // Implement recommendation logic: prioritize videos from followed users for 'home' (long videos)
+                    if (currentUserId && currentPage === 'home' && videoType === 'long') {
+                        const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
+                        const userDoc = await getDoc(userProfileRef);
+                        const userFollowing = userDoc.exists() ? (userDoc.data().following || []) : [];
+
+                        let followedVideos = [];
+                        let otherVideos = [];
+
+                        filteredVideoList.forEach(video => {
+                            if (userFollowing.includes(video.userId)) {
+                                followedVideos.push(video);
+                            } else {
+                                otherVideos.push(video);
+                            }
+                        });
+
+                        // Shuffle followed videos to vary their order
+                        followedVideos.sort(() => Math.random() - 0.5);
+                        // Shuffle other videos
+                        otherVideos.sort(() => Math.random() - 0.5);
+
+                        // Combine: followed videos first, then shuffled others
+                        filteredVideoList = [...followedVideos, ...otherVideos];
+                        console.log("Videos reordered based on following:", filteredVideoList);
+                    } else {
+                        // For shorts or if not on home page, just shuffle all videos
+                        filteredVideoList.sort(() => Math.random() - 0.5); // Randomize order
+                    }
+
 
                     // Apply search filter if query exists
                     if (searchQuery) {
@@ -1181,10 +1268,11 @@
 
                     // For Shorts, adjust container classes for vertical layout
                     if (videoType === 'short') {
-                        videoFeedContainer.classList.add('flex', 'flex-col', 'items-center', 'justify-center');
+                        videoFeedContainer.classList.add('flex', 'flex-col', 'items-center', 'justify-center', 'snap-mandatory');
                         videoFeedContainer.classList.remove('grid', 'grid-cols-1'); // Remove grid if it was added
+                        shortsAdCounter = 0; // Reset counter when loading shorts feed
                     } else {
-                        videoFeedContainer.classList.remove('flex', 'flex-col', 'items-center', 'justify-center');
+                        videoFeedContainer.classList.remove('flex', 'flex-col', 'items-center', 'justify-center', 'snap-mandatory');
                         // For long videos, we don't need grid here as each card takes full width in this layout
                     }
 
@@ -1196,13 +1284,64 @@
 
                         // Inject a banner ad after every N shorts videos IF monetization is ON for banner300x250
                         // This serves as the "in-feed" ad.
-                        if (video.videoType === 'short' && video.monetization?.banner300x250 && (i + 1) % 3 === 0) { // Every 3 videos
-                            const adDiv = document.createElement('div');
-                            adDiv.className = 'w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 flex-shrink-0 snap-center my-4 text-center p-4';
-                            adDiv.id = `shorts-banner-ad-${video.id}-${i}`;
-                            adDiv.innerHTML = `<span class="block">Shorts In-Feed Ad</span><span class="block text-orange-400 mt-2 text-sm">Ad by definitive-priority.com</span>`;
-                            videoFeedContainer.appendChild(adDiv);
-                            injectSpecificAdScript(adDiv.id, 'banner300x250'); // Use 300x250 for in-feed
+                        if (video.videoType === 'short' && video.monetization?.banner300x250) {
+                            shortsAdCounter++;
+                            if (shortsAdCounter % 7 === 0) { // Every 7 shorts, insert a VAST ad (simulated)
+                                const adDiv = document.createElement('div');
+                                adDiv.className = 'w-full h-full bg-black flex flex-col items-center justify-center text-white flex-shrink-0 snap-center';
+                                adDiv.id = `shorts-vast-ad-${video.id}-${i}`;
+                                adDiv.innerHTML = `
+                                    <div class="flex flex-col items-center justify-center text-center">
+                                        <p class="text-xl font-bold mb-4">VAST Ad (5s)</p>
+                                        <div class="relative w-48 h-48">
+                                            <svg class="animate-spin h-full w-full text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span id="shorts-vast-timer-${video.id}-${i}" class="absolute inset-0 flex items-center justify-center text-3xl font-bold">5</span>
+                                        </div>
+                                    </div>
+                                `;
+                                videoFeedContainer.appendChild(adDiv);
+
+                                // Simulate 5-second VAST ad and increment ad count
+                                let timer = 5;
+                                const timerElement = adDiv.querySelector(`#shorts-vast-timer-${video.id}-${i}`);
+                                const interval = setInterval(async () => {
+                                    timer--;
+                                    if (timerElement) timerElement.textContent = timer;
+                                    if (timer <= 0) {
+                                        clearInterval(interval);
+                                        adDiv.remove(); // Remove the ad placeholder
+                                        // Increment ad view count for the user
+                                        if (currentUserId && db) {
+                                            const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
+                                            try {
+                                                await updateDoc(userProfileRef, {
+                                                    adsViewed: increment(1) // Increment by 1
+                                                });
+                                                console.log("User ad view count incremented for shorts VAST ad.");
+                                                // Update profile page's ad count if it's currently open
+                                                if (currentPage === 'profile') {
+                                                    const userDoc = await getDoc(userProfileRef);
+                                                    if (userDoc.exists()) {
+                                                        userAdViewsCounter.textContent = userDoc.data().adsViewed || 0;
+                                                    }
+                                                }
+                                            } catch (error) {
+                                                console.error("Error incrementing ad view count:", error);
+                                            }
+                                        }
+                                    }
+                                }, 1000);
+                            } else { // In-feed banner ad for other shorts
+                                const adDiv = document.createElement('div');
+                                adDiv.className = 'w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 flex-shrink-0 snap-center my-4 text-center p-4';
+                                adDiv.id = `shorts-banner-ad-${video.id}-${i}`;
+                                adDiv.innerHTML = `<span class="block">Shorts In-Feed Ad</span><span class="block text-orange-400 mt-2 text-sm">Ad by definitive-priority.com</span>`;
+                                videoFeedContainer.appendChild(adDiv);
+                                injectSpecificAdScript(adDiv.id, 'banner300x250'); // Use 300x250 for in-feed
+                            }
                         }
                     }
                     homeLoading.classList.add('hidden');
@@ -1318,6 +1457,11 @@
                         </div>
                     </div>` : ''}
                 </div>
+
+                <!-- In-Player Slider Ad (simulated) -->
+                <div id="in-player-slider-ad-${video.id}" class="in-player-slider-ad hidden">
+                    <img src="https://placehold.co/120x90/FF7F50/FFFFFF?text=Slider+Ad" alt="Slider Ad" class="w-full h-full object-cover">
+                </div>
             `;
 
             // Attach event listeners after element is in DOM
@@ -1328,16 +1472,17 @@
                     const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
                     const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
                     const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
+                    const sliderAd = videoCard.querySelector(`#in-player-slider-ad-${video.id}`);
 
                     // Hide play button after click
                     playButton.classList.add('hidden');
 
                     // If VAST ads are enabled for this video, play ad first
                     if (video.monetization?.vast) {
-                        playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage);
+                        playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, sliderAd);
                     } else {
                         console.log("VAST ads disabled for video:", video.id, ". Playing video directly.");
-                        cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, true); // Skip ad
+                        cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, sliderAd, true); // Skip ad
                     }
                 });
             }
@@ -1469,6 +1614,8 @@
                 profileUsername.textContent = username;
                 profileUserId.textContent = currentUserId;
                 document.getElementById('profile-avatar').src = `https://placehold.co/100x100/374151/E5E7EB?text=${username.charAt(0)}`;
+                userAdViewsCounter.textContent = userDoc.exists() ? (userDoc.data().adsViewed || 0) : 0;
+
 
                 // Update tab active state
                 if (profileVideoTypeFilter === 'long') {
@@ -1537,11 +1684,133 @@
             }
         }
 
+        /**
+         * Loads and displays other users for the "People" page.
+         */
+        async function loadPeople() {
+            if (!authReady || !db || !currentUserId) {
+                console.warn("Firebase or user not ready for people page. Aborting loadPeople.");
+                peopleLoading.classList.add('hidden');
+                peopleError.textContent = "Please sign in to view other users.";
+                peopleError.classList.remove('hidden');
+                return;
+            }
+
+            peopleLoading.classList.remove('hidden');
+            peopleError.classList.add('hidden');
+            noPeopleMessage.classList.add('hidden');
+            peopleFeedContainer.innerHTML = ''; // Clear previous content
+
+            try {
+                // Get current user's following list
+                const currentUserProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
+                const currentUserDoc = await getDoc(currentUserProfileRef);
+                const currentUserFollowing = currentUserDoc.exists() ? (currentUserDoc.data().following || []) : [];
+
+                // Fetch all user profiles from the 'profile' subcollection of each user
+                const usersCollection = collection(db, `artifacts/${appId}/users`);
+                const allUsersQuerySnapshot = await getDocs(usersCollection);
+
+                let peopleList = [];
+                for (const userDocRef of allUsersQuerySnapshot.docs) {
+                    const userId = userDocRef.id;
+                    if (userId === currentUserId) continue; // Skip current user
+
+                    const userProfileSubcollectionRef = collection(db, `artifacts/${appId}/users/${userId}/profile`);
+                    const userProfileSnapshot = await getDocs(userProfileSubcollectionRef);
+
+                    if (!userProfileSnapshot.empty) {
+                        const profileDoc = userProfileSnapshot.docs[0]; // Assuming one profile doc per user
+                        peopleList.push({ id: userId, ...profileDoc.data() });
+                    }
+                }
+
+                if (peopleList.length === 0) {
+                    noPeopleMessage.classList.remove('hidden');
+                } else {
+                    peopleList.forEach(person => {
+                        const isFollowing = currentUserFollowing.includes(person.id);
+                        const personElement = `
+                            <div class="flex items-center justify-between bg-gray-900 rounded-lg p-4 mb-4 shadow-md border border-gray-800">
+                                <div class="flex items-center space-x-4">
+                                    <img src="https://placehold.co/60x60/374151/E5E7EB?text=${person.username.charAt(0)}" alt="${person.username} Avatar" class="w-14 h-14 rounded-full border-2 border-orange-500" />
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-orange-300">${person.username}</h3>
+                                        <p class="text-sm text-gray-400 break-all">ID: ${person.id}</p>
+                                    </div>
+                                </div>
+                                <button id="follow-button-${person.id}" class="px-4 py-2 rounded-md font-semibold transition duration-200
+                                    ${isFollowing ? 'bg-gray-600 hover:bg-gray-700 text-gray-300' : 'btn-primary text-white'}">
+                                    ${isFollowing ? 'Following' : 'Follow'}
+                                </button>
+                            </div>
+                        `;
+                        peopleFeedContainer.insertAdjacentHTML('beforeend', personElement);
+
+                        const followButton = document.getElementById(`follow-button-${person.id}`);
+                        if (followButton) {
+                            followButton.addEventListener('click', () => toggleFollow(person.id, isFollowing));
+                        }
+                    });
+                }
+                peopleLoading.classList.add('hidden');
+
+            } catch (error) {
+                console.error("Error loading people:", error);
+                peopleError.textContent = `Failed to load users: ${error.message}.`;
+                peopleError.classList.remove('hidden');
+                peopleLoading.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Toggles the follow status of another user.
+         * @param {string} targetUserId - The ID of the user to follow/unfollow.
+         * @param {boolean} isCurrentlyFollowing - True if currently following, false otherwise.
+         */
+        async function toggleFollow(targetUserId, isCurrentlyFollowing) {
+            if (!currentUserId || !db) {
+                showCustomModal('Action Required', 'Please sign in to follow users.', false);
+                return;
+            }
+
+            const currentUserProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
+            const targetUserProfileRef = doc(db, `artifacts/${appId}/users/${targetUserId}/profile/${targetUserId}`);
+
+            try {
+                if (isCurrentlyFollowing) {
+                    // Unfollow
+                    await updateDoc(currentUserProfileRef, {
+                        following: arrayRemove(targetUserId)
+                    });
+                    await updateDoc(targetUserProfileRef, {
+                        followers: arrayRemove(currentUserId)
+                    });
+                    showCustomModal('Unfollowed', `You have unfollowed this user.`, false);
+                } else {
+                    // Follow
+                    await updateDoc(currentUserProfileRef, {
+                        following: arrayUnion(targetUserId)
+                    });
+                    await updateDoc(targetUserProfileRef, {
+                        followers: arrayUnion(currentUserId)
+                    });
+                    showCustomModal('Followed', `You are now following this user!`, false);
+                }
+                // Reload people page to update buttons
+                loadPeople();
+            } catch (error) {
+                console.error("Error toggling follow:", error);
+                showCustomModal('Error', `Failed to update follow status: ${error.message}`, false);
+            }
+        }
+
 
         // --- VAST Ad Integration Logic (Google IMA SDK) ---
 
         let currentAdManager = null;
         let isAdPlaying = false; // Global flag to indicate if an ad is currently playing
+        let sliderAdInterval = null; // Interval for the in-player slider ad
 
         /**
          * Plays a VAST ad using Google IMA SDK before showing the video.
@@ -1550,15 +1819,16 @@
          * @param {HTMLElement} thumbnail - The thumbnail element.
          * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
          * @param {HTMLElement} adMessageElement - The element to show message after ad.
+         * @param {HTMLElement} sliderAdElement - The element for the in-player slider ad.
          */
-        function playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement) {
+        function playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement) {
             console.log("Attempting to play ad for video:", video.id);
 
             // Ensure IMA SDK is loaded
             if (typeof google === 'undefined' || !google.ima) {
                 console.error("Google IMA SDK not loaded. Skipping ad, playing video directly.");
                 showCustomModal('Ad Error', 'Ad service not available. Playing video directly.', false);
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true);
+                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true);
                 return;
             }
 
@@ -1577,6 +1847,7 @@
             thumbnail.classList.add('hidden'); // Hide thumbnail once play button is clicked and ad starts
             youtubeIframeWrapper.classList.add('hidden');
             adMessageElement.classList.add('hidden');
+            sliderAdElement.classList.add('hidden'); // Hide slider ad during VAST ad
 
 
             const adDisplayContainer = new google.ima.AdDisplayContainer(imaAdContainer);
@@ -1586,7 +1857,7 @@
             adsLoader.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
                 console.error("Ad error from adsLoader:", adErrorEvent.getError().getMessage());
                 showCustomModal('Ad Playback Error', 'Failed to play ad. Continuing to video.', false);
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
+                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true); // True to skip ad
             }, false);
 
             // Listen for ads loaded event
@@ -1598,12 +1869,12 @@
                 // Add event listeners for the AdsManager itself
                 adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
                     console.error("Ad manager error:", adErrorEvent.getError().getMessage());
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true); // True to skip ad
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.ALL_ADS_COMPLETED, () => {
                     console.log("VAST ad completed.");
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, false); // False to indicate ad completed
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, false); // False to indicate ad completed
                 }, false);
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, () => {
@@ -1616,7 +1887,7 @@
 
                 adsManager.addEventListener(google.ima.AdEvent.Type.AD_SKIPPED, () => {
                     console.log("Ad SKIPPED event. Proceeding to video.");
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, false); // Ad was skipped, proceed
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, false); // Ad was skipped, proceed
                 }, false);
 
 
@@ -1627,7 +1898,7 @@
                     console.log("VAST ad playback initiated.");
                 } catch (adError) {
                     console.error("AdsManager could not be started:", adError);
-                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, true); // True to skip ad
                 }
             }, false);
 
@@ -1653,9 +1924,10 @@
          * @param {HTMLElement} thumbnail - The thumbnail element.
          * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
          * @param {HTMLElement} adMessageElement - The element to show message after ad.
+         * @param {HTMLElement} sliderAdElement - The element for the in-player slider ad.
          * @param {boolean} skipAd - If true, implies ad was skipped or failed, just show video.
          */
-        function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, skipAd = false) {
+        function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, sliderAdElement, skipAd = false) {
             console.log("Cleaning up ad and showing video for:", video.id, "Skip Ad (or failed):", skipAd);
             if (currentAdManager) {
                 currentAdManager.destroy();
@@ -1698,6 +1970,22 @@
             setTimeout(() => {
                 adMessageElement.classList.add('hidden');
             }, 3000); // Hide message after 3 seconds
+
+            // Show and animate slider ad if monetization is enabled for it
+            if (video.monetization?.native && sliderAdElement) { // Using 'native' for simplicity for slider ad monetization check
+                sliderAdElement.classList.remove('hidden');
+                // Clear any existing interval to prevent duplicates
+                if (sliderAdInterval) clearInterval(sliderAdInterval);
+                // Simulate continuous loading/sliding for slider ad
+                sliderAdInterval = setInterval(() => {
+                    if (sliderAdElement.classList.contains('hidden')) {
+                        sliderAdElement.classList.remove('hidden');
+                    } else {
+                        sliderAdElement.classList.add('hidden'); // Briefly hide for a "refresh" effect
+                        setTimeout(() => sliderAdElement.classList.remove('hidden'), 500);
+                    }
+                }, 5000); // Change every 5 seconds
+            }
         }
 
 
@@ -2074,6 +2362,20 @@
                 return;
             }
 
+            // Check ad view criteria
+            const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
+            const userDoc = await getDoc(userProfileRef);
+            const adsViewed = userDoc.exists() ? (userDoc.data().adsViewed || 0) : 0;
+
+            if (adsViewed < 10000) {
+                withdrawErrorMessage.textContent = `You need to have at least 10,000 ad views (${adsViewed}/10,000) to withdraw earnings.`;
+                withdrawErrorMessage.classList.remove('hidden');
+                withdrawSubmitButton.disabled = false;
+                withdrawButtonText.textContent = 'Request Withdrawal';
+                withdrawLoadingSpinner.classList.add('hidden');
+                return;
+            }
+
 
             try {
                 // Simulate API call for withdrawal request
@@ -2100,6 +2402,11 @@
          */
         async function handleSignOut() {
             try {
+                // Clear the slider ad interval if it's active before signing out
+                if (sliderAdInterval) {
+                    clearInterval(sliderAdInterval);
+                    sliderAdInterval = null;
+                }
                 await signOut(auth);
                 console.log("Signed out successfully.");
                 currentUserId = null; // Clear userId after sign out
@@ -2481,3 +2788,4 @@
     </script>
 </body>
 </html>
+
