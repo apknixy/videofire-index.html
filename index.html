@@ -8,16 +8,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google IMA SDK for VAST Ads -->
     <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-    <!-- Font Awesome for Icons (for Shorts/Play button) -->
+    <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlalHtskXv/FzP/rG2wR2M4Xk5pQ6O1Vf8T5mYF1iWk0K9a/8+f+g5mS8X4c6q+g6K0g6G0g6G0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        /* Base styles for Inter font, dark background, and overflow handling */
         body {
-            font-family: 'Inter', sans-serif; /* Using Inter font */
+            font-family: 'Inter', sans-serif;
             background-color: #0d0d0d; /* Deep dark background */
             margin: 0;
             padding: 0;
             overflow: hidden; /* Prevent body scroll, main content will scroll */
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
+
+        /* Hide scrollbar for cleaner look */
         .hide-scrollbar::-webkit-scrollbar {
             display: none; /* For Chrome, Safari, Opera */
         }
@@ -25,14 +31,16 @@
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
         }
-        /* Snap scrolling for video feed */
+
+        /* Snap scrolling for video feed (Shorts style) */
         .snap-mandatory {
             scroll-snap-type: y mandatory;
         }
         .snap-center {
             scroll-snap-align: center;
         }
-        /* Custom animation for ad message */
+
+        /* Custom animation for temporary ad message */
         @keyframes fadeInOut {
             0% { opacity: 0; transform: translateY(-20px); }
             10% { opacity: 1; transform: translateY(0); }
@@ -42,38 +50,40 @@
         .animate-fade-in-out {
             animation: fadeInOut 3s ease-in-out forwards;
         }
-        /* Full screen ad container */
+
+        /* Full screen ad container for IMA SDK (critical for VAST) */
         #ima-ad-container {
             width: 100vw;
             height: 100vh;
-            position: absolute;
+            position: fixed; /* Use fixed to ensure it covers everything */
             top: 0;
             left: 0;
             background-color: black;
-            z-index: 100; /* Ensure it's above everything else */
+            z-index: 200; /* Higher than other modals to ensure full screen dominance */
             display: none; /* Hidden by default */
             align-items: center;
             justify-content: center;
+            flex-direction: column;
         }
-        /* Tailwind classes for iframe responsiveness */
+
+        /* Ensure iframes are responsive */
         iframe {
             max-width: 100%;
             height: auto;
         }
-        /* Custom toggle switch style */
+
+        /* Custom toggle switch styling for monetization options */
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 44px;
             height: 24px;
         }
-
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-
         .toggle-slider {
             position: absolute;
             cursor: pointer;
@@ -86,7 +96,6 @@
             transition: .4s;
             border-radius: 24px;
         }
-
         .toggle-slider:before {
             position: absolute;
             content: "";
@@ -99,21 +108,19 @@
             transition: .4s;
             border-radius: 50%;
         }
-
         input:checked + .toggle-slider {
             background-color: #f97316; /* orange-500 */
         }
-
         input:focus + .toggle-slider {
             box-shadow: 0 0 1px #f97316;
         }
-
         input:checked + .toggle-slider:before {
             -webkit-transform: translateX(20px);
             -ms-transform: translateX(20px);
             transform: translateX(20px);
         }
-        /* Style for Shorts indicator */
+
+        /* Style for Shorts indicator on video cards */
         .short-indicator {
             position: absolute;
             top: 8px;
@@ -128,11 +135,188 @@
             align-items: center;
             gap: 4px;
         }
+
+        /* Header search bar styling */
+        .search-bar-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            background-color: #1a1a1a;
+            border-radius: 20px;
+            padding: 6px 12px;
+            margin: 0 16px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .search-bar-container input {
+            flex-grow: 1;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            padding: 4px 8px;
+        }
+        .search-bar-container button {
+            background-color: transparent;
+            border: none;
+            color: #d1d5db; /* gray-300 */
+            cursor: pointer;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .search-bar-container button:hover {
+            color: white;
+        }
+
+        /* Main content area padding for header and footer */
+        main {
+            padding-top: 70px; /* Space for fixed header */
+            padding-bottom: 60px; /* Space for fixed footer */
+            flex: 1; /* Allow main content to grow and take available space */
+            overflow-y: auto; /* Enable scrolling for main content */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align content to top */
+            width: 100%; /* Ensure it takes full width */
+        }
+
+        /* Specific styling for Shorts video cards to ensure proper aspect ratio and centering */
+        #home-page.shorts-mode #video-feed-container > div {
+            width: 100%;
+            max-width: 400px; /* Max width for shorts on larger screens */
+            height: calc(100vh - 130px); /* Adjust height for shorts, considering header/footer */
+            aspect-ratio: 9/16;
+            margin-left: auto;
+            margin-right: auto;
+            scroll-snap-align: center;
+            border-radius: 1rem; /* rounded-xl */
+            overflow: hidden;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        #home-page.shorts-mode #video-feed-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100%;
+        }
+
+        /* Ensure video player elements fill their container within the card */
+        .video-player-container, .youtube-iframe-wrapper {
+            width: 100%;
+            height: 100%;
+        }
+        .video-player-container iframe {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Ensure video covers iframe */
+        }
+
+        /* Video card hover effects */
+        .video-card-item {
+            transform: scale(1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border-radius: 0.75rem; /* rounded-lg */
+            overflow: hidden;
+        }
+        .video-card-item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3); /* orange-500 shadow */
+        }
+
+        /* Buttons with gradients and shadows */
+        .btn-primary {
+            background-image: linear-gradient(to right, #f97316, #ef4444); /* orange-500 to red-500 */
+            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.4);
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-image: linear-gradient(to right, #ef4444, #f97316);
+            box-shadow: 0 6px 15px rgba(249, 115, 22, 0.6);
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background-color: #4b5563; /* gray-700 */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-secondary:hover {
+            background-color: #6b7280; /* gray-600 */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Modal styling */
+        .modal-content {
+            background-color: #1f2937; /* gray-800 */
+            border-radius: 0.75rem; /* rounded-lg */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            border: 1px solid #374151; /* gray-700 */
+        }
+
+        /* Input field focus styling */
+        input:focus, textarea:focus {
+            border-color: #f97316; /* orange-500 */
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+        }
+
+        /* Footer active button style */
+        .footer-btn-active {
+            color: #f97316; /* orange-500 */
+            background-color: #1f2937; /* gray-800 */
+            box-shadow: 0 -2px 10px rgba(249, 115, 22, 0.2);
+        }
+
+        /* Player container in video card */
+        .video-card-item .player-container {
+            position: relative;
+            width: 100%;
+            /* Fixed height for long videos, 9/16 aspect for shorts */
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            overflow: hidden;
+        }
+        .video-card-item .player-container iframe,
+        .video-card-item .player-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Specific styles for shorts player */
+        #home-page.shorts-mode .video-card-item .player-container {
+            padding-bottom: 177.77%; /* 9:16 Aspect Ratio (16 / 9 * 100) */
+            height: calc(100% - 180px); /* Adjust based on info panel height */
+        }
+        #home-page.shorts-mode .video-card-item .video-info-overlay {
+            height: 180px; /* Fixed height for info overlay */
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        .video-info-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5), transparent);
+            color: white;
+            z-index: 10;
+        }
     </style>
 </head>
-<body class="bg-gray-950 text-white min-h-screen flex flex-col">
+<body class="bg-gray-950 text-white flex flex-col">
 
     <!-- Global Ad Container for IMA SDK (hidden by default) -->
+    <!-- This container is crucial for full-screen VAST ad playback -->
     <div id="ima-ad-container" class="bg-black flex flex-col items-center justify-center">
         <div class="text-white text-lg font-bold mb-4 flex items-center">
             <svg class="animate-pulse h-6 w-6 mr-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
@@ -144,18 +328,22 @@
         </svg>
     </div>
 
-    <!-- Header -->
+    <!-- Header Section -->
     <header class="fixed top-0 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm p-4 flex items-center justify-between shadow-lg z-50 rounded-b-xl border-b border-gray-800">
         <div class="flex items-center space-x-3">
-            <img src="https://placehold.co/40x40/FF7F50/FFFFFF?text=VF" alt="Video Fire Logo" class="rounded-full" />
-            <span class="text-2xl font-extrabold text-orange-500 drop-shadow-md">Video Fire</span>
+            <img src="https://placehold.co/40x40/FF7F50/FFFFFF?text=VF" alt="Video Fire Logo" class="rounded-full shadow-md" />
+            <span class="text-2xl font-extrabold text-orange-500 drop-shadow-lg">Video Fire</span>
         </div>
-        <div class="flex items-center space-x-4">
-            <button id="search-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200" title="Search">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <!-- Search bar in header (hidden by default) -->
+        <div id="header-search-container" class="search-bar-container hidden sm:flex">
+            <input type="text" id="header-search-input" placeholder="Search by title, tags, or channel..." />
+            <button id="clear-search-button" class="text-gray-400 hover:text-white">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <button id="upload-header-button" class="p-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white transition duration-200 shadow-md" title="Upload Video">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        </div>
+        <div id="header-buttons-container" class="flex items-center space-x-4">
+            <button id="search-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200 hidden sm:block" title="Search">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
             </button>
             <button id="withdraw-header-button" class="p-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition duration-200 shadow-md" title="Withdraw">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
@@ -164,48 +352,48 @@
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             </button>
             <div id="user-info" class="flex items-center space-x-2 text-sm text-gray-400 hidden">
-                <span id="display-user-id"></span>
-                <button id="sign-out-button" class="p-1 rounded-md text-xs bg-red-600 hover:bg-red-700 text-white">Sign Out</button>
+                <span id="display-user-id" class="font-medium text-orange-300"></span>
+                <button id="sign-out-button" class="px-3 py-1 rounded-md text-xs bg-red-600 hover:bg-red-700 text-white font-semibold transition duration-200">Sign Out</button>
             </div>
         </div>
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-1 mt-[70px] mb-[60px] flex justify-center items-center">
-        <!-- Home Page (Video Feed) -->
+    <main class="flex-1 w-full flex justify-center items-center overflow-hidden">
+        <!-- Home Page (Main Video Feed for Long and Shorts) -->
         <div id="home-page" class="w-full h-full overflow-y-scroll snap-y snap-mandatory bg-gray-950 hide-scrollbar">
             <div id="video-feed-container" class="w-full h-full">
-                <!-- Videos will be injected here -->
+                <!-- Videos will be dynamically injected here -->
             </div>
-            <div id="home-loading" class="flex flex-col items-center justify-center h-full text-white hidden">
+            <div id="home-loading" class="flex flex-col items-center justify-center h-full text-white text-lg hidden">
                 <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span class="ml-3 mt-2">Loading videos...</span>
+                <span class="ml-3 mt-4">Loading videos...</span>
             </div>
-            <div id="home-error" class="flex items-center justify-center h-full text-red-500 text-center p-4 hidden"></div>
+            <div id="home-error" class="flex items-center justify-center h-full text-red-500 text-center p-4 hidden text-lg"></div>
             <div id="no-videos-message" class="flex items-center justify-center h-full text-white text-lg hidden">
                 No videos available. Upload some!
             </div>
         </div>
 
         <!-- Profile Page -->
-        <div id="profile-page" class="hidden p-6 bg-gray-950 min-h-full w-full overflow-y-auto hide-scrollbar">
+        <div id="profile-page" class="hidden p-6 bg-gray-950 w-full h-full overflow-y-auto hide-scrollbar">
             <div class="max-w-4xl mx-auto">
                 <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8 bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800">
                     <img id="profile-avatar" src="https://placehold.co/100x100/374151/E5E7EB?text=U" alt="Profile Avatar" class="w-24 h-24 rounded-full border-4 border-orange-500 shadow-md" />
                     <div>
                         <h1 id="profile-username" class="text-3xl font-extrabold text-orange-400 mb-1"></h1>
-                        <p class="text-gray-400">User ID: <span id="profile-user-id"></span></p>
-                        <p class="text-gray-300 mt-2">Total Uploads: <span id="profile-uploads-count">0</span></p>
+                        <p class="text-gray-400">User ID: <span id="profile-user-id" class="break-all text-sm"></span></p>
+                        <p class="text-gray-300 mt-2">Total Uploads: <span id="profile-uploads-count" class="font-semibold">0</span></p>
                     </div>
                 </div>
 
                 <!-- Profile Videos/Shorts Tabs -->
                 <div class="flex border-b border-gray-700 mb-6">
-                    <button id="profile-tab-videos" class="px-4 py-2 text-lg font-semibold border-b-2 border-orange-500 text-orange-500">Videos</button>
-                    <button id="profile-tab-shorts" class="px-4 py-2 text-lg font-semibold border-b-2 border-transparent text-gray-400 hover:text-white hover:border-gray-500">Shorts</button>
+                    <button id="profile-tab-videos" class="px-4 py-2 text-lg font-semibold border-b-2 border-orange-500 text-orange-500 transition-colors duration-200">Videos</button>
+                    <button id="profile-tab-shorts" class="px-4 py-2 text-lg font-semibold border-b-2 border-transparent text-gray-400 hover:text-white hover:border-gray-500 transition-colors duration-200">Shorts</button>
                 </div>
 
                 <h2 class="text-2xl font-bold mb-6 text-orange-300">My Uploads</h2>
@@ -215,14 +403,14 @@
                 <p id="no-user-videos-message" class="text-gray-400 text-center py-8 bg-gray-900 rounded-lg border border-gray-800 hidden">
                     You haven't uploaded any videos yet.
                 </p>
-                <div id="profile-loading" class="flex justify-center items-center h-48 text-white hidden">Loading profile...</div>
-                <div id="profile-error" class="text-red-500 text-center mt-8 hidden"></div>
+                <div id="profile-loading" class="flex justify-center items-center h-48 text-white hidden text-lg">Loading profile...</div>
+                <div id="profile-error" class="text-red-500 text-center mt-8 hidden text-lg"></div>
             </div>
         </div>
 
-        <!-- Search Page (Placeholder) -->
+        <!-- Search Page (Placeholder - Actual search handled by updateVideoFeed) -->
         <div id="search-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
-            Search Functionality Coming Soon!
+            Search Functionality Activated in Header!
         </div>
         <!-- People Page (Placeholder) -->
         <div id="people-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
@@ -231,17 +419,17 @@
 
     </main>
 
-    <!-- Footer -->
+    <!-- Footer Navigation -->
     <footer class="fixed bottom-0 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm p-3 flex items-center justify-around shadow-lg z-50 rounded-t-xl border-t border-gray-800">
-        <button id="home-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-orange-500 bg-gray-800">
+        <button id="home-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 footer-btn-active">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7-7-7M19 10v10a1 1 0 01-1 1h-3"></path></svg>
             <span class="text-xs mt-1">Home</span>
         </button>
         <button id="shorts-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
-            <i class="fa-solid fa-play h-6 w-6 text-2xl"></i>
+            <i class="fa-solid fa-bolt h-6 w-6 text-2xl"></i>
             <span class="text-xs mt-1">Shorts</span>
         </button>
-        <button id="upload-footer-button" class="flex flex-col items-center p-2 rounded-full bg-orange-600 hover:bg-orange-700 text-white transition duration-200 shadow-md -mt-6">
+        <button id="upload-footer-button" class="flex flex-col items-center p-2 rounded-full btn-primary shadow-lg -mt-6">
             <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
         </button>
         <button id="people-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
@@ -256,7 +444,7 @@
 
     <!-- Custom Modal Structure -->
     <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[1000] p-4 hidden">
-        <div class="bg-gray-800 p-6 rounded-lg shadow-xl border border-gray-700 max-w-sm w-full text-white text-center">
+        <div class="modal-content p-6 max-w-sm w-full text-center">
             <h3 id="custom-modal-title" class="text-xl font-bold mb-4 text-orange-400"></h3>
             <p id="custom-modal-message" class="mb-6 text-gray-300"></p>
             <div class="flex justify-center space-x-4">
@@ -268,7 +456,7 @@
 
     <!-- Comment Modal Structure -->
     <div id="comment-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-end justify-center z-[900] p-0 hidden">
-        <div class="bg-gray-800 w-full max-w-lg h-3/4 rounded-t-2xl shadow-lg flex flex-col overflow-hidden">
+        <div class="modal-content w-full max-w-lg h-3/4 rounded-t-2xl flex flex-col overflow-hidden">
             <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-900">
                 <h2 class="text-xl font-bold text-orange-400">Comments</h2>
                 <button id="comment-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
@@ -289,7 +477,7 @@
             <div class="p-4 border-t border-gray-700 bg-gray-900">
                 <div class="flex space-x-2">
                     <input type="text" id="new-comment-input" class="flex-1 p-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Add a comment..." />
-                    <button id="add-comment-button" class="px-5 py-3 bg-orange-600 hover:bg-orange-700 rounded-lg font-semibold text-white transition duration-200">Post</button>
+                    <button id="add-comment-button" class="px-5 py-3 btn-primary rounded-lg font-semibold text-white">Post</button>
                 </div>
             </div>
         </div>
@@ -297,7 +485,7 @@
 
     <!-- Upload Video Modal Structure -->
     <div id="upload-video-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[900] p-4 hidden">
-        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
+        <div class="modal-content p-8 w-full max-w-md">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-orange-400">Upload New Video</h2>
                 <button id="upload-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
@@ -307,29 +495,29 @@
             <form id="upload-video-form">
                 <div class="mb-4">
                     <label for="video-url-input" class="block text-gray-300 text-sm font-semibold mb-2">YouTube Video URL:</label>
-                    <input type="text" id="video-url-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., https://youtu.be/WC2FUEmKEu8" required />
+                    <input type="text" id="video-url-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="e.g., https://youtu.be/WC2FUEmKEu8" required />
                 </div>
                 <div class="mb-4">
                     <label for="video-title-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Title (Max 100 words):</label>
-                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Enter video title" maxlength="100" required />
+                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Enter video title" maxlength="100" required />
                 </div>
                 <div class="mb-4">
                     <label for="video-description-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Description:</label>
-                    <textarea id="video-description-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Write about the video"></textarea>
+                    <textarea id="video-description-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Write about the video"></textarea>
                 </div>
                 <div class="mb-6">
                     <label for="video-tags-input" class="block text-gray-300 text-sm font-semibold mb-2">Tags (Comma-separated, Max 200 words):</label>
-                    <input type="text" id="video-tags-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="tag1, tag2, tag3" maxlength="200" />
+                    <input type="text" id="video-tags-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="tag1, tag2, tag3" maxlength="200" />
                 </div>
 
                 <div class="mb-6">
                     <label class="block text-gray-300 text-sm font-semibold mb-2">Visibility:</label>
                     <div class="flex items-center space-x-4">
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="video-visibility" value="public" class="form-radio text-orange-500" checked>
                             <span class="ml-2 text-gray-300">Public (Anyone can view)</span>
                         </label>
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="video-visibility" value="private" class="form-radio text-orange-500">
                             <span class="ml-2 text-gray-300">Private (Only you)</span>
                         </label>
@@ -339,11 +527,11 @@
                 <div class="mb-6">
                     <label class="block text-gray-300 text-sm font-semibold mb-2">Video Type:</label>
                     <div class="flex items-center space-x-4">
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="video-type" value="long" class="form-radio text-orange-500" checked>
                             <span class="ml-2 text-gray-300">Long Video</span>
                         </label>
-                        <label class="inline-flex items-center">
+                        <label class="inline-flex items-center cursor-pointer">
                             <input type="radio" name="video-type" value="short" class="form-radio text-orange-500">
                             <span class="ml-2 text-gray-300">Short Video</span>
                         </label>
@@ -368,7 +556,7 @@
                             </label>
                         </div>
                         <div class="flex items-center justify-between">
-                            <label for="monetize-banner-300x250" class="text-gray-300">Banner Ad (300x250)</label>
+                            <label for="monetize-banner-300x250" class="text-gray-300">Banner Ad (300x250) - Used for in-feed Shorts ads</label>
                             <label class="toggle-switch">
                                 <input type="checkbox" id="monetize-banner-300x250" checked>
                                 <span class="toggle-slider"></span>
@@ -385,7 +573,7 @@
                 </div>
 
                 <p id="upload-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
-                <button type="submit" id="upload-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="submit" id="upload-submit-button" class="w-full py-3 btn-primary rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="upload-button-text">Upload Video</span>
                     <svg id="upload-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -398,7 +586,7 @@
 
     <!-- Withdraw Modal Structure -->
     <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[900] p-4 hidden">
-        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700">
+        <div class="modal-content p-8 w-full max-w-md">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-orange-400">Withdraw Earnings</h2>
                 <button id="withdraw-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
@@ -411,14 +599,14 @@
             <form id="withdraw-form">
                 <div class="mb-4">
                     <label for="withdraw-amount-input" class="block text-gray-300 text-sm font-semibold mb-2">Amount (₹):</label>
-                    <input type="number" id="withdraw-amount-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., 150" min="100" step="any" required />
+                    <input type="number" id="withdraw-amount-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="e.g., 150" min="100" step="any" required />
                 </div>
                 <div class="mb-6">
                     <label for="upi-id-input" class="block text-gray-300 text-sm font-semibold mb-2">Your UPI ID:</label>
-                    <input type="text" id="upi-id-input" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="e.g., yourname@upi" required />
+                    <input type="text" id="upi-id-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="e.g., yourname@upi" required />
                 </div>
                 <p id="withdraw-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
-                <button type="submit" id="withdraw-submit-button" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="submit" id="withdraw-submit-button" class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-md font-bold text-white transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="withdraw-button-text">Request Withdrawal</span>
                     <svg id="withdraw-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -431,35 +619,35 @@
 
     <!-- Authentication Modal Structure -->
     <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[1100] p-4 hidden">
-        <div class="bg-gray-800 p-8 rounded-lg shadow-xl w-full max-w-md border border-gray-700 text-center">
+        <div class="modal-content p-8 w-full max-w-md text-center">
             <h2 id="auth-modal-title" class="text-2xl font-bold text-orange-400 mb-6">Login / Sign Up</h2>
 
-            <div class="flex justify-center mb-6">
-                <button id="auth-tab-login" class="px-6 py-3 rounded-l-lg font-semibold transition duration-200" style="background-color: #f97316; color: white;">Login</button>
-                <button id="auth-tab-signup" class="px-6 py-3 rounded-r-lg font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition duration-200">Sign Up</button>
+            <div class="flex justify-center mb-6 rounded-lg overflow-hidden">
+                <button id="auth-tab-login" class="flex-1 px-6 py-3 font-semibold transition duration-200 bg-orange-500 text-white">Login</button>
+                <button id="auth-tab-signup" class="flex-1 px-6 py-3 font-semibold transition duration-200 bg-gray-700 text-gray-300 hover:bg-gray-600">Sign Up</button>
             </div>
 
             <!-- Login Form -->
             <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Email" required />
-                <input type="password" id="login-password" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Password" required />
+                <input type="email" id="login-email" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Email" required />
+                <input type="password" id="login-password" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Password" required />
                 <p id="login-error-message" class="text-red-500 text-sm hidden"></p>
-                <button type="submit" id="login-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="submit" id="login-submit-button" class="w-full py-3 btn-primary rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="login-button-text">Login</span>
                     <svg id="login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </button>
-                <button type="button" id="forgot-password-button" class="text-gray-400 hover:text-orange-400 text-sm mt-2">Forgot Password?</button>
+                <button type="button" id="forgot-password-button" class="text-gray-400 hover:text-orange-400 text-sm mt-2 transition-colors duration-200">Forgot Password?</button>
             </form>
 
             <!-- Sign Up Form -->
             <form id="signup-form" class="space-y-4 hidden">
-                <input type="email" id="signup-email" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Email" required />
-                <input type="password" id="signup-password" class="w-full p-3 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Password (min 6 characters)" required />
+                <input type="email" id="signup-email" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Email" required />
+                <input type="password" id="signup-password" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Password (min 6 characters)" required />
                 <p id="signup-error-message" class="text-red-500 text-sm hidden"></p>
-                <button type="submit" id="signup-submit-button" class="w-full py-3 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <button type="submit" id="signup-submit-button" class="w-full py-3 btn-primary rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
                     <span id="signup-button-text">Sign Up</span>
                     <svg id="signup-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -485,7 +673,7 @@
                 <span>Sign in with Google</span>
             </button>
 
-            <button id="guest-login-button" class="w-full py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-md transition duration-200 mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+            <button id="guest-login-button" class="w-full py-3 btn-secondary rounded-md mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span id="guest-login-button-text">Continue as Guest</span>
                 <svg id="guest-login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -522,9 +710,11 @@
         let authReady = false; // Flag to indicate if Firebase auth is initialized
         let currentPage = 'home'; // 'home', 'profile', 'search', 'people', 'shorts'
         let currentVideoIdForComments = null;
+        let profileVideoTypeFilter = 'long'; // For profile page: 'long' or 'short'
+        let allVideosCache = []; // Cache for search functionality
 
-        // Firebase Configuration (from provided data)
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        // Firebase Configuration
+        const firebaseConfig = {
             apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",
             authDomain: "videofire-268ff.firebaseapp.com",
             databaseURL: "https://videofire-268ff-default-rtdb.firebaseio.com",
@@ -533,17 +723,20 @@
             messagingSenderId: "910374058927",
             appId: "1:910374058927:web:6add3afdea07cfa2914d5a"
         };
+
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        // VAST Ad Tag URL
-        const vastAdTagUrl = "https://assured-sandwich.com/dsm/Fzz.daGsN/vNZUGoUR/oeRmF9OufZFUylok/PkTDYe0zM/jfQp0zOlTvYDt/NIjTQyyGNQDsQr5tNoycZQseaKWo1lpFdWDU0ix-";
+        // VAST Ad Tag URL - Using a Google sample ad pod tag that should provide skippable ads.
+        // This tag generally provides 2 linear ads in a pod.
+        // The skip button and its timing are controlled by the ad server and Google IMA SDK, not directly by the app.
+        const vastAdTagUrl = "https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/ad_rule_samples&ciu_szs=300x250&ad_rule=1&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpremidpostpod&cmsid=496&vid=short_video&correlator=";
 
         // --- DOM Elements ---
         const homePage = document.getElementById('home-page');
         const profilePage = document.getElementById('profile-page');
-        const searchPage = document.getElementById('search-page');
-        const peoplePage = document.getElementById('people-page');
+        const searchPage = document.getElementById('search-page'); // Placeholder now but remains
+        const peoplePage = document.getElementById('people-page'); // Placeholder now but remains
         const videoFeedContainer = document.getElementById('video-feed-container');
 
         const homeLoading = document.getElementById('home-loading');
@@ -637,6 +830,12 @@
         const guestLoginButtonText = document.getElementById('guest-login-button-text');
         const guestLoginLoadingSpinner = document.getElementById('guest-login-loading-spinner');
 
+        // Header Search Elements
+        const headerSearchContainer = document.getElementById('header-search-container');
+        const headerSearchInput = document.getElementById('header-search-input');
+        const headerButtonsContainer = document.getElementById('header-buttons-container');
+        const clearSearchButton = document.getElementById('clear-search-button');
+
 
         // --- Utility Functions ---
 
@@ -646,6 +845,7 @@
          * @returns {object|null} An object with videoId, embedUrl, thumbnailUrl, or null if invalid.
          */
         function getYouTubeInfo(url) {
+            // Regex to capture video ID from various YouTube URL formats including shorts
             const regExp = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|shorts\/|v\/|)([\w-]{11})(?:\S+)?/g;
             const match = regExp.exec(url);
 
@@ -653,8 +853,10 @@
                 const videoId = match[1];
                 return {
                     videoId: videoId,
-                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${videoId}`, // Autoplay, no controls, loop
-                    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+                    // Autoplay, no controls, modestbranding (no YouTube logo), no related videos, loop.
+                    // For shorts, YouTube iframe automatically adjusts for vertical play.
+                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${videoId}`,
+                    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` // High quality thumbnail
                 };
             }
             return null;
@@ -669,8 +871,8 @@
          * @param {function} onClose - Callback for close button.
          */
         function showCustomModal(title, message, showConfirmButton = false, onConfirm = () => {}, onClose = () => {}) {
-            customModalTitle.textContent = title;
-            customModalMessage.textContent = message;
+            customModalTitle.innerHTML = title; // Use innerHTML to allow for HTML in message
+            customModalMessage.innerHTML = message; // Use innerHTML to allow for HTML in message
             customModalConfirmButton.onclick = () => { onConfirm(); closeModal('custom'); };
             customModalCloseButton.onclick = () => { onClose(); closeModal('custom'); };
 
@@ -697,8 +899,8 @@
                     break;
                 case 'upload':
                     uploadVideoModal.classList.add('hidden');
-                    uploadVideoForm.reset(); // Clear form
-                    // Also reset specific inputs if not covered by form.reset()
+                    uploadVideoForm.reset(); // Clear form fields
+                    // Reset default settings explicitly as form.reset() might not cover toggles/radios
                     videoUrlInput.value = '';
                     videoTitleInput.value = '';
                     videoDescriptionInput.value = '';
@@ -833,8 +1035,9 @@
         /**
          * Shows the specified page and hides others.
          * @param {string} pageName - The name of the page to show ('home', 'profile', 'search', 'people', 'shorts').
+         * @param {string} [videoType='long'] - Optional: video type to load for home/shorts feeds.
          */
-        function showPage(pageName) {
+        function showPage(pageName, videoType = 'long') {
             currentPage = pageName;
             const pages = [homePage, profilePage, searchPage, peoplePage];
             const footerButtons = {
@@ -847,10 +1050,27 @@
 
             pages.forEach(page => page.classList.add('hidden'));
 
+            // Reset footer button styles
             Object.values(footerButtons).forEach(btn => {
-                if(btn) btn.classList.remove('text-orange-500', 'bg-gray-800');
-                if(btn) btn.classList.add('text-gray-400', 'hover:bg-gray-700');
+                if(btn) {
+                    btn.classList.remove('footer-btn-active');
+                    btn.classList.add('text-gray-400', 'hover:bg-gray-700');
+                }
             });
+
+            // Handle header elements visibility based on page
+            // Search bar only shows in header when on 'search' page OR when the search icon is explicitly clicked
+            if (pageName === 'search' || headerSearchContainer.classList.contains('active')) { // 'active' class used for manual toggle
+                headerSearchContainer.classList.remove('hidden');
+                headerButtonsContainer.classList.add('hidden');
+                headerSearchInput.focus();
+            } else {
+                headerSearchContainer.classList.add('hidden');
+                headerButtonsContainer.classList.remove('hidden');
+                headerSearchInput.value = ''; // Clear search on navigation away
+                headerSearchContainer.classList.remove('active'); // Remove active state
+            }
+
 
             if (!authReady || !currentUserId) {
                 console.log("Auth not ready or user not logged in, showing auth modal.");
@@ -859,47 +1079,51 @@
                 return;
             }
 
+            // Set active state for the current footer button
+            const activeFooterButton = footerButtons[pageName === 'shorts' ? 'shorts' : pageName];
+            if (activeFooterButton) {
+                activeFooterButton.classList.add('footer-btn-active');
+                activeFooterButton.classList.remove('text-gray-400', 'hover:bg-gray-700');
+            }
+
+
             switch (pageName) {
                 case 'home':
                     homePage.classList.remove('hidden');
-                    footerButtons['home'].classList.add('text-orange-500', 'bg-gray-800');
-                    footerButtons['home'].classList.remove('text-gray-400', 'hover:bg-gray-700');
+                    homePage.classList.remove('shorts-mode'); // Ensure shorts-mode is off
                     updateVideoFeed('long'); // Load long videos for home feed
                     break;
                 case 'shorts':
                     homePage.classList.remove('hidden'); // Shorts also use homePage container
-                    footerButtons['shorts'].classList.add('text-orange-500', 'bg-gray-800');
-                    footerButtons['shorts'].classList.remove('text-gray-400', 'hover:bg-gray-700');
+                    homePage.classList.add('shorts-mode'); // Add shorts-mode class
                     updateVideoFeed('short'); // Load short videos for shorts feed
                     break;
                 case 'profile':
                     profilePage.classList.remove('hidden');
-                    footerButtons['profile'].classList.add('text-orange-500', 'bg-gray-800');
-                    footerButtons['profile'].classList.remove('text-gray-400', 'hover:bg-gray-700');
-                    updateProfilePage('long'); // Load long videos by user for profile
+                    updateProfilePage(profileVideoTypeFilter); // Use the stored filter
                     break;
                 case 'search':
                     searchPage.classList.remove('hidden');
+                    // Search is now handled directly by header search bar and updateVideoFeed
+                    // The content for searchPage remains a placeholder.
                     break;
                 case 'people':
                     peoplePage.classList.remove('hidden');
-                    footerButtons['people'].classList.add('text-orange-500', 'bg-gray-800');
-                    footerButtons['people'].classList.remove('text-gray-400', 'hover:bg-gray-700');
                     break;
                 default:
                     homePage.classList.remove('hidden'); // Fallback to home
-                    footerButtons['home'].classList.add('text-orange-500', 'bg-gray-800');
-                    footerButtons['home'].classList.remove('text-gray-400', 'hover:bg-gray-700');
+                    homePage.classList.remove('shorts-mode');
                     updateVideoFeed('long');
                     break;
             }
         }
 
         /**
-         * Updates the video feed on the home page based on video type.
+         * Updates the video feed on the home page based on video type and optional search query.
          * @param {string} videoType - 'long' or 'short'.
+         * @param {string} [searchQuery=''] - Optional search query.
          */
-        async function updateVideoFeed(videoType = 'long') {
+        async function updateVideoFeed(videoType = 'long', searchQuery = '') {
             if (!authReady || !db) {
                 console.warn("Firebase not ready for video feed. Aborting updateVideoFeed.");
                 homeLoading.classList.add('hidden');
@@ -913,10 +1137,9 @@
             noVideosMessage.classList.add('hidden');
             videoFeedContainer.innerHTML = ''; // Clear previous videos
 
-            console.log(`Fetching ${videoType} videos from Firestore...`);
+            console.log(`Fetching ${videoType} videos from Firestore with search query: "${searchQuery}"`);
             try {
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
-                // Query based on videoType
                 const q = query(videosColRef, where('videoType', '==', videoType));
 
                 onSnapshot(q, async (snapshot) => {
@@ -929,12 +1152,24 @@
                     videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
                     // Filter videos based on visibility: only public videos from others, or private videos if current user is uploader
-                    const filteredVideoList = videoList.filter(video => {
+                    let filteredVideoList = videoList.filter(video => {
                         if (video.visibility === 'private') {
                             return video.userId === currentUserId; // Only uploader can see their private videos
                         }
                         return true; // Public videos are visible to everyone
                     });
+
+                    // Apply search filter if query exists
+                    if (searchQuery) {
+                        const lowerCaseQuery = searchQuery.toLowerCase();
+                        filteredVideoList = filteredVideoList.filter(video =>
+                            (video.title && video.title.toLowerCase().includes(lowerCaseQuery)) ||
+                            (video.description && video.description.toLowerCase().includes(lowerCaseQuery)) ||
+                            (video.userName && video.userName.toLowerCase().includes(lowerCaseQuery)) ||
+                            (video.tags && video.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery)))
+                        );
+                    }
+                    allVideosCache = filteredVideoList; // Update cache for search bar
 
                     console.log(`Fetched and filtered ${videoType} videos:`, filteredVideoList);
 
@@ -944,10 +1179,31 @@
                         return;
                     }
 
+                    // For Shorts, adjust container classes for vertical layout
+                    if (videoType === 'short') {
+                        videoFeedContainer.classList.add('flex', 'flex-col', 'items-center', 'justify-center');
+                        videoFeedContainer.classList.remove('grid', 'grid-cols-1'); // Remove grid if it was added
+                    } else {
+                        videoFeedContainer.classList.remove('flex', 'flex-col', 'items-center', 'justify-center');
+                        // For long videos, we don't need grid here as each card takes full width in this layout
+                    }
+
                     videoFeedContainer.innerHTML = ''; // Clear existing videos before re-rendering
-                    for (const video of filteredVideoList) {
+                    for (let i = 0; i < filteredVideoList.length; i++) {
+                        const video = filteredVideoList[i];
                         const videoCard = createVideoCardElement(video);
                         videoFeedContainer.appendChild(videoCard);
+
+                        // Inject a banner ad after every N shorts videos IF monetization is ON for banner300x250
+                        // This serves as the "in-feed" ad.
+                        if (video.videoType === 'short' && video.monetization?.banner300x250 && (i + 1) % 3 === 0) { // Every 3 videos
+                            const adDiv = document.createElement('div');
+                            adDiv.className = 'w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 flex-shrink-0 snap-center my-4 text-center p-4';
+                            adDiv.id = `shorts-banner-ad-${video.id}-${i}`;
+                            adDiv.innerHTML = `<span class="block">Shorts In-Feed Ad</span><span class="block text-orange-400 mt-2 text-sm">Ad by definitive-priority.com</span>`;
+                            videoFeedContainer.appendChild(adDiv);
+                            injectSpecificAdScript(adDiv.id, 'banner300x250'); // Use 300x250 for in-feed
+                        }
                     }
                     homeLoading.classList.add('hidden');
                     noVideosMessage.classList.add('hidden');
@@ -959,7 +1215,8 @@
                     homeLoading.classList.add('hidden');
                 });
 
-            } catch (error) {
+            }
+            catch (error) {
                 console.error("Error setting up video feed listener:", error);
                 homeError.textContent = `Error: ${error.message}. Could not set up real-time listener.`;
                 homeError.classList.remove('hidden');
@@ -977,11 +1234,20 @@
             const videoCard = document.createElement('div');
             videoCard.id = `video-card-${video.id}`;
 
-            // Adjust class based on video type for layout
-            videoCard.className = `relative flex-shrink-0 w-full ${video.videoType === 'short' ? 'h-full aspect-[9/16] max-w-[400px] mx-auto' : 'h-full'} snap-center bg-gray-900 rounded-lg overflow-hidden border border-gray-800 shadow-xl`;
+            // Determine class based on video type for responsive layout
+            videoCard.className = `video-card-item relative w-full ${video.videoType === 'short' ? 'h-full aspect-[9/16] max-w-[400px] mx-auto' : 'mb-8'} snap-center bg-gray-900 overflow-hidden border border-gray-800 shadow-xl`;
+            if (video.videoType === 'long') {
+                videoCard.style.paddingBottom = '56.25%'; /* 16:9 aspect ratio for long videos */
+                videoCard.style.position = 'relative';
+                videoCard.style.height = '0';
+            }
+
 
             const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
             const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/1280x720/000000/FFFFFF?text=Invalid+Video+URL';
+
+            // Format upload time
+            const uploadTime = video.timestamp ? new Date(video.timestamp.toDate()).toLocaleString() : 'N/A';
 
             // Extract tags and format them
             const tagsHtml = (video.tags && video.tags.length > 0)
@@ -989,19 +1255,20 @@
                 : '';
 
             videoCard.innerHTML = `
-                <!-- Video Player Container -->
-                <div id="player-container-${video.id}" class="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
-                    <!-- Thumbnail placeholder for ad loading -->
+                <!-- Video Player Container (Thumbnail/Iframe) -->
+                <div id="player-container-${video.id}" class="player-container relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
+                    <!-- Thumbnail placeholder -->
                     <img id="thumbnail-${video.id}" src="${thumbnailUrl}" alt="Video Thumbnail" class="absolute inset-0 w-full h-full object-cover z-10" />
+
                     <!-- Shorts Indicator -->
                     ${video.videoType === 'short' ? `<div class="short-indicator"><i class="fa-solid fa-bolt"></i> Shorts</div>` : ''}
 
-                    <!-- Ad Overlay -->
-                    <div id="ad-overlay-${video.id}" class="absolute inset-0 bg-black bg-opacity-75 flex items-center justify-center z-40 text-white text-lg font-bold hidden">
-                        <svg class="animate-pulse h-6 w-6 mr-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                        <span class="text-gray-300">Ad playing...</span>
-                    </div>
-                    <!-- Ad message after ad finishes -->
+                    <!-- Play button overlay on thumbnail -->
+                    <button id="play-button-${video.id}" class="absolute z-20 bg-black bg-opacity-70 rounded-full p-4 hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-orange-500 focus:ring-opacity-50">
+                        <svg class="h-10 w-10 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+                    </button>
+
+                    <!-- Message after ad finishes (briefly) -->
                     <div id="ad-message-${video.id}" class="absolute top-4 left-1/2 -translate-x-1/2 bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold animate-fade-in-out z-40 hidden">
                         Video playing soon!
                     </div>
@@ -1009,19 +1276,12 @@
                     <div id="youtube-iframe-wrapper-${video.id}" class="w-full h-full hidden"></div>
                 </div>
 
-                <!-- Video Info and Controls -->
-                <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black to-transparent flex flex-col justify-end text-white z-10">
-                    <!-- Conditional Adstreaa Banner 468x60 -->
-                    ${video.monetization?.banner468x60 ? `<div class="mb-4 w-full flex justify-center">
-                        <div id="adstreaa-banner-468x60-${video.id}" class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
-                            Banner 468x60 Ad
-                        </div>
-                    </div>` : ''}
-
-                    <h2 class="text-xl font-bold mb-2 text-orange-300 drop-shadow">${video.title}</h2>
+                <!-- Video Info and Controls Overlay -->
+                <div class="video-info-overlay flex flex-col justify-end text-white z-10">
+                    <h2 class="text-xl font-bold mb-1 text-orange-300 drop-shadow">${video.title}</h2>
                     <p class="text-sm text-gray-300 mb-2 drop-shadow">${video.description || ''}</p>
-                    <div class="flex flex-wrap mb-4">${tagsHtml}</div>
-                    <p class="text-sm text-gray-300 mb-4 drop-shadow">By ${video.userName || 'Anonymous User'} | ${video.viewsCount || 0} views</p>
+                    <div class="flex flex-wrap mb-2">${tagsHtml}</div>
+                    <p class="text-sm text-gray-300 mb-4 drop-shadow">By ${video.userName || 'Anonymous User'} | ${video.viewsCount || 0} views | Uploaded: ${uploadTime}</p>
 
                     <!-- Social Buttons -->
                     <div class="flex items-center space-x-6 text-xl">
@@ -1037,7 +1297,7 @@
                             </svg>
                             <span class="text-sm">Comments</span>
                         </button>
-                        <button class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
+                        <button class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200" onclick="shareVideo('${video.id}', '${video.title}', '${video.youtubeUrl}')">
                             <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.516 3.832a3 3 0 00.512-1.632V12c0-.36-.062-.716-.184-1.049m0 2.098L8.684 10.658m10.158-1.342a3 3 0 110-2.684m0 2.684l-6.516-3.832a3 3 0 00-.512 1.632V12c0 .36.062.716.184 1.049m0-2.098L18.842 8.658"></path>
                             </svg>
@@ -1045,23 +1305,43 @@
                         </button>
                     </div>
 
-                    <!-- Conditional Hilltops Banner 300x250 -->
-                    ${video.monetization?.banner300x250 ? `<div class="mt-4 w-full flex justify-center">
-                        <div id="hilltops-banner-300x250-${video.id}" class="w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700">
-                            Banner 300x250 Ad
+                    <!-- Conditional Ads (banners below video details) -->
+                    ${video.monetization?.banner468x60 ? `<div class="mt-4 w-full flex justify-center">
+                        <div id="adstreaa-banner-468x60-${video.id}" class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 text-center p-2">
+                             Banner 468x60 Ad <br> (by HighPerformanceFormat.com)
                         </div>
                     </div>` : ''}
 
-                     <!-- Conditional Adstreaa Native Ads -->
                     ${video.monetization?.native ? `<div class="mt-4 w-full flex justify-center">
-                        <div id="adstreaa-native-${video.id}" class="w-full max-w-sm bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 p-2 min-h-[100px]">
-                            Native Ad
+                        <div id="adstreaa-native-${video.id}" class="w-full max-w-sm bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 p-2 min-h-[100px] text-center">
+                            Native Ad <br> (Content will load if configured by ad network)
                         </div>
                     </div>` : ''}
                 </div>
             `;
 
             // Attach event listeners after element is in DOM
+            const playButton = videoCard.querySelector(`#play-button-${video.id}`);
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    const playerContainer = videoCard.querySelector(`#player-container-${video.id}`);
+                    const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
+                    const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
+                    const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
+
+                    // Hide play button after click
+                    playButton.classList.add('hidden');
+
+                    // If VAST ads are enabled for this video, play ad first
+                    if (video.monetization?.vast) {
+                        playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage);
+                    } else {
+                        console.log("VAST ads disabled for video:", video.id, ". Playing video directly.");
+                        cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, true); // Skip ad
+                    }
+                });
+            }
+
             videoCard.querySelector(`#like-button-${video.id}`).addEventListener('click', () => handleLike(video.id));
             videoCard.querySelector(`#comment-button-${video.id}`).addEventListener('click', () => openCommentModal(video.id));
 
@@ -1089,91 +1369,84 @@
                 }).catch(error => console.error("Error checking initial like status:", error));
             }
 
-            // Play ad then video
-            const playerContainer = videoCard.querySelector(`#player-container-${video.id}`);
-            const adOverlay = videoCard.querySelector(`#ad-overlay-${video.id}`);
-            const thumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
-            const youtubeIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
-            const adMessage = videoCard.querySelector(`#ad-message-${video.id}`);
-
-            // Inject inline ad scripts into their respective containers conditionally
+            // Inject specific ad scripts into their respective containers conditionally
             if (video.monetization?.banner468x60) {
-                const adstreaaBanner468x60Div = videoCard.querySelector(`#adstreaa-banner-468x60-${video.id}`);
-                if (adstreaaBanner468x60Div) {
-                    const scriptText = `
-                        atOptions = {  
-                            'key' : '7281653bd62d5d460d6daa8793f19c5e',  
-                            'format' : 'iframe',  
-                            'height' : 60,  
-                            'width' : 468,  
-                            'params' : {}  
-                        };  
-                    `;
-                    const script1 = document.createElement('script');
-                    script1.type = 'text/javascript';
-                    script1.textContent = scriptText;
-                    adstreaaBanner468x60Div.appendChild(script1);
-
-                    const script2 = document.createElement('script');
-                    script2.type = 'text/javascript';
-                    script2.src = '//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js';
-                    adstreaaBanner468x60Div.appendChild(script2);
-                }
+                injectSpecificAdScript(`adstreaa-banner-468x60-${video.id}`, 'banner468x60');
             }
-
-            if (video.monetization?.banner300x250) {
-                const hilltopsBanner300x250Div = videoCard.querySelector(`#hilltops-banner-300x250-${video.id}`);
-                if (hilltopsBanner300x250Div) {
-                    const scriptFn = `
-                        (function(zrot){     
-                        var d = document,     
-                        s = d.createElement('script'),     
-                        l = d.scripts[d.scripts.length - 1];     
-                        s.settings = zrot || {};     
-                        s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";     
-                        s.async = true;     
-                        s.referrerPolicy = 'no-referrer-when-downgrade';     
-                        l.parentNode.insertBefore(s, l);     
-                        })({});
-                    `;
-                    const script = document.createElement('script');
-                    script.textContent = scriptFn;
-                    hilltopsBanner300x250Div.appendChild(script);
-                }
+            // For shorts in-feed ads, the script is injected in updateVideoFeed.
+            // For long videos, this is a banner below the video details.
+            if (video.monetization?.banner300x250 && video.videoType === 'long') {
+                injectSpecificAdScript(`adstreaa-banner-300x250-${video.id}`, 'banner300x250');
             }
-
             if (video.monetization?.native) {
-                const adstreaaNativeDiv = videoCard.querySelector(`#adstreaa-native-${video.id}`);
-                if (adstreaaNativeDiv) {
-                    // For dynamic loading, ensure the `invoke.js` is loaded, then trigger the ad for the specific div.
-                    adstreaaNativeDiv.textContent = "Native Ad (Loading)"; // Indicate it's trying to load.
-                    // A real ad network would have a function like this:
-                    // if (window.adstreaa && window.adstreaa.loadAd) {
-                    //    window.adstreaa.loadAd(adstreaaNativeDiv.id);
-                    // }
-                    // Since a generic native ad script was loaded globally, it might just populate divs with specific IDs.
-                    // For now, this placeholder indicates it's trying.
-                }
+                injectSpecificAdScript(`adstreaa-native-${video.id}`, 'native');
             }
-
-
-            // Play VAST ad if enabled for this video
-            if (video.monetization?.vast) {
-                playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessage);
-            } else {
-                console.log("VAST ads disabled for video:", video.id, ". Playing video directly.");
-                cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessage, true); // Skip ad
-            }
-
 
             return videoCard;
         }
+
+        /**
+         * Injects ad scripts into specific div IDs.
+         * This is a utility to encapsulate ad script loading.
+         * @param {string} divId The ID of the div where the ad should be injected.
+         * @param {string} adType The type of ad ('banner468x60', 'banner300x250', 'native').
+         */
+        function injectSpecificAdScript(divId, adType) {
+            const adDiv = document.getElementById(divId);
+            if (!adDiv) {
+                console.warn(`Ad div with ID ${divId} not found.`);
+                return;
+            }
+
+            // Clear existing content to prevent duplicate ad loads on re-render
+            adDiv.innerHTML = ''; // Clear placeholder text
+
+            if (adType === 'banner468x60') {
+                const script1 = document.createElement('script');
+                script1.type = 'text/javascript';
+                script1.textContent = `
+                    var atOptions = {
+                        'key' : '7281653bd62d5d460d6daa8793f19c5e',
+                        'format' : 'iframe',
+                        'height' : 60,
+                        'width' : 468,
+                        'params' : {}
+                    };
+                    document.write('<scr' + 'ipt type="text/javascript" src="//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js"></scr' + 'ipt>');
+                `;
+                adDiv.appendChild(script1);
+
+            } else if (adType === 'banner300x250') {
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.textContent = `
+                    (function(zrot){
+                        var d = document,
+                        s = d.createElement('script'),
+                        l = d.scripts[d.scripts.length - 1];
+                        s.settings = zrot || {};
+                        s.src = "//definitive-priority.com/bOX/VYsBd.Golu0eYpWdco/reFmA9WujZeU/lTkBPQTiYH0IMrj_Q_1BNsjJI-tTNujcQ/yrNSDxU/2SMowA";
+                        s.async = true;
+                        s.referrerPolicy = 'no-referrer-when-downgrade';
+                        l.parentNode.insertBefore(s, l);
+                    })({});
+                `;
+                adDiv.appendChild(script);
+            } else if (adType === 'native') {
+                // For native ads, the specific ad network's setup would go here.
+                // This is a placeholder.
+                adDiv.textContent = "Native Ad (Content will load if configured by ad network)";
+            }
+        }
+
 
         /**
          * Updates the profile page with user-specific data and filters videos by type.
          * @param {string} videoTypeFilter - 'long' or 'short' to filter user's uploads.
          */
         async function updateProfilePage(videoTypeFilter = 'long') {
+            profileVideoTypeFilter = videoTypeFilter; // Store the current filter for future updates
+
             if (!authReady || !db || !currentUserId) {
                 console.warn("Firebase or user not ready for profile page. Aborting updateProfilePage.");
                 profileLoading.classList.add('hidden');
@@ -1198,7 +1471,7 @@
                 document.getElementById('profile-avatar').src = `https://placehold.co/100x100/374151/E5E7EB?text=${username.charAt(0)}`;
 
                 // Update tab active state
-                if (videoTypeFilter === 'long') {
+                if (profileVideoTypeFilter === 'long') {
                     profileTabVideos.classList.add('border-orange-500', 'text-orange-500');
                     profileTabVideos.classList.remove('border-transparent', 'text-gray-400', 'hover:text-white', 'hover:border-gray-500');
                     profileTabShorts.classList.remove('border-orange-500', 'text-orange-500');
@@ -1213,7 +1486,7 @@
 
                 // Fetch videos uploaded by this user, filtered by videoType
                 const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
-                const q = query(videosColRef, where('userId', '==', currentUserId), where('videoType', '==', videoTypeFilter));
+                const q = query(videosColRef, where('userId', '==', currentUserId), where('videoType', '==', profileVideoTypeFilter));
 
                 onSnapshot(q, (snapshot) => {
                     let userVideos = snapshot.docs.map(doc => ({
@@ -1224,9 +1497,7 @@
                     // Client-side sort by timestamp (descending)
                     userVideos.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
 
-                    profileUploadsCount.textContent = userVideos.length; // This count is for the filtered view.
-                    // If you want total uploads regardless of filter, fetch all and then filter for display.
-                    // For now, this shows count of currently displayed videos.
+                    profileUploadsCount.textContent = userVideos.length;
                     userVideosContainer.innerHTML = ''; // Clear previous
 
                     if (userVideos.length === 0) {
@@ -1275,13 +1546,12 @@
         /**
          * Plays a VAST ad using Google IMA SDK before showing the video.
          * @param {object} video - The video data.
-         * @param {HTMLElement} playerContainer - The main container for video/ad.
-         * @param {HTMLElement} adOverlay - The element to show during ad playback.
+         * @param {HTMLElement} playerContainer - The main container for video/ad (within the card).
          * @param {HTMLElement} thumbnail - The thumbnail element.
          * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
          * @param {HTMLElement} adMessageElement - The element to show message after ad.
          */
-        function playVideoWithAd(video, playerContainer, adOverlay, thumbnail, youtubeIframeWrapper, adMessageElement) {
+        function playVideoWithAd(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement) {
             console.log("Attempting to play ad for video:", video.id);
 
             // Ensure IMA SDK is loaded
@@ -1298,13 +1568,13 @@
                 currentAdManager = null;
             }
 
-            // Show global IMA ad container and hide local video player elements temporarily
-            imaAdContainer.style.display = 'flex'; // Show the global ad container
-            playerContainer.style.display = 'none'; // Hide current video card's player container during global ad
-
+            // Show global IMA ad container, covering the entire display for ad playback
+            imaAdContainer.style.display = 'flex';
+            // We need to hide the main content area so that the global ad container covers everything.
+            document.querySelector('main').classList.add('hidden');
+            
             isAdPlaying = true;
-            adOverlay.classList.remove('hidden'); // Show local ad overlay too, as a visual indicator
-            thumbnail.classList.remove('hidden');
+            thumbnail.classList.add('hidden'); // Hide thumbnail once play button is clicked and ad starts
             youtubeIframeWrapper.classList.add('hidden');
             adMessageElement.classList.add('hidden');
 
@@ -1325,6 +1595,7 @@
                 const adsManager = adsManagerLoadedEvent.getAdsManager();
                 currentAdManager = adsManager;
 
+                // Add event listeners for the AdsManager itself
                 adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, (adErrorEvent) => {
                     console.error("Ad manager error:", adErrorEvent.getError().getMessage());
                     cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, true); // True to skip ad
@@ -1343,10 +1614,16 @@
                     console.log("Ad break ready. Starting ad playback.");
                 }, false);
 
+                adsManager.addEventListener(google.ima.AdEvent.Type.AD_SKIPPED, () => {
+                    console.log("Ad SKIPPED event. Proceeding to video.");
+                    cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, false); // Ad was skipped, proceed
+                }, false);
+
 
                 try {
+                    // This initializes the AdsManager with the dimensions of the IMA ad container.
                     adsManager.init(imaAdContainer.offsetWidth, imaAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
-                    adsManager.start();
+                    adsManager.start(); // Start ad playback
                     console.log("VAST ad playback initiated.");
                 } catch (adError) {
                     console.error("AdsManager could not be started:", adError);
@@ -1357,6 +1634,7 @@
             // Request ads
             const adsRequest = new google.ima.AdsRequest();
             adsRequest.adTagUrl = vastAdTagUrl;
+            // Set linear and non-linear ad slot dimensions to match the global IMA ad container
             adsRequest.linearAdSlotWidth = imaAdContainer.offsetWidth;
             adsRequest.linearAdSlotHeight = imaAdContainer.offsetHeight;
             adsRequest.nonLinearAdSlotWidth = imaAdContainer.offsetWidth;
@@ -1371,24 +1649,23 @@
         /**
          * Cleans up ad manager and reveals the video player.
          * @param {object} video - The video data.
-         * @param {HTMLElement} playerContainer - The main container for video/ad.
+         * @param {HTMLElement} playerContainer - The main container for video/ad (within the card).
          * @param {HTMLElement} thumbnail - The thumbnail element.
          * @param {HTMLElement} youtubeIframeWrapper - The wrapper for the YouTube iframe.
          * @param {HTMLElement} adMessageElement - The element to show message after ad.
          * @param {boolean} skipAd - If true, implies ad was skipped or failed, just show video.
          */
         function cleanupAdAndShowVideo(video, playerContainer, thumbnail, youtubeIframeWrapper, adMessageElement, skipAd = false) {
-            console.log("Cleaning up ad and showing video for:", video.id, "Skip Ad:", skipAd);
+            console.log("Cleaning up ad and showing video for:", video.id, "Skip Ad (or failed):", skipAd);
             if (currentAdManager) {
                 currentAdManager.destroy();
                 currentAdManager = null;
             }
             imaAdContainer.style.display = 'none'; // Hide the global ad container
-            playerContainer.style.display = 'flex'; // Show the video card's player container
+            document.querySelector('main').classList.remove('hidden'); // Show the main content area again
 
             isAdPlaying = false;
-            adOverlay.classList.add('hidden'); // Hide local ad overlay
-            thumbnail.classList.add('hidden'); // Hide thumbnail
+            thumbnail.classList.add('hidden'); // Keep thumbnail hidden
             youtubeIframeWrapper.classList.remove('hidden'); // Show iframe wrapper
 
             // Add YouTube iframe if not already present or if ad was skipped/failed
@@ -1408,18 +1685,15 @@
                     youtubeIframeWrapper.innerHTML = `<div class="text-red-500 text-center">Invalid YouTube URL</div>`;
                     console.error("Invalid YouTube URL for video:", video.id, video.youtubeUrl);
                 }
-            } else if (skipAd) {
-                 // If ad was skipped/failed and iframe already exists, ensure it starts playing
-                 // This is a common issue with YouTube embeds: they might not autoplay if the iframe
-                 // existed but was hidden. Reloading or manually triggering play is tricky.
-                 // The autoplay parameter in embedUrl should handle it, but a re-render can help.
+            } else {
+                 // If iframe already exists, re-set its src to force autoplay/reload in case it was paused or not fully loaded
                  const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
                  if (youTubeInfo) {
-                    iframe.src = youTubeInfo.embedUrl; // Re-set src to force autoplay/reload
+                    iframe.src = youTubeInfo.embedUrl;
                  }
             }
 
-
+            // Display "Video playing soon!" message briefly
             adMessageElement.classList.remove('hidden');
             setTimeout(() => {
                 adMessageElement.classList.add('hidden');
@@ -1427,7 +1701,7 @@
         }
 
 
-        // --- Social Interactions (Like, Comment) ---
+        // --- Social Interactions (Like, Comment, Share) ---
 
         /**
          * Handles the like/unlike action for a video.
@@ -1588,6 +1862,37 @@
             } catch (error) {
                 console.error("Error adding comment:", error);
                 showCustomModal('Error', `Failed to add comment: ${error.message}`, false);
+            }
+        }
+
+        /**
+         * Shares a video link externally using the Web Share API.
+         * @param {string} videoId - The ID of the video to share.
+         * @param {string} title - The title of the video.
+         * @param {string} url - The YouTube URL of the video.
+         */
+        function shareVideo(videoId, title, url) {
+            // For a production app, you might want to generate a unique shareable link for your app
+            // e.g., `https://yourapp.com/video/${videoId}`
+            // For now, we'll share the YouTube URL itself or a generic app link.
+            const shareUrl = url; // Directly share the YouTube URL for convenience
+
+            if (navigator.share) {
+                navigator.share({
+                    title: `Check out this video on Video Fire: ${title}`,
+                    text: `Watch "${title}" now on Video Fire!`,
+                    url: shareUrl
+                }).then(() => {
+                    console.log('Video shared successfully!');
+                }).catch((error) => {
+                    console.error('Error sharing video:', error);
+                    showCustomModal('Share Failed', `Could not share video: ${error.message}`, false);
+                });
+            } else {
+                // Fallback for browsers that do not support Web Share API
+                // Provide a text area to copy the link
+                const fallbackMessage = `Sharing is not supported in your browser. You can manually copy the video link below: <br><br> <textarea class="w-full bg-gray-700 text-white rounded p-2 text-sm" rows="3" readonly>${shareUrl}</textarea>`;
+                showCustomModal('Share Not Supported', fallbackMessage, false);
             }
         }
 
@@ -1815,17 +2120,17 @@
          */
         function switchAuthTab(type) {
             if (type === 'login') {
-                authTabLogin.style.backgroundColor = '#f97316';
-                authTabLogin.style.color = 'white';
-                authTabSignup.style.backgroundColor = 'rgb(75 85 99)'; // gray-700
-                authTabSignup.style.color = 'rgb(209 213 219)'; // gray-300
+                authTabLogin.classList.add('bg-orange-500', 'text-white');
+                authTabLogin.classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
+                authTabSignup.classList.remove('bg-orange-500', 'text-white');
+                authTabSignup.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
                 loginForm.classList.remove('hidden');
                 signupForm.classList.add('hidden');
             } else { // type === 'signup'
-                authTabSignup.style.backgroundColor = '#f97316';
-                authTabSignup.style.color = 'white';
-                authTabLogin.style.backgroundColor = 'rgb(75 85 99)'; // gray-700
-                authTabLogin.style.color = 'rgb(209 213 219)'; // gray-300
+                authTabSignup.classList.add('bg-orange-500', 'text-white');
+                authTabSignup.classList.remove('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
+                authTabLogin.classList.remove('bg-orange-500', 'text-white');
+                authTabLogin.classList.add('bg-gray-700', 'text-gray-300', 'hover:bg-gray-600');
                 signupForm.classList.remove('hidden');
                 loginForm.classList.add('hidden');
             }
@@ -2072,6 +2377,13 @@
         }
 
 
+        // --- Search Functionality ---
+        function performSearch(query) {
+            const currentVideoType = currentPage === 'shorts' ? 'short' : 'long';
+            updateVideoFeed(currentVideoType, query);
+        }
+
+
         // --- Event Listeners ---
         document.addEventListener('DOMContentLoaded', () => {
             console.log("DOM Content Loaded. Starting app initialization.");
@@ -2082,16 +2394,43 @@
             injectExternalAdScripts();
 
             // Header Button Listeners
-            document.getElementById('search-button').addEventListener('click', () => showPage('search'));
+            // Toggle search bar visibility
+            document.getElementById('search-button').addEventListener('click', () => {
+                if (headerSearchContainer.classList.contains('hidden')) {
+                    headerSearchContainer.classList.remove('hidden');
+                    headerSearchContainer.classList.add('active'); // Mark as active for persistent visibility
+                    headerButtonsContainer.classList.add('hidden');
+                    headerSearchInput.focus();
+                } else {
+                    // If search bar is visible, clicking search button again hides it and clears search
+                    headerSearchContainer.classList.add('hidden');
+                    headerSearchContainer.classList.remove('active'); // Remove active state
+                    headerButtonsContainer.classList.remove('hidden');
+                    headerSearchInput.value = ''; // Clear search on close
+                    // Re-fetch videos without search filter
+                    const currentVideoType = currentPage === 'shorts' ? 'short' : 'long';
+                    updateVideoFeed(currentVideoType);
+                }
+            });
+            clearSearchButton.addEventListener('click', () => {
+                headerSearchInput.value = '';
+                const currentVideoType = currentPage === 'shorts' ? 'short' : 'long';
+                updateVideoFeed(currentVideoType); // Clear search filter
+                headerSearchInput.focus();
+            });
+            headerSearchInput.addEventListener('input', (e) => {
+                performSearch(e.target.value);
+            });
+
+
             document.getElementById('profile-header-button').addEventListener('click', () => showPage('profile'));
-            document.getElementById('upload-header-button').addEventListener('click', openUploadModal);
+            document.getElementById('upload-footer-button').addEventListener('click', openUploadModal); // Upload button moved to footer
             document.getElementById('withdraw-header-button').addEventListener('click', openWithdrawModal);
             signOutButton.addEventListener('click', handleSignOut);
 
             // Footer Button Listeners
             document.getElementById('home-footer-button').addEventListener('click', () => showPage('home'));
             document.getElementById('shorts-footer-button').addEventListener('click', () => showPage('shorts')); // New Shorts button
-            document.getElementById('upload-footer-button').addEventListener('click', openUploadModal);
             document.getElementById('people-footer-button').addEventListener('click', () => showPage('people'));
             document.getElementById('profile-footer-button').addEventListener('click', () => showPage('profile'));
 
