@@ -3,443 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Fire</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google IMA SDK for VAST Ads -->
-    <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlalHtskXv/FzP/rG2wR2M4Xk5pQ6O1Vf8T5mYF1iWk0K9a/8+f+g5mS8X4c6q+g6K0g6G0g6G0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <title>VideoApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Base styles for Inter font, dark background, and overflow handling */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0d0d0d; /* Deep dark background */
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Prevent body scroll, main content will scroll */
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        /* Hide scrollbar for cleaner look */
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none; /* For Chrome, Safari, Opera */
-        }
-        .hide-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
-        }
-
-        /* Snap scrolling for video feed (Shorts style) */
-        .snap-mandatory {
-            scroll-snap-type: y mandatory;
-        }
-        .snap-center {
-            scroll-snap-align: center;
-        }
-
-        /* Custom animation for temporary ad message */
-        @keyframes fadeInOut {
-            0% { opacity: 0; transform: translateY(-20px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); }
-        }
-        .animate-fade-in-out {
-            animation: fadeInOut 3s ease-in-out forwards;
-        }
-
-        /* Full screen ad container for IMA SDK (critical for VAST) */
-        #ima-ad-container {
-            width: 100vw;
-            height: 100vh;
-            position: fixed; /* Use fixed to ensure it covers everything */
-            top: 0;
-            left: 0;
-            background-color: black;
-            z-index: 200; /* Higher than other modals to ensure full screen dominance */
-            display: none; /* Hidden by default */
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        /* Ensure iframes are responsive */
-        iframe {
-            max-width: 100%;
-            height: auto;
-        }
-
-        /* Custom toggle switch styling for monetization options */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-        }
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #4a5568; /* gray-600 */
-            -webkit-transition: .4s;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            -webkit-transition: .4s;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .toggle-slider {
-            background-color: #f97316; /* orange-500 */
-        }
-        input:focus + .toggle-slider {
-            box-shadow: 0 0 1px #f97316;
-        }
-        input:checked + .toggle-slider:before {
-            -webkit-transform: translateX(20px);
-            -ms-transform: translateX(20px);
-            transform: translateX(20px);
-        }
-
-        /* Style for Shorts indicator on video cards */
-        .short-indicator {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Header search bar styling */
-        .search-bar-container {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            max-width: 500px;
+            font-family: Arial, sans-serif;
             background-color: #1a1a1a;
-            border-radius: 20px;
-            padding: 6px 12px;
-            margin: 0 16px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+            color: #fff;
         }
-        .search-bar-container input {
-            flex-grow: 1;
-            background-color: transparent;
-            border: none;
-            outline: none;
-            color: white;
-            padding: 4px 8px;
-        }
-        .search-bar-container button {
-            background-color: transparent;
-            border: none;
-            color: #d1d5db; /* gray-300 */
-            cursor: pointer;
-            padding: 4px;
-            transition: color 0.2s;
-        }
-        .search-bar-container button:hover {
-            color: white;
-        }
-
-        /* Main content area padding for header and footer */
-        main {
-            padding-top: 70px; /* Space for fixed header */
-            padding-bottom: 60px; /* Space for fixed footer */
-            flex: 1; /* Allow main content to grow and take available space */
-            overflow-y: auto; /* Enable scrolling for main content */
-            display: flex;
-            justify-content: center;
-            align-items: flex-start; /* Align content to top */
-            width: 100%; /* Ensure it takes full width */
-        }
-
-        /* Specific styling for Shorts video cards to ensure proper aspect ratio and centering */
-        #home-page.shorts-mode #video-feed-container > div {
-            width: 100%;
-            max-width: 400px; /* Max width for shorts on larger screens */
-            height: calc(100vh - 130px); /* Adjust height for shorts, considering header/footer */
-            aspect-ratio: 9/16;
-            margin-left: auto;
-            margin-right: auto;
-            scroll-snap-align: start; /* snap-center to snap-start for smoother reel-like scroll */
-            border-radius: 1rem; /* rounded-xl */
-            overflow: hidden;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        #home-page.shorts-mode #video-feed-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100%;
-            scroll-snap-type: y mandatory; /* Enable snap scrolling for shorts */
-            overflow-y: scroll; /* Ensure shorts container is scrollable */
-        }
-
-        /* Ensure video player elements fill their container within the card */
-        .video-player-container, .youtube-iframe-wrapper {
-            width: 100%;
-            height: 100%;
-        }
-        .video-player-container iframe {
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* Ensure video covers iframe */
-        }
-
-        /* Video card hover effects */
-        .video-card-item {
-            transform: scale(1);
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-            border-radius: 0.75rem; /* rounded-lg */
-            overflow: hidden;
-        }
-        .video-card-item:hover {
-            transform: scale(1.02);
-            box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3); /* orange-500 shadow */
-        }
-
-        /* Buttons with gradients and shadows */
-        .btn-primary {
-            background-image: linear-gradient(to right, #f97316, #ef4444); /* orange-500 to red-500 */
-            box-shadow: 0 4px 10px rgba(249, 115, 22, 0.4);
-            transition: all 0.3s ease-in-out;
-        }
-        .btn-primary:hover {
-            background-image: linear-gradient(to right, #ef4444, #f97316);
-            box-shadow: 0 6px 15px rgba(249, 115, 22, 0.6);
-            transform: translateY(-2px);
-        }
-        .btn-secondary {
-            background-color: #4b5563; /* gray-700 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-            transition: all 0.3s ease-in-out;
-        }
-        .btn-secondary:hover {
-            background-color: #6b7280; /* gray-600 */
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transform: translateY(-1px);
-        }
-
-        /* Modal styling */
-        .modal-content {
-            background-color: #1f2937; /* gray-800 */
-            border-radius: 0.75rem; /* rounded-lg */
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-            border: 1px solid #374151; /* gray-700 */
-        }
-
-        /* Input field focus styling */
-        input:focus, textarea:focus {
-            border-color: #f97316; /* orange-500 */
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
-        }
-
-        /* Footer active button style */
-        .footer-btn-active {
-            color: #f97316; /* orange-500 */
-            background-color: #1f2937; /* gray-800 */
-            box-shadow: 0 -2px 10px rgba(249, 115, 22, 0.2);
-        }
-
-        /* Player container in video card */
-        .video-card-item .player-container {
-            position: relative;
-            width: 100%;
-            /* Fixed height for long videos, 9/16 aspect for shorts */
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-        }
-        .video-card-item .player-container iframe,
-        .video-card-item .player-container img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Specific styles for shorts player */
-        #home-page.shorts-mode .video-card-item .player-container {
-            padding-bottom: 177.77%; /* 9:16 Aspect Ratio (16 / 9 * 100) */
-            height: calc(100% - 180px); /* Adjust based on info panel height */
-        }
-        #home-page.shorts-mode .video-card-item .video-info-overlay {
-            height: 180px; /* Fixed height for info overlay */
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-
-        .video-info-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
             padding: 1rem;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.5), transparent);
-            color: white;
-            z-index: 10;
         }
-
-        /* Full-screen video player (for single video view) */
-        #single-video-player-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #0d0d0d; /* Same as body */
-            z-index: 150; /* Above main content, below modals */
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto; /* Enable scroll for recommended videos/comments */
-        }
-
-        #single-video-player-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 aspect ratio */
-            height: 0;
-            overflow: hidden;
-            background-color: black;
-        }
-
-        #single-video-player-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        /* Style for the small slider ad within the video player */
-        .in-player-slider-ad {
-            position: absolute;
-            bottom: 10px; /* Adjust as needed */
-            right: 10px; /* Adjust as needed */
-            width: 120px; /* Small size */
-            height: 90px; /* Small size, e.g., 4:3 aspect */
-            background-color: rgba(0, 0, 0, 0.7);
+        .video-card {
+            background-color: #2a2a2a;
             border-radius: 8px;
             overflow: hidden;
-            z-index: 20; /* Above video content */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-        }
-        .in-player-slider-ad img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .in-player-slider-ad .ad-label {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            background-color: rgba(249, 115, 22, 0.8);
-            color: white;
-            font-size: 0.6rem;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
-
-        /* Professional Look Enhancements */
-        .video-thumbnail-wrapper {
-            position: relative;
-            overflow: hidden;
-            border-radius: 0.5rem; /* rounded-lg */
             cursor: pointer;
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.2s;
+            position: relative; /* For ad placement */
         }
-        .video-thumbnail-wrapper:hover {
-            transform: scale(1.03);
+        .video-card:hover {
+            transform: translateY(-5px);
         }
-        .video-thumbnail {
-            width: 100%;
-            height: 200px; /* Fixed height for consistent thumbnails */
-            object-fit: cover;
-            border-radius: 0.5rem;
-        }
-        .video-metadata-line {
-            display: flex;
-            align-items: center;
-            color: #9ca3af; /* gray-400 */
-            font-size: 0.875rem; /* text-sm */
-            margin-top: 4px;
-        }
-        .video-metadata-line span {
-            margin-left: 8px; /* space after channel name */
-        }
-        .video-metadata-line img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        .home-video-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid for videos */
-            gap: 1.5rem; /* gap-6 */
-            padding: 1.5rem;
-            width: 100%;
-            max-width: 1200px; /* Max width for content */
-            margin: auto;
-        }
-
-        /* Short video grid */
-        .shorts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive grid for shorts */
-            gap: 1rem;
-            padding: 1rem;
-            width: 100%;
-            max-width: 1000px;
-            margin: auto;
-        }
-        .shorts-grid .short-item {
+        .thumbnail-container {
             position: relative;
             width: 100%;
-            padding-bottom: 177.77%; /* 9:16 aspect ratio */
-            height: 0;
-            overflow: hidden;
-            border-radius: 0.75rem;
-            background-color: black;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
         }
-        .shorts-grid .short-item video {
+        .thumbnail-container img {
             position: absolute;
             top: 0;
             left: 0;
@@ -447,1698 +42,1473 @@
             height: 100%;
             object-fit: cover;
         }
-        .shorts-grid .short-overlay {
+        .shorts-thumbnail-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 177.77%; /* 9:16 Aspect Ratio */
+            background-color: #000;
+        }
+        .shorts-thumbnail-container img {
             position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .shorts-reel {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: calc(100vh - 120px); /* Adjust based on header/footer */
+            -webkit-overflow-scrolling: touch;
+        }
+        .shorts-reel > div {
+            scroll-snap-align: start;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #2a2a2a;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .video-player-modal .modal-content {
+            width: 95%;
+            max-width: 900px; /* Wider for better video view */
+            background: none;
+            padding: 0;
+        }
+        .video-player-iframe-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            background-color: #000;
+        }
+        .video-player-iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+        .ad-container {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .video-details {
+            padding: 1rem;
+        }
+        .video-details h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .video-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .video-actions button {
+            background-color: #3a3a3a;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .bottom-nav {
+            position: fixed;
             bottom: 0;
             left: 0;
-            right: 0;
-            padding: 0.75rem;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            color: white;
-            z-index: 1;
-        }
-        .shorts-grid .short-actions {
+            width: 100%;
+            background-color: #2a2a2a;
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            position: absolute;
-            right: 0.75rem;
-            bottom: 1rem;
-            z-index: 2;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            border-top: 1px solid #3a3a3a;
+            z-index: 50;
         }
-        .shorts-grid .short-actions button {
-            background-color: rgba(0,0,0,0.6);
-            border-radius: 50%;
-            padding: 0.5rem;
-            color: white;
+        .bottom-nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
+            color: #aaa;
             font-size: 0.75rem;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
         }
-        .shorts-grid .short-actions button i {
+        .bottom-nav-item.active {
+            color: #fff;
+        }
+        .bottom-nav-item i {
+            font-size: 1.25rem;
+            margin-bottom: 0.25rem;
+        }
+        .upload-button-nav {
+            background-color: #ff0000;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            color: #fff;
+            position: relative;
+            top: -10px; /* Lift it slightly above the nav bar */
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.5);
+        }
+        .login-modal-content {
+            background-color: #2a2a2a;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 1rem;
+            color: #fff;
             font-size: 1.2rem;
-            margin-bottom: 0.2rem;
         }
-
-        /* Search bar for smaller screens (mobile) */
-        @media (max-width: 640px) {
-            #header-search-container {
-                display: flex !important; /* Always show search bar on small screens */
-                flex-grow: 1;
-                margin-left: 0;
-                order: 2; /* Put it below logo on small screens if layout changes */
-            }
-            #header-buttons-container {
-                display: none !important; /* Hide other header buttons on small screens */
-            }
-            .header-left {
-                width: auto;
-            }
-            header {
-                flex-wrap: wrap;
-                justify-content: space-between;
-                padding-bottom: 0.5rem;
-            }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .auth-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .auth-container input {
+            background-color: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            padding: 0.75rem;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .auth-container button {
+            background-color: #ff0000;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #fff;
+            transition: background-color 0.2s;
+        }
+        .auth-container button:hover {
+            background-color: #cc0000;
+        }
+        .google-signin-button {
+            background-color: #4285f4 !important; /* Google Blue */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .google-signin-button:hover {
+            background-color: #357ae8 !important;
+        }
+        .guest-button {
+            background-color: #555 !important;
+        }
+        .guest-button:hover {
+            background-color: #444 !important;
+        }
+        .ad-banner-468x60 {
+            width: 468px;
+            height: 60px;
+            background-color: #333;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            margin: 10px auto;
+        }
+        .ad-banner-300x250 {
+            width: 300px;
+            height: 250px;
+            background-color: #333;
+            color: #eee;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            border-radius: 4px;
+            margin: 10px auto;
+        }
+        .ad-native {
+            background-color: #2b2b2b;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 10px auto;
+            max-width: 400px;
+        }
+        .ad-native .ad-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .ad-native .ad-description {
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+        .ad-native .ad-cta {
+            background-color: #007bff;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        /* Style for tags */
+        .tag-pill {
+            display: inline-block;
+            background-color: #3a3a3a;
+            color: #bbb;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        #commentSection {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #333;
+        }
+        #commentInput {
+            width: 100%;
+            background-color: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            padding: 0.75rem;
+            border-radius: 4px;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        #commentButton {
+            background-color: #ff0000;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            color: #fff;
+            font-weight: bold;
+        }
+        .comment-item {
+            background-color: #2b2b2b;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+        .comment-item strong {
+            color: #ff0000;
         }
     </style>
 </head>
-<body class="bg-gray-950 text-white flex flex-col">
+<body class="bg-gray-900 text-white">
 
-    <!-- Global Ad Container for IMA SDK (hidden by default) -->
-    <!-- This container is crucial for full-screen VAST ad playback -->
-    <div id="ima-ad-container" class="bg-black flex flex-col items-center justify-center">
-        <div class="text-white text-lg font-bold mb-4 flex items-center">
-            <svg class="animate-pulse h-6 w-6 mr-2 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-            <span>Ad playing...</span>
-        </div>
-        <svg class="animate-spin h-8 w-8 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-storage-compat.js"></script>
+    <script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <p id="loadingMessage">Loading app...</p>
     </div>
 
-    <!-- Header Section -->
-    <header class="fixed top-0 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm p-4 flex items-center justify-between shadow-lg z-50 rounded-b-xl border-b border-gray-800">
-        <div class="flex items-center space-x-3">
-            <img src="https://placehold.co/40x40/FF7F50/FFFFFF?text=VF" alt="Video Fire Logo" class="rounded-full shadow-md" />
-            <span class="text-2xl font-extrabold text-orange-500 drop-shadow-lg">Video Fire</span>
-        </div>
-        <!-- Search bar in header (always visible on small screens) -->
-        <div id="header-search-container" class="search-bar-container hidden sm:flex">
-            <input type="text" id="header-search-input" placeholder="Search by title, tags, or channel..." />
-            <button id="clear-search-button" class="text-gray-400 hover:text-white">
-                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div id="header-buttons-container" class="flex items-center space-x-4">
-            <button id="search-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200 hidden sm:block" title="Search">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </button>
-            <button id="withdraw-header-button" class="p-2 rounded-full bg-green-600 hover:bg-green-700 text-white transition duration-200 shadow-md" title="Withdraw">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-            </button>
-            <button id="profile-header-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300 transition duration-200" title="Profile">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            </button>
-            <div id="user-info" class="flex items-center space-x-2 text-sm text-gray-400 hidden">
-                <span id="display-user-id" class="font-medium text-orange-300"></span>
-                <button id="sign-out-button" class="px-3 py-1 rounded-md text-xs bg-red-600 hover:bg-red-700 text-white font-semibold transition duration-200">Sign Out</button>
+    <div id="authModal" class="modal">
+        <div class="login-modal-content">
+            <h2 class="text-2xl font-bold mb-4">Welcome to VideoApp</h2>
+            <div class="auth-container">
+                <input type="email" id="authEmail" placeholder="Email" class="w-full">
+                <input type="password" id="authPassword" placeholder="Password" class="w-full">
+                <button id="authLoginButton" class="w-full">Login</button>
+                <button id="authSignupButton" class="w-full bg-blue-600 hover:bg-blue-700">Sign Up</button>
+                <button id="authGoogleSignIn" class="google-signin-button w-full">
+                    <i class="fab fa-google"></i> Sign In with Google
+                </button>
+                <button id="authGuestButton" class="guest-button w-full">Continue as Guest</button>
+                <button id="authForgotPassword" class="text-sm text-gray-400 mt-2 hover:text-white">Forgot Password?</button>
             </div>
+            <p id="authMessage" class="text-red-500 mt-4"></p>
         </div>
-    </header>
+    </div>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 w-full flex justify-center items-center overflow-hidden">
-        <!-- Home Page (Main Video Feed for Long and Shorts) -->
-        <div id="home-page" class="w-full h-full overflow-y-scroll bg-gray-950 hide-scrollbar">
-            <div id="video-feed-container" class="home-video-grid">
-                <!-- Videos will be dynamically injected here -->
-            </div>
-            <div id="home-loading" class="flex flex-col items-center justify-center h-full text-white text-lg hidden">
-                <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span class="ml-3 mt-4">Loading videos...</span>
-            </div>
-            <div id="home-error" class="flex items-center justify-center h-full text-red-500 text-center p-4 hidden text-lg"></div>
-            <div id="no-videos-message" class="flex items-center justify-center h-full text-white text-lg hidden">
-                No videos available. Upload some!
-            </div>
-        </div>
-
-        <!-- Single Video Player Page (New) -->
-        <div id="single-video-player-page" class="hidden">
-            <button id="back-to-feed-button" class="absolute top-4 left-4 z-10 p-2 rounded-full bg-gray-800 text-white hover:bg-gray-700">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <div id="single-video-player-container" class="w-full relative">
-                 <!-- YouTube iframe will be loaded here -->
-                <div id="in-player-slider-ad-container" class="in-player-slider-ad hidden">
-                     <!-- Slider ad will be injected here -->
-                </div>
-            </div>
-            <div class="p-4 bg-gray-900 flex-1 overflow-y-auto hide-scrollbar">
-                <h1 id="video-page-title" class="text-2xl font-bold text-orange-300 mb-2"></h1>
-                <p id="video-page-description" class="text-gray-300 text-sm mb-4"></p>
-                <div class="flex items-center space-x-6 text-xl mb-4">
-                    <button id="video-page-like-button" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
-                        <svg class="h-6 w-6 text-gray-300 like-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
-                        <span class="text-sm like-count">0</span>
-                    </button>
-                    <button id="video-page-comment-button" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
-                        <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                        </svg>
-                        <span class="text-sm">Comments</span>
-                    </button>
-                    <button id="video-page-share-button" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
-                        <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.516 3.832a3 3 0 00.512-1.632V12c0-.36-.062-.716-.184-1.049m0 2.098L8.684 10.658m10.158-1.342a3 3 0 110-2.684m0 2.684l-6.516-3.832a3 3 0 00-.512 1.632V12c0 .36.062.716.184 1.049m0-2.098L18.842 8.658"></path>
-                        </svg>
-                        <span class="text-sm">Share</span>
+    <div id="appContainer" class="hidden">
+        <header class="bg-gray-800 p-4 flex justify-between items-center sticky top-0 z-40">
+            <h1 class="text-2xl font-bold">VideoApp</h1>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="Search..." class="bg-gray-700 text-white rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <button id="searchButton" class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                        <i class="fas fa-search"></i>
                     </button>
                 </div>
-                <div class="up-next-videos mt-8">
-                    <h3 class="text-xl font-bold text-orange-300 mb-4">Up Next</h3>
-                    <div id="recommended-videos-container" class="grid grid-cols-1 gap-4">
-                        <!-- Recommended videos will be injected here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-
-        <!-- Profile Page -->
-        <div id="profile-page" class="hidden p-6 bg-gray-950 w-full h-full overflow-y-auto hide-scrollbar">
-            <div class="max-w-4xl mx-auto">
-                <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-8 bg-gray-900 p-6 rounded-xl shadow-lg border border-gray-800">
-                    <img id="profile-avatar" src="https://placehold.co/100x100/374151/E5E7EB?text=U" alt="Profile Avatar" class="w-24 h-24 rounded-full border-4 border-orange-500 shadow-md" />
-                    <div>
-                        <h1 id="profile-username" class="text-3xl font-extrabold text-orange-400 mb-1"></h1>
-                        <p class="text-gray-400">User ID: <span id="profile-user-id" class="break-all text-sm"></span></p>
-                        <p class="text-gray-300 mt-2">Total Uploads: <span id="profile-uploads-count" class="font-semibold">0</span></p>
-                        <p class="text-gray-300 mt-2">Ads Viewed on Shorts: <span id="user-ad-views" class="font-semibold">0</span> / 10000 (for withdrawal criteria)</p>
-                    </div>
-                </div>
-
-                <!-- Profile Videos/Shorts Tabs -->
-                <div class="flex border-b border-gray-700 mb-6">
-                    <button id="profile-tab-videos" class="px-4 py-2 text-lg font-semibold border-b-2 border-orange-500 text-orange-500 transition-colors duration-200">Videos</button>
-                    <button id="profile-tab-shorts" class="px-4 py-2 text-lg font-semibold border-b-2 border-transparent text-gray-400 hover:text-white hover:border-gray-500 transition-colors duration-200">Shorts</button>
-                </div>
-
-                <h2 class="text-2xl font-bold mb-6 text-orange-300">My Uploads</h2>
-                <div id="user-videos-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- User videos will be injected here -->
-                </div>
-                <p id="no-user-videos-message" class="text-gray-400 text-center py-8 bg-gray-900 rounded-lg border border-gray-800 hidden">
-                    You haven't uploaded any videos yet.
-                </p>
-                <div id="profile-loading" class="flex justify-center items-center h-48 text-white hidden text-lg">Loading profile...</div>
-                <div id="profile-error" class="text-red-500 text-center mt-8 hidden text-lg"></div>
-            </div>
-        </div>
-
-        <!-- Search Page (Placeholder - Actual search handled by updateVideoFeed) -->
-        <div id="search-page" class="hidden flex items-center justify-center h-full w-full bg-gray-950 text-white text-3xl font-bold">
-            Search Functionality Activated in Header!
-        </div>
-        <!-- People Page (New) -->
-        <div id="people-page" class="hidden p-6 bg-gray-950 w-full h-full overflow-y-auto hide-scrollbar">
-            <div class="max-w-4xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6 text-orange-300">Discover People</h2>
-                <div id="people-feed-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- People to follow will be injected here -->
-                </div>
-                <div id="people-loading" class="flex flex-col items-center justify-center h-full text-white text-lg hidden">
-                    <svg class="animate-spin h-10 w-10 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="ml-3 mt-4">Loading users...</span>
-                </div>
-                <div id="people-error" class="flex items-center justify-center h-full text-red-500 text-center p-4 hidden text-lg"></div>
-                <div id="no-people-message" class="flex items-center justify-center h-full text-white text-lg hidden">
-                    No other users to discover.
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Footer Navigation -->
-    <footer class="fixed bottom-0 left-0 right-0 bg-gray-900 bg-opacity-90 backdrop-blur-sm p-3 flex items-center justify-around shadow-lg z-50 rounded-t-xl border-t border-gray-800">
-        <button id="home-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 footer-btn-active">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7-7-7M19 10v10a1 1 0 01-1 1h-3"></path></svg>
-            <span class="text-xs mt-1">Home</span>
-        </button>
-        <button id="shorts-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
-            <i class="fa-solid fa-bolt h-6 w-6 text-2xl"></i>
-            <span class="text-xs mt-1">Shorts</span>
-        </button>
-        <button id="upload-footer-button" class="flex flex-col items-center p-2 rounded-full btn-primary shadow-lg -mt-6">
-            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path></svg>
-        </button>
-        <button id="people-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h2a2 2 0 002-2V4a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h2m0 0a2 2 0 100 4 2 2 0 000-4zm0 0H9m4 0h4m-4 0a2 2 0 100 4 2 2 0 000-4zm0 0H9"></path></svg>
-            <span class="text-xs mt-1">People</span>
-        </button>
-        <button id="profile-footer-button" class="flex flex-col items-center p-2 rounded-lg transition duration-200 text-gray-400 hover:bg-gray-700">
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            <span class="text-xs mt-1">You</span>
-        </button>
-    </footer>
-
-    <!-- Custom Modal Structure -->
-    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[1000] p-4 hidden">
-        <div class="modal-content p-6 max-w-sm w-full text-center">
-            <h3 id="custom-modal-title" class="text-xl font-bold mb-4 text-orange-400"></h3>
-            <p id="custom-modal-message" class="mb-6 text-gray-300"></p>
-            <div class="flex justify-center space-x-4">
-                <button id="custom-modal-confirm-button" class="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition duration-200 hidden">Confirm</button>
-                <button id="custom-modal-close-button" class="px-6 py-2 bg-red-600 hover:bg-red-700 rounded-md font-semibold transition duration-200">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Comment Modal Structure -->
-    <div id="comment-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-end justify-center z-[900] p-0 hidden">
-        <div class="modal-content w-full max-w-lg h-3/4 rounded-t-2xl flex flex-col overflow-hidden">
-            <div class="flex justify-between items-center p-4 border-b border-gray-700 bg-gray-900">
-                <h2 class="text-xl font-bold text-orange-400">Comments</h2>
-                <button id="comment-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <button id="profileButton" class="text-white hover:text-gray-300">
+                    <i class="fas fa-user-circle text-2xl"></i>
                 </button>
+                <button id="signOutButton" class="text-sm bg-red-600 px-3 py-1 rounded hover:bg-red-700">Sign Out</button>
             </div>
-            <div id="comment-list" class="flex-1 overflow-y-auto p-4 hide-scrollbar">
-                <div id="comment-loading" class="flex flex-col justify-center items-center h-full text-white hidden">
-                    <svg class="animate-spin h-6 w-6 text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="ml-2 mt-2 text-gray-300">Loading comments...</span>
-                </div>
-                <p id="no-comments-message" class="text-gray-400 text-center mt-4 hidden">No comments yet. Be the first!</p>
-                <!-- Comments will be injected here -->
-            </div>
-            <div class="p-4 border-t border-gray-700 bg-gray-900">
-                <div class="flex space-x-2">
-                    <input type="text" id="new-comment-input" class="flex-1 p-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 border border-gray-600" placeholder="Add a comment..." />
-                    <button id="add-comment-button" class="px-5 py-3 btn-primary rounded-lg font-semibold text-white">Post</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        </header>
 
-    <!-- Upload Video Modal Structure -->
-    <div id="upload-video-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[900] p-4 hidden">
-        <div class="modal-content p-8 w-full max-w-md">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-orange-400">Upload New Video</h2>
-                <button id="upload-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <form id="upload-video-form">
-                <div class="mb-4">
-                    <label for="video-url-input" class="block text-gray-300 text-sm font-semibold mb-2">YouTube Video URL:</label>
-                    <input type="text" id="video-url-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="e.g., https://youtu.be/WC2FUEmKEu8" required />
-                </div>
-                <div class="mb-4">
-                    <label for="video-title-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Title (Max 100 words):</label>
-                    <input type="text" id="video-title-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Enter video title" maxlength="100" required />
-                </div>
-                <div class="mb-4">
-                    <label for="video-description-input" class="block text-gray-300 text-sm font-semibold mb-2">Video Description:</label>
-                    <textarea id="video-description-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Write about the video"></textarea>
-                </div>
-                <div class="mb-6">
-                    <label for="video-tags-input" class="block text-gray-300 text-sm font-semibold mb-2">Tags (Comma-separated, Max 200 words):</label>
-                    <input type="text" id="video-tags-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="tag1, tag2, tag3" maxlength="200" />
-                </div>
+        <main class="container py-4">
+            <section id="homeSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                </section>
 
-                <div class="mb-6">
-                    <label class="block text-gray-300 text-sm font-semibold mb-2">Visibility:</label>
-                    <div class="flex items-center space-x-4">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="video-visibility" value="public" class="form-radio text-orange-500" checked>
-                            <span class="ml-2 text-gray-300">Public (Anyone can view)</span>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="video-visibility" value="private" class="form-radio text-orange-500">
-                            <span class="ml-2 text-gray-300">Private (Only you)</span>
-                        </label>
+            <section id="shortsSection" class="hidden shorts-reel">
+                </section>
+
+            <div id="uploadModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button" onclick="closeUploadModal()">&times;</span>
+                    <h2 class="text-2xl font-bold mb-4">Upload Video</h2>
+                    <div class="flex flex-col space-y-4">
+                        <input type="text" id="videoUrlInput" placeholder="YouTube Video URL" class="bg-gray-700 p-2 rounded">
+                        <input type="text" id="videoTitleInput" placeholder="Video Title (max 100 words)" class="bg-gray-700 p-2 rounded" maxlength="100">
+                        <textarea id="videoDescriptionInput" placeholder="Video Description" class="bg-gray-700 p-2 rounded h-24 resize-none"></textarea>
+                        <input type="text" id="videoTagsInput" placeholder="Tags (comma separated, max 200 words)" class="bg-gray-700 p-2 rounded" maxlength="200">
+
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="videoType" value="normal" checked class="form-radio text-red-500">
+                                <span>Long Video</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="videoType" value="short" class="form-radio text-red-500">
+                                <span>Short</span>
+                            </label>
+                        </div>
+
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="videoVisibility" value="public" checked class="form-radio text-red-500">
+                                <span>Public</span>
+                            </label>
+                            <label class="flex items-center space-x-2">
+                                <input type="radio" name="videoVisibility" value="private" class="form-radio text-red-500">
+                                <span>Private</span>
+                            </label>
+                        </div>
+
+                        <div class="bg-gray-800 p-4 rounded-md">
+                            <h3 class="text-lg font-semibold mb-2">Monetization Settings</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="monetizeVast" checked class="form-checkbox text-red-500 rounded">
+                                    <span>VAST Ads</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="monetizeBanner468" checked class="form-checkbox text-red-500 rounded">
+                                    <span>Banner 468x60</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="monetizeBanner300" checked class="form-checkbox text-red-500 rounded">
+                                    <span>Banner 300x250</span>
+                                </label>
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" id="monetizeNative" checked class="form-checkbox text-red-500 rounded">
+                                    <span>Native Ads</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="uploadVideoButton" class="bg-red-600 p-2 rounded font-bold hover:bg-red-700">Upload</button>
+                        <p id="uploadMessage" class="text-green-500 mt-2"></p>
                     </div>
                 </div>
+            </div>
 
-                <div class="mb-6">
-                    <label class="block text-gray-300 text-sm font-semibold mb-2">Video Type:</label>
-                    <div class="flex items-center space-x-4">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="video-type" value="long" class="form-radio text-orange-500" checked>
-                            <span class="ml-2 text-gray-300">Long Video</span>
-                        </label>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="radio" name="video-type" value="short" class="form-radio text-orange-500">
-                            <span class="ml-2 text-gray-300">Short Video</span>
-                        </label>
+            <div id="videoPlayerModal" class="modal video-player-modal">
+                <div class="modal-content">
+                    <span class="close-button" onclick="closeVideoPlayerModal()">&times;</span>
+                    <div id="vastAdContainer" style="width: 100%; height: 400px; display: none;"></div>
+                    <div id="contentPlayer" class="video-player-iframe-container" style="display: none;">
+                        <iframe id="youtubePlayer" allowfullscreen></iframe>
                     </div>
-                </div>
+                    <div id="adPlayMessage" class="text-center text-xl mt-4 hidden">Ad playing...</div>
 
-                <div class="mb-6">
-                    <h3 class="text-gray-300 text-sm font-semibold mb-3 border-b border-gray-700 pb-2">Monetization Settings (Ads for this video)</h3>
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between">
-                            <label for="monetize-vast" class="text-gray-300">VAST Ads (Pre-roll video ads)</label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="monetize-vast" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
+                    <div id="videoDetailsContainer" class="video-details hidden">
+                        <h2 id="videoPlayerTitle" class="text-xl font-bold mb-2"></h2>
+                        <div class="text-sm text-gray-400 mb-2">
+                            <span id="videoPlayerChannel"></span> • <span id="videoPlayerViews"></span> views
                         </div>
-                        <div class="flex items-center justify-between">
-                            <label for="monetize-banner-468x60" class="text-gray-300">Banner Ad (468x60)</label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="monetize-banner-468x60" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
+                        <p id="videoPlayerDescription" class="text-gray-300 text-sm mb-3"></p>
+                        <div id="videoPlayerTags" class="flex flex-wrap gap-2 mb-4"></div>
+
+                        <div class="video-actions">
+                            <button id="likeButton"><i class="fas fa-thumbs-up"></i> <span id="likeCount">0</span></button>
+                            <button id="shareButton"><i class="fas fa-share"></i> Share</button>
                         </div>
-                        <div class="flex items-center justify-between">
-                            <label for="monetize-banner-300x250" class="text-gray-300">Banner Ad (300x250) - Used for in-feed Shorts ads</label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="monetize-banner-300x250" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <label for="monetize-native" class="text-gray-300">Native Ads</label>
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="monetize-native" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
+
+                        <div id="adContainerVideoPlayer" class="ad-container grid grid-cols-1 md:grid-cols-2 gap-4">
+                            </div>
+
+                        <div id="commentSection">
+                            <h3 class="text-lg font-semibold mb-2">Comments</h3>
+                            <input type="text" id="commentInput" placeholder="Add a comment..." class="mb-2">
+                            <button id="commentButton">Post Comment</button>
+                            <div id="commentsList" class="mt-4 max-h-60 overflow-y-auto">
+                                </div>
                         </div>
                     </div>
                 </div>
-
-                <p id="upload-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
-                <button type="submit" id="upload-submit-button" class="w-full py-3 btn-primary rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="upload-button-text">Upload Video</span>
-                    <svg id="upload-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Withdraw Modal Structure -->
-    <div id="withdraw-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[900] p-4 hidden">
-        <div class="modal-content p-8 w-full max-w-md">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-orange-400">Withdraw Earnings</h2>
-                <button id="withdraw-modal-close-button" class="p-2 rounded-full hover:bg-gray-700 text-gray-300">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <p class="text-gray-300 text-sm mb-4">
-                Minimum withdrawal amount: ₹100. Payments are sent manually via UPI.
-            </p>
-            <form id="withdraw-form">
-                <div class="mb-4">
-                    <label for="withdraw-amount-input" class="block text-gray-300 text-sm font-semibold mb-2">Amount (₹):</label>
-                    <input type="number" id="withdraw-amount-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="e.g., 150" min="100" step="any" required />
-                </div>
-                <div class="mb-6">
-                    <label for="upi-id-input" class="block text-gray-300 text-sm font-semibold mb-2">Your UPI ID:</label>
-                    <input type="text" id="upi-id-input" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="e.g., yourname@upi" required />
-                </div>
-                <p id="withdraw-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
-                <button type="submit" id="withdraw-submit-button" class="w-full py-3 bg-green-600 hover:bg-green-700 rounded-md font-bold text-white transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="withdraw-button-text">Request Withdrawal</span>
-                    <svg id="withdraw-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Authentication Modal Structure -->
-    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-[1100] p-4 hidden">
-        <div class="modal-content p-8 w-full max-w-md text-center">
-            <h2 id="auth-modal-title" class="text-2xl font-bold text-orange-400 mb-6">Login / Sign Up</h2>
-
-            <div class="flex justify-center mb-6 rounded-lg overflow-hidden">
-                <button id="auth-tab-login" class="flex-1 px-6 py-3 font-semibold transition duration-200 bg-orange-500 text-white">Login</button>
-                <button id="auth-tab-signup" class="flex-1 px-6 py-3 font-semibold transition duration-200 bg-gray-700 text-gray-300 hover:bg-gray-600">Sign Up</button>
             </div>
 
-            <!-- Login Form -->
-            <form id="login-form" class="space-y-4">
-                <input type="email" id="login-email" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Email" required />
-                <input type="password" id="login-password" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Password" required />
-                <p id="login-error-message" class="text-red-500 text-sm hidden"></p>
-                <button type="submit" id="login-submit-button" class="w-full py-3 btn-primary rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="login-button-text">Login</span>
-                    <svg id="login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </button>
-                <button type="button" id="forgot-password-button" class="text-gray-400 hover:text-orange-400 text-sm mt-2 transition-colors duration-200">Forgot Password?</button>
-            </form>
 
-            <!-- Sign Up Form -->
-            <form id="signup-form" class="space-y-4 hidden">
-                <input type="email" id="signup-email" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Email" required />
-                <input type="password" id="signup-password" class="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600" placeholder="Password (min 6 characters)" required />
-                <p id="signup-error-message" class="text-red-500 text-sm hidden"></p>
-                <button type="submit" id="signup-submit-button" class="w-full py-3 btn-primary rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span id="signup-button-text">Sign Up</span>
-                    <svg id="signup-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </button>
-            </form>
-
-            <div class="relative flex items-center justify-center my-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-700"></div>
+            <section id="profileSection" class="hidden">
+                <div class="flex flex-col items-center p-6 bg-gray-800 rounded-lg shadow-lg mb-8">
+                    <i class="fas fa-user-circle text-6xl text-gray-400 mb-4"></i>
+                    <h2 id="profileUsername" class="text-3xl font-bold mb-2">Guest User</h2>
+                    <p id="profileUserId" class="text-gray-400 text-sm">User ID: N/A</p>
                 </div>
-                <div class="relative z-10 px-4 bg-gray-800 text-gray-400 text-sm">OR</div>
+
+                <h3 class="text-2xl font-bold mb-4">My Uploaded Videos</h3>
+                <div id="myVideosList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    </div>
+                <p id="noVideosMessage" class="text-gray-400 text-center mt-8 hidden">You haven't uploaded any videos yet.</p>
+            </section>
+
+            <section id="searchResultsSection" class="hidden">
+                <h2 class="text-2xl font-bold mb-4">Search Results for "<span id="searchQueryDisplay"></span>"</h2>
+                <div id="searchResultsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    </div>
+                <p id="noSearchResultsMessage" class="text-gray-400 text-center mt-8 hidden">No videos found for your search.</p>
+            </section>
+
+             <section id="subscriptionsSection" class="hidden text-center py-20">
+                <h2 class="text-4xl font-bold mb-4">Subscriptions</h2>
+                <p class="text-gray-400">This feature is coming soon!</p>
+            </section>
+
+            <section id="librarySection" class="hidden text-center py-20">
+                <h2 class="text-4xl font-bold mb-4">Library</h2>
+                <p class="text-gray-400">This feature is coming soon!</p>
+            </section>
+
+
+        </main>
+
+        <nav class="bottom-nav">
+            <div class="bottom-nav-item active" onclick="showSection('home')">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
             </div>
-
-            <button id="google-sign-in-button" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md transition duration-200 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.0001 4.54518C14.1561 4.54518 15.9321 5.26718 17.2791 6.55418L20.0241 3.80918C18.1081 1.86818 15.2891 0.72718 12.0001 0.72718C7.68313 0.72718 4.02013 3.03718 2.05413 6.44418L6.08213 9.47918C6.96713 7.21818 9.38713 5.45418 12.0001 5.45418V4.54518ZM23.0901 12.0002C23.0901 11.2332 23.0231 10.4792 22.8981 9.73918H12.0001V14.2612H18.4141C18.1751 15.6362 17.3871 16.7902 16.2051 17.5842L20.2331 20.6192C22.2001 17.1852 23.0901 13.9162 23.0901 12.0002Z" fill="#4285F4"/>
-                    <path d="M12.0001 23.2732C15.2891 23.2732 18.1081 22.1322 20.0241 20.1912L17.2791 17.4462C15.9321 18.7332 14.1561 19.4552 12.0001 19.4552C9.38713 19.4552 6.96713 17.6912 6.08213 15.4302L2.05413 18.4652C4.02013 21.8722 7.68313 23.2732 12.0001 23.2732Z" fill="#34A853"/>
-                    <path d="M4.05404 15.4302L0.0259998 18.4652C0.603003 19.4202 1.34304 20.2792 2.22804 20.9702L6.25604 17.9352C5.37104 17.2442 4.63104 16.3852 4.05404 15.4302Z" fill="#F9BC05"/>
-                    <path d="M2.05404 6.44418L6.08204 9.47918C6.96704 7.21818 9.38704 5.45418 12.0001 5.45418V0.72718C7.68313 0.72718 4.02013 3.03718 2.05404 6.44418Z" fill="#EA4335"/>
-                </svg>
-                <span>Sign in with Google</span>
-            </button>
-
-            <button id="guest-login-button" class="w-full py-3 btn-secondary rounded-md mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span id="guest-login-button-text">Continue as Guest</span>
-                <svg id="guest-login-loading-spinner" class="animate-spin h-5 w-5 ml-3 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-            </button>
-        </div>
+            <div class="bottom-nav-item" onclick="showSection('shorts')">
+                <i class="fas fa-bolt"></i>
+                <span>Shorts</span>
+            </div>
+            <div class="bottom-nav-item upload-button-nav" onclick="openUploadModal()">
+                <i class="fas fa-plus"></i>
+            </div>
+            <div class="bottom-nav-item" onclick="showSection('subscriptions')">
+                <i class="fas fa-youtube"></i>
+                <span>Subscriptions</span>
+            </div>
+            <div class="bottom-nav-item" onclick="showSection('library')">
+                <i class="fas fa-book"></i>
+                <span>Library</span>
+            </div>
+        </nav>
     </div>
 
-
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import {
-            getAuth,
-            signInAnonymously,
-            signInWithCustomToken,
-            onAuthStateChanged,
-            signOut,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            sendPasswordResetEmail,
-            sendEmailVerification,
-            GoogleAuthProvider,
-            signInWithPopup
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- Global Variables ---
-        let app;
-        let db;
-        let auth;
-        let currentUserId = null;
-        let authReady = false; // Flag to indicate if Firebase auth is initialized
-        let currentPage = 'home'; // 'home', 'profile', 'search', 'people', 'shorts'
-        let currentVideoIdForComments = null;
-        let profileVideoTypeFilter = 'long'; // For profile page: 'long' or 'short'
-        let allVideosCache = []; // Cache for search functionality
-        let shortsAdCounter = 0; // Counter for shorts ads viewed to trigger VAST
-
-        // Firebase Configuration
+    <script>
+        // Firebase Configuration (Replace with your actual Firebase project config)
         const firebaseConfig = {
-            apiKey: "AIzaSyDes3ioeygnWBqJB6NnHb7xj732JJhOqm8",
-            authDomain: "videofire-268ff.firebaseapp.com",
-            databaseURL: "https://videofire-268ff-default-rtdb.firebaseio.com",
-            projectId: "videofire-268ff",
-            storageBucket: "videofire-268ff.firebasestorage.app",
-            messagingSenderId: "910374058927",
-            appId: "1:910374058927:web:6add3afdea07cfa2914d5a"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+        const appId = firebaseConfig.appId; // Use the app ID from config
 
-        // VAST Ad Tag URL - Using the provided URL for Google Ad Manager/IMA SDK
-        const vastAdTagUrl = "https://assured-sandwich.com/d.mpF/zZdzGnNHvfZMGcUH/WeLmK9juvZyULlVk/PgTgYR0/MMjyQS0YOdT_YHtmN/jwQ/yGNBDGQH5nNRygZJs/aKWN1/pSdQDX0Wxp";
+        let currentUser = null;
+        let adsManager = null;
+        let adsLoader = null;
+        let adDisplayContainer = null;
+        let intervalTimer = null;
+        let currentVideoData = null; // To store current video's full data
 
-        // --- DOM Elements ---
-        const homePage = document.getElementById('home-page');
-        const profilePage = document.getElementById('profile-page');
-        const searchPage = document.getElementById('search-page');
-        const peoplePage = document.getElementById('people-page');
-        const videoFeedContainer = document.getElementById('video-feed-container'); // Now for Home Grid
-        const singleVideoPlayerPage = document.getElementById('single-video-player-page'); // New single video view
-        const singleVideoPlayerContainer = document.getElementById('single-video-player-container'); // Container for main video iframe
-        const inPlayerSliderAdContainer = document.getElementById('in-player-slider-ad-container'); // Container for slider ad
+        const sections = ['homeSection', 'shortsSection', 'uploadModal', 'videoPlayerModal', 'profileSection', 'searchResultsSection', 'subscriptionsSection', 'librarySection'];
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const authModal = document.getElementById('authModal');
+        const appContainer = document.getElementById('appContainer');
 
-        const backToFeedButton = document.getElementById('back-to-feed-button');
-        const videoPageTitle = document.getElementById('video-page-title');
-        const videoPageDescription = document.getElementById('video-page-description');
-        const videoPageLikeButton = document.getElementById('video-page-like-button');
-        const videoPageCommentButton = document.getElementById('video-page-comment-button');
-        const videoPageShareButton = document.getElementById('video-page-share-button');
-        const recommendedVideosContainer = document.getElementById('recommended-videos-container');
+        const homeSection = document.getElementById('homeSection');
+        const shortsSection = document.getElementById('shortsSection');
+        const uploadModal = document.getElementById('uploadModal');
+        const videoPlayerModal = document.getElementById('videoPlayerModal');
+        const profileSection = document.getElementById('profileSection');
+        const searchResultsSection = document.getElementById('searchResultsSection');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchQueryDisplay = document.getElementById('searchQueryDisplay');
+        const searchResultsList = document.getElementById('searchResultsList');
+        const noSearchResultsMessage = document.getElementById('noSearchResultsMessage');
 
+        // Elements for authentication
+        const authEmail = document.getElementById('authEmail');
+        const authPassword = document.getElementById('authPassword');
+        const authLoginButton = document.getElementById('authLoginButton');
+        const authSignupButton = document.getElementById('authSignupButton');
+        const authGoogleSignIn = document.getElementById('authGoogleSignIn');
+        const authGuestButton = document.getElementById('authGuestButton');
+        const authForgotPassword = document.getElementById('authForgotPassword');
+        const authMessage = document.getElementById('authMessage');
+        const signOutButton = document.getElementById('signOutButton');
+        const profileButton = document.getElementById('profileButton');
 
-        const homeLoading = document.getElementById('home-loading');
-        const homeError = document.getElementById('home-error');
-        const noVideosMessage = document.getElementById('no-videos-message');
+        // Elements for video upload
+        const videoUrlInput = document.getElementById('videoUrlInput');
+        const videoTitleInput = document.getElementById('videoTitleInput');
+        const videoDescriptionInput = document.getElementById('videoDescriptionInput');
+        const videoTagsInput = document.getElementById('videoTagsInput');
+        const uploadVideoButton = document.getElementById('uploadVideoButton');
+        const uploadMessage = document.getElementById('uploadMessage');
+        const monetizeVast = document.getElementById('monetizeVast');
+        const monetizeBanner468 = document.getElementById('monetizeBanner468');
+        const monetizeBanner300 = document.getElementById('monetizeBanner300');
+        const monetizeNative = document.getElementById('monetizeNative');
 
-        const profileUsername = document.getElementById('profile-username');
-        const profileUserId = document.getElementById('profile-user-id');
-        const profileUploadsCount = document.getElementById('profile-uploads-count');
-        const userVideosContainer = document.getElementById('user-videos-container');
-        const noUserVideosMessage = document.getElementById('no-user-videos-message');
-        const profileLoading = document.getElementById('profile-loading');
-        const profileError = document.getElementById('profile-error');
-        const profileTabVideos = document.getElementById('profile-tab-videos');
-        const profileTabShorts = document.getElementById('profile-tab-shorts');
-        const userAdViewsCounter = document.getElementById('user-ad-views');
+        // Elements for video player
+        const youtubePlayer = document.getElementById('youtubePlayer');
+        const vastAdContainer = document.getElementById('vastAdContainer');
+        const contentPlayer = document.getElementById('contentPlayer');
+        const adPlayMessage = document.getElementById('adPlayMessage');
+        const videoPlayerTitle = document.getElementById('videoPlayerTitle');
+        const videoPlayerChannel = document.getElementById('videoPlayerChannel');
+        const videoPlayerViews = document.getElementById('videoPlayerViews');
+        const videoPlayerDescription = document.getElementById('videoPlayerDescription');
+        const videoPlayerTags = document.getElementById('videoPlayerTags');
+        const likeButton = document.getElementById('likeButton');
+        const likeCount = document.getElementById('likeCount');
+        const shareButton = document.getElementById('shareButton');
+        const commentInput = document.getElementById('commentInput');
+        const commentButton = document.getElementById('commentButton');
+        const commentsList = document.getElementById('commentsList');
+        const adContainerVideoPlayer = document.getElementById('adContainerVideoPlayer');
 
-        const customModal = document.getElementById('custom-modal');
-        const customModalTitle = document.getElementById('custom-modal-title');
-        const customModalMessage = document.getElementById('custom-modal-message');
-        const customModalConfirmButton = document.getElementById('custom-modal-confirm-button');
-        const customModalCloseButton = document.getElementById('custom-modal-close-button');
-
-        const commentModal = document.getElementById('comment-modal');
-        const commentModalCloseButton = document.getElementById('comment-modal-close-button');
-        const commentList = document.getElementById('comment-list');
-        const commentLoading = document.getElementById('comment-loading');
-        const noCommentsMessage = document.getElementById('no-comments-message');
-        const newCommentInput = document.getElementById('new-comment-input');
-        const addCommentButton = document.getElementById('add-comment-button');
-
-        const uploadVideoModal = document.getElementById('upload-video-modal');
-        const uploadModalCloseButton = document.getElementById('upload-modal-close-button');
-        const uploadVideoForm = document.getElementById('upload-video-form');
-        const videoUrlInput = document.getElementById('video-url-input');
-        const videoTitleInput = document.getElementById('video-title-input');
-        const videoDescriptionInput = document.getElementById('video-description-input');
-        const videoTagsInput = document.getElementById('video-tags-input');
-        const videoVisibilityPublic = document.querySelector('input[name="video-visibility"][value="public"]');
-        const videoVisibilityPrivate = document.querySelector('input[name="video-visibility"][value="private"]');
-        const videoTypeLong = document.querySelector('input[name="video-type"][value="long"]');
-        const videoTypeShort = document.querySelector('input[name="video-type"][value="short"]');
-        const monetizeVast = document.getElementById('monetize-vast');
-        const monetizeBanner468x60 = document.getElementById('monetize-banner-468x60');
-        const monetizeBanner300x250 = document.getElementById('monetize-banner-300x250');
-        const monetizeNative = document.getElementById('monetize-native');
-        const uploadErrorMessage = document.getElementById('upload-error-message');
-        const uploadSubmitButton = document.getElementById('upload-submit-button');
-        const uploadButtonText = document.getElementById('upload-button-text');
-        const uploadLoadingSpinner = document.getElementById('upload-loading-spinner');
-
-        const withdrawModal = document.getElementById('withdraw-modal');
-        const withdrawModalCloseButton = document.getElementById('withdraw-modal-close-button');
-        const withdrawForm = document.getElementById('withdraw-form');
-        const withdrawAmountInput = document.getElementById('withdraw-amount-input');
-        const upiIdInput = document.getElementById('upi-id-input');
-        const withdrawErrorMessage = document.getElementById('withdraw-error-message');
-        const withdrawSubmitButton = document.getElementById('withdraw-submit-button');
-        const withdrawButtonText = document.getElementById('withdraw-button-text');
-        const withdrawLoadingSpinner = document.getElementById('withdraw-loading-spinner');
-
-        const imaAdContainer = document.getElementById('ima-ad-container'); // Global IMA ad container
-
-        const displayUserId = document.getElementById('display-user-id');
-        const userInfo = document.getElementById('user-info');
-        const signOutButton = document.getElementById('sign-out-button');
-
-        // Auth Modal Elements
-        const authModal = document.getElementById('auth-modal');
-        const authTabLogin = document.getElementById('auth-tab-login');
-        const authTabSignup = document.getElementById('auth-tab-signup');
-
-        const loginForm = document.getElementById('login-form');
-        const loginEmailInput = document.getElementById('login-email');
-        const loginPasswordInput = document.getElementById('login-password');
-        const loginErrorMessage = document.getElementById('login-error-message');
-        const loginSubmitButton = document.getElementById('login-submit-button');
-        const loginButtonText = document.getElementById('login-button-text');
-        const loginLoadingSpinner = document.getElementById('login-loading-spinner');
-        const forgotPasswordButton = document.getElementById('forgot-password-button');
-
-        const signupForm = document.getElementById('signup-form');
-        const signupEmailInput = document.getElementById('signup-email');
-        const signupPasswordInput = document.getElementById('signup-password');
-        const signupErrorMessage = document.getElementById('signup-error-message');
-        const signupSubmitButton = document.getElementById('signup-submit-button');
-        const signupButtonText = document.getElementById('signup-button-text');
-        const signupLoadingSpinner = document.getElementById('signup-loading-spinner');
-
-        const googleSignInButton = document.getElementById('google-sign-in-button');
-        const guestLoginButton = document.getElementById('guest-login-button');
-        const guestLoginButtonText = document.getElementById('guest-login-button-text');
-        const guestLoginLoadingSpinner = document.getElementById('guest-login-loading-spinner');
-
-        // Header Search Elements
-        const headerSearchContainer = document.getElementById('header-search-container');
-        const headerSearchInput = document.getElementById('header-search-input');
-        const headerButtonsContainer = document.getElementById('header-buttons-container');
-        const clearSearchButton = document.getElementById('clear-search-button');
-
-        // People page elements
-        const peopleFeedContainer = document.getElementById('people-feed-container');
-        const peopleLoading = document.getElementById('people-loading');
-        const peopleError = document.getElementById('people-error');
-        const noPeopleMessage = document.getElementById('no-people-message');
+        // Profile elements
+        const profileUsername = document.getElementById('profileUsername');
+        const profileUserId = document.getElementById('profileUserId');
+        const myVideosList = document.getElementById('myVideosList');
+        const noVideosMessage = document.getElementById('noVideosMessage');
 
         // --- Utility Functions ---
-
-        /**
-         * Calculates time ago string from a Firebase Timestamp.
-         * @param {firebase.firestore.Timestamp} timestamp - The Firebase Timestamp object.
-         * @returns {string} - Formatted time ago string.
-         */
-        function getTimeAgo(timestamp) {
-            if (!timestamp) return 'N/A';
-            const now = new Date();
-            const date = timestamp.toDate();
-            const seconds = Math.floor((now - date) / 1000);
-
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " years ago";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " months ago";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + " days ago";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " hours ago";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " minutes ago";
-            return Math.floor(seconds) + " seconds ago";
+        function showLoading(message = 'Loading...') {
+            loadingMessage.textContent = message;
+            loadingOverlay.style.display = 'flex';
         }
 
+        function hideLoading() {
+            loadingOverlay.style.display = 'none';
+        }
 
-        /**
-         * Parses a YouTube URL to extract video ID, embed URL, and thumbnail URL.
-         * @param {string} url - The YouTube video URL.
-         * @returns {object|null} An object with videoId, embedUrl, thumbnailUrl, or null if invalid.
-         */
-        function getYouTubeInfo(url) {
-            // Regex to capture video ID from various YouTube URL formats including shorts
-            const regExp = /(?:https?:\/\/)?(?:www\.)?(?:m\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=|embed\/|shorts\/|v\/|)([\w-]{11})(?:\S+)?/g;
-            const match = regExp.exec(url);
-
-            if (match && match[1]) {
-                const videoId = match[1];
-                return {
-                    videoId: videoId,
-                    // Autoplay, no controls, modestbranding (no YouTube logo), no related videos, loop.
-                    // For shorts, YouTube iframe automatically adjusts for vertical play.
-                    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=0&modestbranding=1&rel=0&loop=1&playlist=${videoId}`,
-                    thumbnailUrl: `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` // High quality thumbnail
-                };
+        function showSection(sectionId) {
+            sections.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) {
+                    section.classList.add('hidden');
+                }
+            });
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
             }
-            return null;
+
+            // Update active state in bottom nav
+            document.querySelectorAll('.bottom-nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeNavItem = document.querySelector(`.bottom-nav-item[onclick="showSection('${sectionId}')"]`);
+            if (activeNavItem) {
+                activeNavItem.classList.add('active');
+            } else if (sectionId === 'uploadModal' || sectionId === 'videoPlayerModal' || sectionId === 'profileSection') {
+                 // For modals and profile, no bottom nav item explicitly active
+            } else if (sectionId === 'searchResultsSection') {
+                // No active state for search results, as it's not a primary nav item
+            }
         }
 
-        /**
-         * Shows a custom modal dialog.
-         * @param {string} title - The title of the modal.
-         * @param {string} message - The message content.
-         * @param {boolean} showConfirmButton - Whether to show a confirm button.
-         * @param {function} onConfirm - Callback for confirm button.
-         * @param {function} onClose - Callback for close button.
-         */
-        function showCustomModal(title, message, showConfirmButton = false, onConfirm = () => {}, onClose = () => {}) {
-            customModalTitle.innerHTML = title; // Use innerHTML to allow for HTML in message
-            customModalMessage.innerHTML = message; // Use innerHTML to allow for HTML in message
-            customModalConfirmButton.onclick = () => { onConfirm(); closeModal('custom'); };
-            customModalCloseButton.onclick = () => { onClose(); closeModal('custom'); };
+        function openUploadModal() {
+            if (!currentUser || currentUser.isAnonymous) {
+                alert('Please sign in to upload videos.');
+                showAuthModal();
+                return;
+            }
+            uploadModal.classList.remove('hidden');
+            uploadModal.style.display = 'flex';
+        }
 
-            if (showConfirmButton) {
-                customModalConfirmButton.classList.remove('hidden');
+        function closeUploadModal() {
+            uploadModal.classList.add('hidden');
+            uploadModal.style.display = 'none';
+            videoUrlInput.value = '';
+            videoTitleInput.value = '';
+            videoDescriptionInput.value = '';
+            videoTagsInput.value = '';
+            uploadMessage.textContent = '';
+            document.querySelector('input[name="videoType"][value="normal"]').checked = true;
+            document.querySelector('input[name="videoVisibility"][value="public"]').checked = true;
+            monetizeVast.checked = true;
+            monetizeBanner468.checked = true;
+            monetizeBanner300.checked = true;
+            monetizeNative.checked = true;
+        }
+
+        function openVideoPlayerModal(video) {
+            currentVideoData = video; // Store the full video data
+            videoPlayerModal.classList.remove('hidden');
+            videoPlayerModal.style.display = 'flex';
+
+            videoPlayerTitle.textContent = video.title;
+            videoPlayerChannel.textContent = video.uploaderName || 'Unknown Uploader';
+            videoPlayerViews.textContent = `${(video.views || 0).toLocaleString()} views`;
+            videoPlayerDescription.textContent = video.description || 'No description available.';
+            videoPlayerTags.innerHTML = '';
+            if (video.tags && video.tags.length > 0) {
+                video.tags.forEach(tag => {
+                    const tagPill = document.createElement('span');
+                    tagPill.className = 'tag-pill';
+                    tagPill.textContent = tag.trim();
+                    videoPlayerTags.appendChild(tagPill);
+                });
             } else {
-                customModalConfirmButton.classList.add('hidden');
+                videoPlayerTags.textContent = 'No tags.';
             }
-            customModal.classList.remove('hidden');
+
+            likeCount.textContent = video.likes || 0;
+            updateLikeButtonState(video.id);
+            fetchComments(video.id);
+
+            // Hide content player initially, show ad container
+            contentPlayer.style.display = 'none';
+            vastAdContainer.style.display = 'block';
+            adPlayMessage.classList.remove('hidden');
+
+            // Initialize and play VAST ad if enabled
+            if (video.monetization && video.monetization.vast) {
+                console.log('VAST ads are enabled for this video. Attempting to play ad.');
+                requestVastAd(video.youtubeId); // Pass YouTube ID for a unique ad tag or context
+            } else {
+                console.log('VAST ads are disabled for this video, or no ad unit provided. Playing video directly.');
+                playVideoDirectly(video.youtubeId);
+            }
+
+            // Load other ad types based on monetization settings
+            loadDynamicAds(video.monetization);
         }
 
-        /**
-         * Closes a specific modal.
-         * @param {string} modalName - The name of the modal ('custom', 'comment', 'upload', 'withdraw', 'auth').
-         */
-        function closeModal(modalName) {
-            switch (modalName) {
-                case 'custom':
-                    customModal.classList.add('hidden');
-                    break;
-                case 'comment':
-                    commentModal.classList.add('hidden');
-                    currentVideoIdForComments = null;
-                    break;
-                case 'upload':
-                    uploadVideoModal.classList.add('hidden');
-                    uploadVideoForm.reset(); // Clear form fields
-                    // Reset default settings explicitly as form.reset() might not cover toggles/radios
-                    videoUrlInput.value = '';
-                    videoTitleInput.value = '';
-                    videoDescriptionInput.value = '';
-                    videoTagsInput.value = '';
-                    videoVisibilityPublic.checked = true; // Default to public
-                    videoTypeLong.checked = true; // Default to long video
-                    monetizeVast.checked = true; // Default to checked
-                    monetizeBanner468x60.checked = true;
-                    monetizeBanner300x250.checked = true;
-                    monetizeNative.checked = true;
-                    uploadErrorMessage.classList.add('hidden');
-                    break;
-                case 'withdraw':
-                    withdrawModal.classList.add('hidden');
-                    withdrawForm.reset();
-                    withdrawAmountInput.value = '';
-                    upiIdInput.value = '';
-                    withdrawErrorMessage.classList.add('hidden');
-                    break;
-                case 'auth':
-                    authModal.classList.add('hidden');
-                    loginForm.reset();
-                    signupForm.reset();
-                    loginErrorMessage.classList.add('hidden');
-                    signupErrorMessage.classList.add('hidden');
-                    break;
+        function closeVideoPlayerModal() {
+            videoPlayerModal.classList.add('hidden');
+            videoPlayerModal.style.display = 'none';
+            youtubePlayer.src = ''; // Stop video playback
+            vastAdContainer.style.display = 'none';
+            adPlayMessage.classList.add('hidden');
+            contentPlayer.style.display = 'none';
+            adContainerVideoPlayer.innerHTML = ''; // Clear ads
+            commentsList.innerHTML = ''; // Clear comments
+            if (adsManager) {
+                adsManager.destroy();
+                adsManager = null;
             }
+            if (adsLoader) {
+                adsLoader.destroy(); // Important for IMA SDK
+                adsLoader = null;
+            }
+            if (intervalTimer) {
+                clearInterval(intervalTimer);
+                intervalTimer = null;
+            }
+            currentVideoData = null; // Clear current video data
         }
 
+        function getYoutubeId(url) {
+            const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+            const match = url.match(regExp);
+            return (match && match[1]) ? match[1] : null;
+        }
 
-        // --- Firebase Initialization ---
+        function getYoutubeThumbnail(youtubeId, quality = 'hqdefault') {
+            return `https://img.youtube.com/vi/${youtubeId}/${quality}.jpg`;
+        }
 
-        /**
-         * Initializes Firebase and sets up authentication listener.
-         */
-        async function initializeFirebase() {
-            console.log("Initializing Firebase...");
+        function getYouTubeEmbedUrl(youtubeId) {
+            return `https://www.youtube.com/embed/${youtubeId}?autoplay=1`;
+        }
+
+        function formatDate(timestamp) {
+            if (!timestamp) return 'Unknown date';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // --- Firebase Authentication ---
+        auth.onAuthStateChanged(user => {
+            hideLoading();
+            if (user) {
+                currentUser = user;
+                appContainer.classList.remove('hidden');
+                authModal.style.display = 'none';
+                console.log("User logged in:", currentUser.uid, currentUser.email || "Guest");
+                updateProfileDisplay();
+                fetchVideos(); // Fetch videos once user is authenticated
+            } else {
+                currentUser = null;
+                appContainer.classList.add('hidden');
+                showAuthModal();
+            }
+        });
+
+        function showAuthModal() {
+            authModal.style.display = 'flex';
+        }
+
+        authLoginButton.addEventListener('click', async () => {
+            const email = authEmail.value;
+            const password = authPassword.value;
+            if (!email || !password) {
+                authMessage.textContent = 'Please enter email and password.';
+                return;
+            }
+            showLoading('Logging in...');
             try {
-                app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-                console.log("Firebase app, db, auth initialized.");
+                await auth.signInWithEmailAndPassword(email, password);
+                authMessage.textContent = '';
+            } catch (error) {
+                authMessage.textContent = error.message;
+            } finally {
+                hideLoading();
+            }
+        });
 
-                // Auth state listener
-                onAuthStateChanged(auth, async (user) => {
-                    console.log("Auth state changed. User:", user ? user.uid : "No user");
-                    if (user) {
-                        currentUserId = user.uid;
-                        // Display username or a truncated UID
-                        const userProfileRef = doc(db, `artifacts/${appId}/users/${user.uid}/profile/${user.uid}`);
-                        const userDoc = await getDoc(userProfileRef);
-                        const displayUsername = userDoc.exists() && userDoc.data().username ? userDoc.data().username : user.email ? user.email.split('@')[0] : currentUserId.substring(0, 8) + '...';
-                        displayUserId.textContent = displayUsername;
+        authSignupButton.addEventListener('click', async () => {
+            const email = authEmail.value;
+            const password = authPassword.value;
+            if (!email || !password) {
+                authMessage.textContent = 'Please enter email and password.';
+                return;
+            }
+            if (password.length < 6) {
+                authMessage.textContent = 'Password must be at least 6 characters long.';
+                return;
+            }
+            showLoading('Signing up...');
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection('artifacts').doc(appId).collection('users').doc(userCredential.user.uid).collection('profile').doc('data').set({
+                    username: email.split('@')[0], // Default username
+                    userId: userCredential.user.uid,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                authMessage.textContent = 'Sign up successful! You are now logged in.';
+            } catch (error) {
+                authMessage.textContent = error.message;
+            } finally {
+                hideLoading();
+            }
+        });
 
-                        userInfo.classList.remove('hidden'); // Show user info
-                        closeModal('auth'); // Close auth modal if user logs in
+        authGoogleSignIn.addEventListener('click', async () => {
+            showLoading('Signing in with Google...');
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const userCredential = await auth.signInWithPopup(provider);
+                // Check if profile exists, create if not
+                const profileRef = db.collection('artifacts').doc(appId).collection('users').doc(userCredential.user.uid).collection('profile').doc('data');
+                const profileDoc = await profileRef.get();
+                if (!profileDoc.exists) {
+                    await profileRef.set({
+                        username: userCredential.user.displayName || userCredential.user.email.split('@')[0],
+                        userId: userCredential.user.uid,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                authMessage.textContent = '';
+            } catch (error) {
+                authMessage.textContent = error.message;
+            } finally {
+                hideLoading();
+            }
+        });
 
-                        // Ensure user profile exists (or create a dummy one)
-                        try {
-                            if (!userDoc.exists()) {
-                                console.log("Creating new user profile for UID:", user.uid);
-                                await setDoc(userProfileRef, {
-                                    username: user.email ? user.email.split('@')[0] : `User_${user.uid.substring(0, 6)}`,
-                                    email: user.email || null,
-                                    joinedAt: serverTimestamp(),
-                                    isEmailVerified: user.emailVerified || false,
-                                    followers: [],
-                                    following: [],
-                                    adsViewed: 0 // Initialize adsViewed counter for new users
-                                });
-                            } else {
-                                // Update profile with latest info if email is verified
-                                const userData = userDoc.data();
-                                if (user.emailVerified && !userData.isEmailVerified) {
-                                    await updateDoc(userProfileRef, { isEmailVerified: true });
-                                }
-                                // Ensure new fields exist for existing users (for backward compatibility)
-                                if (!userData.followers) await updateDoc(userProfileRef, { followers: [] });
-                                if (!userData.following) await updateDoc(userProfileRef, { following: [] });
-                                if (typeof userData.adsViewed === 'undefined') {
-                                    await updateDoc(userProfileRef, { adsViewed: 0 });
-                                }
-                            }
-                        } catch (profileError) {
-                            console.error("Error creating/fetching user profile:", profileError);
-                            showCustomModal('Profile Error', 'Failed to load user profile. Some features might be limited.', false);
-                        }
+        authGuestButton.addEventListener('click', async () => {
+            showLoading('Continuing as Guest...');
+            try {
+                await auth.signInAnonymously();
+                authMessage.textContent = '';
+            } catch (error) {
+                authMessage.textContent = error.message;
+            } finally {
+                hideLoading();
+            }
+        });
 
+        authForgotPassword.addEventListener('click', async () => {
+            const email = authEmail.value;
+            if (!email) {
+                authMessage.textContent = 'Please enter your email to reset password.';
+                return;
+            }
+            showLoading('Sending password reset email...');
+            try {
+                await auth.sendPasswordResetEmail(email);
+                authMessage.textContent = 'Password reset email sent! Check your inbox.';
+            } catch (error) {
+                authMessage.textContent = error.message;
+            } finally {
+                hideLoading();
+            }
+        });
+
+        signOutButton.addEventListener('click', async () => {
+            showLoading('Signing out...');
+            try {
+                await auth.signOut();
+                // Clear user data
+                currentUser = null;
+                // Redirect to home or login
+                showSection('homeSection'); // Show home, which will then trigger auth modal
+                authModal.style.display = 'flex'; // Explicitly show auth modal
+            } catch (error) {
+                console.error("Sign out error:", error);
+                alert("Failed to sign out: " + error.message);
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // --- Profile Management ---
+        async function updateProfileDisplay() {
+            if (currentUser && !currentUser.isAnonymous) {
+                profileUserId.textContent = `User ID: ${currentUser.uid}`;
+                try {
+                    const profileDoc = await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('profile').doc('data').get();
+                    if (profileDoc.exists) {
+                        profileUsername.textContent = profileDoc.data().username || currentUser.email.split('@')[0];
                     } else {
-                        currentUserId = null;
-                        displayUserId.textContent = '';
-                        userInfo.classList.add('hidden'); // Hide user info
-                        authModal.classList.remove('hidden'); // Show auth modal if no user is logged in
+                        profileUsername.textContent = currentUser.email.split('@')[0];
+                        // Create a basic profile if it doesn't exist (e.g., for older users)
+                        await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('profile').doc('data').set({
+                            username: currentUser.email.split('@')[0],
+                            userId: currentUser.uid,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
                     }
-                    authReady = true; // Firebase auth has completed its initial check
-                    console.log("Auth is ready. Current page:", currentPage);
-                    // Only show page if auth is ready and user is logged in (or explicitly a guest)
-                    if (user || initialAuthToken) { // If user is logged in or custom token was attempted
-                        showPage(currentPage);
-                    } else if (!user && authModal.classList.contains('hidden')) {
-                        // If no user and auth modal is NOT already shown, show it now.
-                        authModal.classList.remove('hidden');
-                        homeLoading.classList.add('hidden'); // Hide loading if auth modal is shown
-                    } else if (!user && !authModal.classList.contains('hidden')) {
-                        // If no user and auth modal is already showing, do nothing and hide loading.
-                        homeLoading.classList.add('hidden');
+                } catch (error) {
+                    console.error("Error fetching profile:", error);
+                    profileUsername.textContent = currentUser.email.split('@')[0]; // Fallback
+                }
+            } else {
+                profileUsername.textContent = 'Guest User';
+                profileUserId.textContent = 'User ID: N/A (Guest)';
+            }
+            fetchMyVideos();
+        }
+
+        profileButton.addEventListener('click', () => {
+            showSection('profileSection');
+            updateProfileDisplay();
+        });
+
+
+        // --- Video Management (Upload, Fetch) ---
+        uploadVideoButton.addEventListener('click', async () => {
+            if (!currentUser || currentUser.isAnonymous) {
+                uploadMessage.textContent = 'Error: Please sign in to upload videos.';
+                uploadMessage.style.color = 'red';
+                return;
+            }
+
+            const videoUrl = videoUrlInput.value.trim();
+            const videoTitle = videoTitleInput.value.trim();
+            const videoDescription = videoDescriptionInput.value.trim();
+            const videoTags = videoTagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+            const videoType = document.querySelector('input[name="videoType"]:checked').value;
+            const videoVisibility = document.querySelector('input[name="videoVisibility"]:checked').value;
+
+            if (!videoUrl || !videoTitle) {
+                uploadMessage.textContent = 'Error: Video URL and Title are required.';
+                uploadMessage.style.color = 'red';
+                return;
+            }
+
+            const youtubeId = getYoutubeId(videoUrl);
+            if (!youtubeId) {
+                uploadMessage.textContent = 'Error: Invalid YouTube URL.';
+                uploadMessage.style.color = 'red';
+                return;
+            }
+
+            uploadMessage.textContent = 'Uploading video...';
+            uploadMessage.style.color = 'yellow';
+            showLoading('Uploading video details...');
+
+            try {
+                let uploaderUsername = 'Anonymous';
+                const profileDoc = await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('profile').doc('data').get();
+                if (profileDoc.exists) {
+                    uploaderUsername = profileDoc.data().username || currentUser.email.split('@')[0];
+                }
+
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').add({
+                    youtubeId: youtubeId,
+                    url: videoUrl,
+                    title: videoTitle,
+                    description: videoDescription,
+                    tags: videoTags,
+                    videoType: videoType,
+                    visibility: videoVisibility, // 'public' or 'private'
+                    uploaderId: currentUser.uid,
+                    uploaderName: uploaderUsername,
+                    uploadDate: firebase.firestore.FieldValue.serverTimestamp(),
+                    views: 0,
+                    likes: 0,
+                    monetization: {
+                        vast: monetizeVast.checked,
+                        banner468: monetizeBanner468.checked,
+                        banner300: monetizeBanner300.checked,
+                        native: monetizeNative.checked,
                     }
                 });
 
-                // Use the initialAuthToken if available
-                if (initialAuthToken) {
-                    try {
-                        console.log("Signing in with custom token...");
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("Signed in with custom token successfully.");
-                    } catch (error) {
-                        console.error("Error signing in with custom token:", error);
-                        // The onAuthStateChanged listener will handle the case of no user after this attempt.
-                        // No explicit showPage here, as onAuthStateChanged will handle the state change.
-                    }
-                }
-
-                console.log("Firebase initialized.");
+                uploadMessage.textContent = 'Video uploaded successfully!';
+                uploadMessage.style.color = 'green';
+                setTimeout(() => {
+                    closeUploadModal();
+                    fetchVideos(); // Refresh videos after upload
+                }, 1500);
 
             } catch (error) {
-                console.error("Critical: Failed to initialize Firebase:", error);
-                showCustomModal('Initialization Error', 'Failed to initialize the application. Please check console for details and ensure your Firebase config is correct.', false);
-                authReady = false;
-                // Display a full-screen error message
-                homeLoading.classList.add('hidden');
-                homeError.textContent = `Critical error initializing app: ${error.message}. Please check your Firebase configuration.`;
-                homeError.classList.remove('hidden');
-                homePage.classList.remove('hidden'); // Ensure home page is visible to show error
-                profilePage.classList.add('hidden'); // Hide other pages
+                console.error("Error uploading video:", error);
+                uploadMessage.textContent = `Error uploading video: ${error.message}`;
+                uploadMessage.style.color = 'red';
+            } finally {
+                hideLoading();
             }
-        }
+        });
 
-
-        // --- UI Navigation and Rendering ---
-
-        /**
-         * Shows the specified page and hides others.
-         * @param {string} pageName - The name of the page to show ('home', 'profile', 'search', 'people', 'shorts', 'video-player').
-         * @param {string} [videoType='long'] - Optional: video type to load for home/shorts feeds.
-         * @param {object} [videoData=null] - Optional: video data to open single video player page.
-         */
-        function showPage(pageName, videoType = 'long', videoData = null) {
-            currentPage = pageName;
-            const pages = [homePage, profilePage, searchPage, peoplePage, singleVideoPlayerPage];
-            const footerButtons = {
-                'home': document.getElementById('home-footer-button'),
-                'shorts': document.getElementById('shorts-footer-button'),
-                'upload': document.getElementById('upload-footer-button'),
-                'people': document.getElementById('people-footer-button'),
-                'profile': document.getElementById('profile-footer-button')
-            };
-
-            pages.forEach(page => page.classList.add('hidden'));
-
-            // Reset footer button styles
-            Object.values(footerButtons).forEach(btn => {
-                if(btn) {
-                    btn.classList.remove('footer-btn-active');
-                    btn.classList.add('text-gray-400', 'hover:bg-gray-700');
-                }
-            });
-
-            // Handle header elements visibility based on page
-            // Search bar always visible on small screens due to CSS, and on large screens if explicitly active
-            const isSmallScreen = window.innerWidth <= 640;
-            if (isSmallScreen || headerSearchContainer.classList.contains('active')) {
-                headerSearchContainer.classList.remove('hidden');
-                headerButtonsContainer.classList.add('hidden');
-                if (pageName === 'search') headerSearchInput.focus();
-            } else {
-                headerSearchContainer.classList.add('hidden');
-                headerButtonsContainer.classList.remove('hidden');
-                headerSearchInput.value = ''; // Clear search on navigation away
-                headerSearchContainer.classList.remove('active'); // Remove active state
-            }
-
-
-            if (!authReady || !currentUserId) {
-                console.log("Auth not ready or user not logged in, showing auth modal.");
-                authModal.classList.remove('hidden');
-                homeLoading.classList.add('hidden');
-                return;
-            }
-
-            // Set active state for the current footer button
-            const activeFooterButton = footerButtons[pageName === 'shorts' ? 'shorts' : pageName];
-            if (activeFooterButton) {
-                activeFooterButton.classList.add('footer-btn-active');
-                activeFooterButton.classList.remove('text-gray-400', 'hover:bg-gray-700');
-            }
-
-
-            switch (pageName) {
-                case 'home':
-                    homePage.classList.remove('hidden');
-                    homePage.classList.remove('shorts-mode'); // Ensure shorts-mode is off
-                    updateVideoFeed('long'); // Load long videos for home feed
-                    break;
-                case 'shorts':
-                    homePage.classList.remove('hidden'); // Shorts also use homePage container
-                    homePage.classList.add('shorts-mode'); // Add shorts-mode class
-                    updateVideoFeed('short'); // Load short videos for shorts feed
-                    break;
-                case 'profile':
-                    profilePage.classList.remove('hidden');
-                    updateProfilePage(profileVideoTypeFilter); // Use the stored filter
-                    break;
-                case 'search':
-                    searchPage.classList.remove('hidden');
-                    break;
-                case 'people':
-                    peoplePage.classList.remove('hidden');
-                    loadPeople(); // Load people to follow
-                    break;
-                case 'video-player':
-                    if (videoData) {
-                        singleVideoPlayerPage.classList.remove('hidden');
-                        loadSingleVideoPlayer(videoData);
-                    } else {
-                        showCustomModal('Error', 'No video data provided to open player.', false);
-                        showPage('home'); // Fallback to home
-                    }
-                    break;
-                default:
-                    homePage.classList.remove('hidden'); // Fallback to home
-                    homePage.classList.remove('shorts-mode');
-                    updateVideoFeed('long');
-                    break;
-            }
-        }
-
-        /**
-         * Updates the video feed on the home page based on video type and optional search query.
-         * @param {string} videoType - 'long' or 'short'.
-         * @param {string} [searchQuery=''] - Optional search query.
-         */
-        async function updateVideoFeed(videoType = 'long', searchQuery = '') {
-            if (!authReady || !db) {
-                console.warn("Firebase not ready for video feed. Aborting updateVideoFeed.");
-                homeLoading.classList.add('hidden');
-                homeError.textContent = "App not ready. Please wait or refresh.";
-                homeError.classList.remove('hidden');
-                return;
-            }
-
-            homeLoading.classList.remove('hidden');
-            homeError.classList.add('hidden');
-            noVideosMessage.classList.add('hidden');
-            videoFeedContainer.innerHTML = ''; // Clear previous videos
-
-            console.log(`Fetching ${videoType} videos from Firestore with search query: "${searchQuery}"`);
+        async function fetchVideos() {
+            showLoading('Fetching videos...');
             try {
-                const videosColRef = collection(db, `artifacts/${appId}/public/data/videos`);
-                const q = query(videosColRef, where('videoType', '==', videoType));
-
-                onSnapshot(q, async (snapshot) => {
-                    let videoList = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-
-                    // Client-side sort by timestamp (descending)
-                    videoList.sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0));
-
-                    // Filter videos based on visibility: only public videos from others, or private videos if current user is uploader
-                    let filteredVideoList = videoList.filter(video => {
-                        if (video.visibility === 'private') {
-                            return video.userId === currentUserId; // Only uploader can see their private videos
-                        }
-                        return true; // Public videos are visible to everyone
-                    });
-
-                    // Implement recommendation logic: prioritize videos from followed users for 'home'
-                    if (currentUserId && currentPage === 'home' && videoType === 'long') {
-                        const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-                        const userDoc = await getDoc(userProfileRef);
-                        const userFollowing = userDoc.exists() ? (userDoc.data().following || []) : [];
-
-                        let followedVideos = [];
-                        let otherVideos = [];
-
-                        filteredVideoList.forEach(video => {
-                            if (userFollowing.includes(video.userId)) {
-                                followedVideos.push(video);
-                            } else {
-                                otherVideos.push(video);
-                            }
-                        });
-
-                        // Shuffle other videos for varied recommendations
-                        otherVideos.sort(() => Math.random() - 0.5);
-
-                        // Combine: followed videos first, then shuffled others
-                        filteredVideoList = [...followedVideos, ...otherVideos];
-                        console.log("Videos reordered based on following:", filteredVideoList);
-                    } else {
-                        // For shorts or if not on home/following, just shuffle all videos
-                        filteredVideoList.sort(() => Math.random() - 0.5); // Randomize order
+                const videosRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos');
+                const querySnapshot = await videosRef.orderBy('uploadDate', 'desc').get();
+                const videos = [];
+                querySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.visibility === 'public' || (currentUser && data.uploaderId === currentUser.uid)) {
+                        videos.push({ id: doc.id, ...data });
                     }
+                });
+                renderVideos(videos);
+            } catch (error) {
+                console.error("Error fetching videos:", error);
+                homeSection.innerHTML = '<p class="text-red-500 text-center">Failed to load videos. Please check your internet connection and Firebase rules.</p>';
+            } finally {
+                hideLoading();
+            }
+        }
 
+        async function fetchMyVideos() {
+            if (!currentUser || currentUser.isAnonymous) {
+                myVideosList.innerHTML = '<p class="text-gray-400 text-center">Please sign in to view your uploaded videos.</p>';
+                noVideosMessage.classList.add('hidden');
+                return;
+            }
 
-                    // Apply search filter if query exists (SEO-like search)
-                    if (searchQuery) {
-                        const lowerCaseQuery = searchQuery.toLowerCase();
-                        filteredVideoList = filteredVideoList.filter(video =>
-                            (video.title && video.title.toLowerCase().includes(lowerCaseQuery)) ||
-                            (video.description && video.description.toLowerCase().includes(lowerCaseQuery)) ||
-                            (video.userName && video.userName.toLowerCase().includes(lowerCaseQuery)) ||
-                            (video.tags && video.tags.some(tag => tag.toLowerCase().includes(lowerCaseQuery)))
-                        );
-                    }
-                    allVideosCache = filteredVideoList; // Update cache for search bar
-
-                    console.log(`Fetched and filtered ${videoType} videos:`, filteredVideoList);
-
-                    if (filteredVideoList.length === 0) {
-                        noVideosMessage.classList.remove('hidden');
-                        homeLoading.classList.add('hidden');
-                        return;
-                    }
-
-                    // For Shorts, adjust container classes for vertical layout with snap scrolling
-                    if (videoType === 'short') {
-                        videoFeedContainer.classList.add('flex', 'flex-col', 'items-center', 'justify-start', 'snap-mandatory');
-                        videoFeedContainer.classList.remove('home-video-grid'); // Remove grid for shorts
-                        shortsAdCounter = 0; // Reset counter when loading shorts feed
-                    } else {
-                        videoFeedContainer.classList.remove('flex', 'flex-col', 'items-center', 'justify-start', 'snap-mandatory');
-                        videoFeedContainer.classList.add('home-video-grid'); // Add grid for long videos
-                    }
-
-                    videoFeedContainer.innerHTML = ''; // Clear existing videos before re-rendering
-                    for (let i = 0; i < filteredVideoList.length; i++) {
-                        const video = filteredVideoList[i];
-                        const videoCard = createVideoCardElement(video);
-                        videoFeedContainer.appendChild(videoCard);
-
-                        // Inject banner/VAST ads for shorts
-                        if (video.videoType === 'short' && video.monetization?.banner300x250) {
-                            shortsAdCounter++;
-                            if (shortsAdCounter % 7 === 0) { // Every 7 shorts, insert a VAST ad (simulated for now)
-                                const adDiv = document.createElement('div');
-                                adDiv.className = 'w-full h-full bg-black flex flex-col items-center justify-center text-white flex-shrink-0 snap-center';
-                                adDiv.id = `shorts-vast-ad-${video.id}-${i}`;
-                                adDiv.innerHTML = `
-                                    <div class="flex flex-col items-center justify-center text-center">
-                                        <p class="text-xl font-bold mb-4">VAST Ad (5s)</p>
-                                        <div class="relative w-48 h-48">
-                                            <svg class="animate-spin h-full w-full text-orange-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            <span id="shorts-vast-timer-${video.id}-${i}" class="absolute inset-0 flex items-center justify-center text-3xl font-bold">5</span>
-                                        </div>
-                                    </div>
-                                `;
-                                videoFeedContainer.appendChild(adDiv);
-
-                                // Simulate 5-second VAST ad and increment ad count after it finishes
-                                let timer = 5;
-                                const timerElement = adDiv.querySelector(`#shorts-vast-timer-${video.id}-${i}`);
-                                const interval = setInterval(async () => {
-                                    timer--;
-                                    if (timerElement) timerElement.textContent = timer;
-                                    if (timer <= 0) {
-                                        clearInterval(interval);
-                                        adDiv.remove(); // Remove the ad placeholder
-                                        // Increment ad view count for the user
-                                        if (currentUserId && db) {
-                                            const userProfileRef = doc(db, `artifacts/${appId}/users/${currentUserId}/profile/${currentUserId}`);
-                                            try {
-                                                await updateDoc(userProfileRef, {
-                                                    adsViewed: increment(1) // Increment by 1
-                                                });
-                                                console.log("User ad view count incremented for shorts VAST ad.");
-                                                // Update profile page's ad count if it's currently open
-                                                if (currentPage === 'profile') {
-                                                    const userDoc = await getDoc(userProfileRef);
-                                                    if (userDoc.exists()) {
-                                                        userAdViewsCounter.textContent = userDoc.data().adsViewed || 0;
-                                                    }
-                                                }
-                                            } catch (error) {
-                                                console.error("Error incrementing ad view count:", error);
-                                            }
-                                        }
-                                    }
-                                }, 1000);
-                            } else { // In-feed banner ad for other shorts
-                                const adDiv = document.createElement('div');
-                                adDiv.className = 'w-[300px] h-[250px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 flex-shrink-0 snap-center my-4 text-center p-4';
-                                adDiv.id = `shorts-banner-ad-${video.id}-${i}`;
-                                adDiv.innerHTML = `<span class="block">Shorts In-Feed Ad</span><span class="block text-orange-400 mt-2 text-sm">Ad by definitive-priority.com</span>`;
-                                videoFeedContainer.appendChild(adDiv);
-                                injectSpecificAdScript(adDiv.id, 'banner300x250_adstreaa_mobile'); // Using the mobile-specific banner
-                            }
-                        }
-                    }
-                    homeLoading.classList.add('hidden');
-                    noVideosMessage.classList.add('hidden');
-
-                }, (err) => {
-                    console.error("Error in onSnapshot for videos:", err);
-                    homeError.textContent = `Failed to load videos: ${err.message}. Check Firebase security rules.`;
-                    homeError.classList.remove('hidden');
-                    homeLoading.classList.add('hidden');
+            showLoading('Fetching your videos...');
+            try {
+                const videosRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos');
+                const querySnapshot = await videosRef.where('uploaderId', '==', currentUser.uid).orderBy('uploadDate', 'desc').get();
+                const myVideos = [];
+                querySnapshot.forEach(doc => {
+                    myVideos.push({ id: doc.id, ...doc.data() });
                 });
 
-            }
-            catch (error) {
-                console.error("Error setting up video feed listener:", error);
-                homeError.textContent = `Error: ${error.message}. Could not set up real-time listener.`;
-                homeError.classList.remove('hidden');
-                homeLoading.classList.add('hidden');
-            }
-        }
-
-        /**
-         * Creates an HTML element for a single video card on home/profile feed.
-         * @param {object} video - The video data.
-         * @returns {HTMLElement} The video card element.
-         */
-        function createVideoCardElement(video) {
-            console.log("Creating video card for:", video.id, "Title:", video.title);
-            const videoCard = document.createElement('div');
-            videoCard.id = `video-card-${video.id}`;
-
-            // Determine class based on video type for responsive layout
-            // For long videos, we use a fixed aspect ratio thumbnail. For shorts, full container is for the video.
-            videoCard.className = `video-card-item relative bg-gray-900 overflow-hidden border border-gray-800 shadow-xl rounded-lg`;
-
-            const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
-            const thumbnailUrl = youTubeInfo ? youTubeInfo.thumbnailUrl : 'https://placehold.co/1280x720/000000/FFFFFF?text=Invalid+Video+URL';
-            const uploadTimeAgo = getTimeAgo(video.timestamp);
-
-            // Fetch uploader's avatar for home page display
-            let channelAvatarUrl = 'https://placehold.co/24x24/374151/E5E7EB?text=U'; // Default avatar
-            let channelName = video.userName || 'Anonymous User';
-
-            // Use an IIFE (Immediately Invoked Function Expression) to fetch avatar
-            // so it can be awaited if needed or handled asynchronously.
-            (async () => {
-                if (video.userId && db) {
-                    try {
-                        const userProfileRef = doc(db, `artifacts/${appId}/users/${video.userId}/profile/${video.userId}`);
-                        const userDoc = await getDoc(userProfileRef);
-                        if (userDoc.exists() && userDoc.data().username) {
-                            // Placeholder for a real avatar, currently using text placeholder
-                            channelAvatarUrl = `https://placehold.co/24x24/374151/E5E7EB?text=${userDoc.data().username.charAt(0)}`;
-                            channelName = userDoc.data().username;
-                        }
-                    } catch (error) {
-                        console.error("Error fetching channel avatar/name:", error);
-                    }
-                }
-                // Now render the card content based on video type
-                if (video.videoType === 'long') {
-                    videoCard.innerHTML = `
-                        <div class="video-thumbnail-wrapper">
-                            <img src="${thumbnailUrl}" alt="${video.title}" class="video-thumbnail" />
-                        </div>
-                        <div class="p-4">
-                            <h3 class="text-lg font-semibold text-orange-300 truncate mb-1">${video.title}</h3>
-                            <div class="video-metadata-line">
-                                <img src="${channelAvatarUrl}" alt="${channelName} Avatar">
-                                <span class="channel-name">${channelName}</span>
-                                <span>• ${video.viewsCount || 0} views</span>
-                                <span>• ${uploadTimeAgo}</span>
-                            </div>
-                            <!-- Home page specific ads, not in video card now -->
-                        </div>
-                    `;
-                    // Attach click listener for entire card to open single video player
-                    videoCard.addEventListener('click', () => showPage('video-player', null, video));
-
-                } else { // Shorts video card
-                    videoCard.classList.add('flex', 'flex-col', 'items-center', 'justify-center', 'snap-center');
-                    videoCard.innerHTML = `
-                        <div id="shorts-player-container-${video.id}" class="relative w-full h-full">
-                            <!-- Thumbnail placeholder -->
-                            <img id="thumbnail-${video.id}" src="${thumbnailUrl}" alt="Video Thumbnail" class="absolute inset-0 w-full h-full object-cover z-10" />
-
-                            <!-- Play button overlay on thumbnail -->
-                            <button id="play-button-${video.id}" class="absolute z-20 bg-black bg-opacity-70 rounded-full p-4 hover:scale-110 transition-transform duration-200 focus:outline-none focus:ring-4 focus:ring-orange-500 focus:ring-opacity-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                                <svg class="h-10 w-10 text-orange-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
-                            </button>
-
-                            <!-- Actual YouTube iframe will be dynamically added here -->
-                            <div id="youtube-iframe-wrapper-${video.id}" class="w-full h-full hidden"></div>
-                        </div>
-                        <!-- Video Info and Controls Overlay for Shorts -->
-                        <div class="video-info-overlay flex flex-col justify-end text-white z-10">
-                            <h2 class="text-xl font-bold mb-1 text-orange-300 drop-shadow">${video.title}</h2>
-                            <p class="text-sm text-gray-300 mb-2 drop-shadow">${video.description || ''}</p>
-                            <div class="flex flex-wrap mb-2">${tagsHtml}</div>
-                            <p class="text-sm text-gray-300 mb-4 drop-shadow">By ${channelName} | ${video.viewsCount || 0} views | Uploaded: ${uploadTimeAgo}</p>
-
-                            <!-- Social Buttons for Shorts -->
-                            <div class="flex items-center space-x-6 text-xl">
-                                <button id="like-button-${video.id}" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
-                                    <svg class="h-6 w-6 text-gray-300 like-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                                    </svg>
-                                    <span class="text-sm like-count">${video.likesCount || 0}</span>
-                                </button>
-                                <button id="comment-button-${video.id}" class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200">
-                                    <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                    <span class="text-sm">Comments</span>
-                                </button>
-                                <button class="flex items-center space-x-1 p-2 rounded-full hover:bg-gray-700 transition duration-200" onclick="shareVideo('${video.id}', '${video.title}', '${video.youtubeUrl}')">
-                                    <svg class="h-6 w-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.516 3.832a3 3 0 00.512-1.632V12c0-.36-.062-.716-.184-1.049m0 2.098L8.684 10.658m10.158-1.342a3 3 0 110-2.684m0 2.684l-6.516-3.832a3 3 0 00-.512 1.632V12c0 .36.062.716.184 1.049m0-2.098L18.842 8.658"></path>
-                                    </svg>
-                                    <span class="text-sm">Share</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    // Auto-play shorts if they are in view (handled by Intersection Observer in JS)
-                    const shortVideoIframeWrapper = videoCard.querySelector(`#youtube-iframe-wrapper-${video.id}`);
-                    const shortThumbnail = videoCard.querySelector(`#thumbnail-${video.id}`);
-                    const shortPlayButton = videoCard.querySelector(`#play-button-${video.id}`);
-
-                    if (shortPlayButton) {
-                        shortPlayButton.addEventListener('click', () => {
-                            // For shorts, immediately play the video on click
-                            shortThumbnail.classList.add('hidden');
-                            shortPlayButton.classList.add('hidden');
-                            shortVideoIframeWrapper.classList.remove('hidden');
-                            const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
-                            if (youTubeInfo) {
-                                let iframe = shortVideoIframeWrapper.querySelector('iframe');
-                                if (!iframe) {
-                                    iframe = document.createElement('iframe');
-                                    iframe.className = "w-full h-full object-cover";
-                                    iframe.src = youTubeInfo.embedUrl; // Autoplay is handled by embedUrl
-                                    iframe.frameBorder = "0";
-                                    iframe.allow = "autoplay; encrypted-media; gyroscope; picture-in-picture";
-                                    iframe.allowFullscreen = true;
-                                    iframe.title = "YouTube short video player";
-                                    shortVideoIframeWrapper.appendChild(iframe);
-                                } else {
-                                    iframe.src = youTubeInfo.embedUrl;
-                                }
-                            }
-                        });
-                    }
-                }
-            })(); // End of IIFE for avatar fetching and card rendering
-
-            // Attach like/comment listeners (common for both types)
-            videoCard.querySelector(`#like-button-${video.id}`).addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent opening video player on like click
-                handleLike(video.id);
-            });
-            videoCard.querySelector(`#comment-button-${video.id}`).addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent opening video player on comment click
-                openCommentModal(video.id);
-            });
-            videoCard.querySelector(`[onclick^="shareVideo('${video.id}'"]`).addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevent opening video player on share click
-            });
-
-
-            // Inject specific ad scripts into their respective containers conditionally for long videos
-            if (video.videoType === 'long') {
-                // In-feed banners below video details
-                if (video.monetization?.banner468x60) {
-                    const adDiv = document.createElement('div');
-                    adDiv.id = `banner-468x60-${video.id}`;
-                    adDiv.className = `mt-4 w-full flex justify-center`;
-                    adDiv.innerHTML = `<div class="w-[468px] h-[60px] bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 text-center p-2">Banner 468x60 Ad <br> (by HighPerformanceFormat.com)</div>`;
-                    videoCard.appendChild(adDiv);
-                    injectSpecificAdScript(`banner-468x60-${video.id} > div`, 'banner468x60_highperformance');
-                }
-                if (video.monetization?.native) {
-                    const adDiv = document.createElement('div');
-                    adDiv.id = `native-ad-${video.id}`;
-                    adDiv.className = `mt-4 w-full flex justify-center`;
-                    adDiv.innerHTML = `<div class="w-full max-w-sm bg-gray-800 rounded-md flex items-center justify-center text-xs text-gray-400 border border-gray-700 p-2 min-h-[100px] text-center">Native Ad <br> (Content will load if configured by ad network)</div>`;
-                    videoCard.appendChild(adDiv);
-                    injectSpecificAdScript(`native-ad-${video.id} > div`, 'native_adstreaa');
-                }
-            }
-
-
-            return videoCard;
-        }
-
-        /**
-         * Loads and displays a single video in a dedicated player page.
-         * @param {object} video - The video data object.
-         */
-        async function loadSingleVideoPlayer(video) {
-            console.log("Loading single video player for:", video.id);
-            // Clear previous content
-            singleVideoPlayerContainer.innerHTML = '';
-            recommendedVideosContainer.innerHTML = '';
-            inPlayerSliderAdContainer.classList.add('hidden'); // Hide slider ad initially
-
-            // Set main video details
-            videoPageTitle.textContent = video.title;
-            videoPageDescription.textContent = video.description || '';
-
-            const youTubeInfo = getYouTubeInfo(video.youtubeUrl);
-            if (youTubeInfo) {
-                const iframe = document.createElement('iframe');
-                iframe.className = "w-full h-full object-cover";
-                iframe.src = youTubeInfo.embedUrl;
-                iframe.frameBorder = "0";
-                iframe.allow = "autoplay; encrypted-media; gyroscope; picture-in-picture";
-                iframe.allowFullscreen = true;
-                iframe.title = "YouTube video player";
-                singleVideoPlayerContainer.appendChild(iframe);
-
-                // Inject video slider ad if enabled
-                if (video.monetization?.videoSlider) {
-                    inPlayerSliderAdContainer.classList.remove('hidden');
-                    injectSpecificAdScript('in-player-slider-ad-container', 'video_slider_adstreaa');
-                }
-            } else {
-                singleVideoPlayerContainer.innerHTML = `<div class="text-red-500 text-center p-4">Invalid YouTube URL: ${video.youtubeUrl}</div>`;
-            }
-
-            // Update like button status
-            const likeIcon = videoPageLikeButton.querySelector('.like-icon');
-            const likeCountSpan = videoPageLikeButton.querySelector('.like-count');
-            likeCountSpan.textContent = video.likesCount || 0; // Update count based on video data
-
-            if (currentUserId && db) {
-                const userLikeRef = doc(db, `artifacts/${appId}/public/data/likes/${video.id}_${currentUserId}`);
-                const docSnap = await getDoc(userLikeRef);
-                if (docSnap.exists()) {
-                    likeIcon.classList.remove('text-gray-300');
-                    likeIcon.classList.add('text-red-500', 'fill-current');
-                    likeIcon.innerHTML = '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.64a5.5 5.5 0 000-7.78z" fill="currentColor"></path>';
+                if (myVideos.length === 0) {
+                    noVideosMessage.classList.remove('hidden');
+                    myVideosList.innerHTML = '';
                 } else {
-                    likeIcon.classList.remove('text-red-500', 'fill-current');
-                    likeIcon.classList.add('text-gray-300');
-                    likeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>';
+                    noVideosMessage.classList.add('hidden');
+                    renderVideoCards(myVideos, myVideosList, true); // Render as normal video cards
                 }
+            } catch (error) {
+                console.error("Error fetching user videos:", error);
+                myVideosList.innerHTML = '<p class="text-red-500 text-center">Failed to load your videos.</p>';
+            } finally {
+                hideLoading();
             }
-            // Add listeners for video page specific buttons
-            videoPageLikeButton.onclick = () => handleLike(video.id);
-            videoPageCommentButton.onclick = () => openCommentModal(video.id);
-            videoPageShareButton.onclick = () => shareVideo(video.id, video.title, video.youtubeUrl);
+        }
 
-            // Load recommended videos (excluding the current one)
-            const recommendedVideos = allVideosCache
-                .filter(v => v.id !== video.id && v.videoType === 'long')
-                .sort(() => Math.random() - 0.5) // Shuffle recommendations
-                .slice(0, 5); // Limit to 5 recommendations for brevity
+        function renderVideos(videos) {
+            homeSection.innerHTML = '';
+            shortsSection.innerHTML = '';
 
-            recommendedVideos.forEach(recVideo => {
-                const recVideoElement = document.createElement('div');
-                recVideoElement.className = "flex items-center space-x-3 p-2 bg-gray-800 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200";
-                recVideoElement.addEventListener('click', () => {
-                    // Load the recommended video into the player
-                    loadSingleVideoPlayer(recVideo);
-                });
+            const longVideos = videos.filter(v => v.videoType === 'normal');
+            const shortVideos = videos.filter(v => v.videoType === 'short');
 
-                const youTubeRecInfo = getYouTubeInfo(recVideo.youtubeUrl);
-                const recThumbnailUrl = youTubeRecInfo ? youTubeRecInfo.thumbnailUrl : 'https://placehold.co/120x90/000/FFF?text=Video';
-                const recUploadTimeAgo = getTimeAgo(recVideo.timestamp);
+            // Render long videos for Home section
+            renderVideoCards(longVideos, homeSection);
 
-                recVideoElement.innerHTML = `
-                    <img src="${recThumbnailUrl}" alt="${recVideo.title}" class="w-24 h-16 object-cover rounded-md flex-shrink-0" />
-                    <div>
-                        <h4 class="text-sm font-semibold text-orange-200 line-clamp-2">${recVideo.title}</h4>
-                        <p class="text-xs text-gray-400">${recVideo.userName || 'Anonymous'} • ${recVideo.viewsCount || 0} views • ${recUploadTimeAgo}</p>
+            // Render shorts for Shorts section
+            shortVideos.forEach(video => {
+                const shortsContainer = document.createElement('div');
+                shortsContainer.className = 'w-full h-full flex flex-col justify-center items-center relative'; // Full screen for shorts
+                shortsContainer.innerHTML = `
+                    <div class="shorts-thumbnail-container w-full max-w-sm mx-auto">
+                        <img src="${getYoutubeThumbnail(video.youtubeId, 'maxresdefault')}" alt="${video.title}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4 w-full max-w-sm mx-auto">
+                        <h3 class="text-lg font-bold">${video.title}</h3>
+                        <p class="text-sm text-gray-400">${video.uploaderName}</p>
+                        <p class="text-xs text-gray-500">${formatDate(video.uploadDate)}</p>
                     </div>
                 `;
-                recommendedVideosContainer.appendChild(recVideoElement);
+                shortsContainer.onclick = () => openVideoPlayerModal(video);
+                shortsSection.appendChild(shortsContainer);
             });
-            if (recommendedVideos.length === 0) {
-                recommendedVideosContainer.innerHTML = `<p class="text-gray-400 text-center py-4">No recommendations available.</p>`;
+
+            if (longVideos.length === 0 && shortVideos.length === 0) {
+                homeSection.innerHTML = '<p class="text-gray-400 text-center col-span-full">No videos available yet. Be the first to upload!</p>';
             }
         }
 
+        function renderVideoCards(videos, targetElement, showVisibility = false) {
+            targetElement.innerHTML = '';
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card shadow-lg';
+                videoCard.innerHTML = `
+                    <div class="thumbnail-container">
+                        <img src="${getYoutubeThumbnail(video.youtubeId)}" alt="${video.title}">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-md font-bold mb-1 line-clamp-2">${video.title}</h3>
+                        <p class="text-sm text-gray-400">${video.uploaderName}</p>
+                        <p class="text-xs text-gray-500">${(video.views || 0).toLocaleString()} views • ${formatDate(video.uploadDate)}</p>
+                        ${showVisibility ? `<p class="text-xs text-gray-500 mt-1">Visibility: ${video.visibility.charAt(0).toUpperCase() + video.visibility.slice(1)}</p>` : ''}
+                    </div>
+                `;
+                videoCard.onclick = () => openVideoPlayerModal(video);
+                targetElement.appendChild(videoCard);
+            });
+        }
 
-        /**
-         * Injects ad scripts into specific div IDs.
-         * This is a utility to encapsulate ad script loading.
-         * @param {string} divId The ID of the div where the ad should be injected.
-         * @param {string} adType The type of ad ('banner468x60_highperformance', 'banner300x250_adstreaa_mobile', 'native_adstreaa', 'video_slider_adstreaa').
-         */
-        function injectSpecificAdScript(divId, adType) {
-            const adDiv = typeof divId === 'string' ? document.getElementById(divId) : divId; // Accept element or ID
-            if (!adDiv) {
-                console.warn(`Ad div with ID/Element ${divId} not found.`);
+        // --- Search Functionality ---
+        searchButton.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        async function performSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                alert('Please enter a search query.');
                 return;
             }
 
-            // Clear existing content to prevent duplicate ad loads on re-render
-            adDiv.innerHTML = ''; // Clear placeholder text
+            showLoading(`Searching for "${query}"...`);
+            try {
+                const videosRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos');
+                let allVideos = [];
 
-            let scriptContent = '';
-            let isDocumentWrite = false;
+                // Fetch all public videos and user's private videos
+                const publicVideosSnapshot = await videosRef.where('visibility', '==', 'public').get();
+                publicVideosSnapshot.forEach(doc => allVideos.push({ id: doc.id, ...doc.data() }));
 
-            switch (adType) {
-                case 'banner300x250_adstreaa_mobile':
-                    scriptContent = `
-                        (function(jyihw){
-                            var d = document,
-                                s = d.createElement('script'),
-                                l = d.scripts[d.scripts.length - 1];
-                            s.settings = jyihw || {};
-                            s.src = "//definitive-priority.com/b/X/V.sMdCGMlL0tYjW-cG/YezmZ9/uuZaUlldk_P/T/YO0LMEjgQm1/NbjrIgtFNyjxQqy/NgD/Uq2zMewZ";
-                            s.async = true;
-                            s.referrerPolicy = 'no-referrer-when-downgrade';
-                            l.parentNode.insertBefore(s, l);
-                        })({});
-                    `;
-                    break;
-                case 'banner468x60_highperformance':
-                    isDocumentWrite = true; // This ad type uses document.write
-                    scriptContent = `
-                        var atOptions = {
-                            'key' : '7281653bd62d5d460d6daa8793f19c5e',
-                            'format' : 'iframe',
-                            'height' : 60,
-                            'width' : 468,
-                            'params' : {}
-                        };
-                        document.write('<scr' + 'ipt type="text/javascript" src="//www.highperformanceformat.com/7281653bd62d5d460d6daa8793f19c5e/invoke.js"></scr' + 'ipt>');
-                    `;
-                    break;
-                case 'native_adstreaa':
-                    // This code needs both a script and a div. The div ID here must be unique per ad unit.
-                    // For a single injection, we can directly place the div here too.
-                    adDiv.innerHTML = `<div id="container-native-ad-${Math.random().toString(36).substring(7)}" class="w-full h-full"></div>`;
-                    scriptContent = `
-                        (function() {
-                            var containerId = '${adDiv.querySelector('div').id}'; // Get the generated ID
-                            var script = document.createElement('script');
-                            script.async = true;
-                            script.setAttribute('data-cfasync', 'false');
-                            script.src = "//pl26835150.profitableratecpm.com/39628927897b21d6c45567203000ccc6/invoke.js";
-                            script.onload = function() {
-                                // After main invoke.js loads, the ad container should be ready.
-                                // If the ad network requires immediate invoke, this might need more logic.
-                            };
-                            document.getElementById(containerId).appendChild(script);
-                        })();
-                    `;
-                    break;
-                case 'video_slider_adstreaa':
-                    scriptContent = `
-                        (function(uwrwh){
-                            var d = document,
-                                s = d.createElement('script'),
-                                l = d.scripts[d.scripts.length - 1];
-                            s.settings = uwrwh || {};
-                            s.src = "//definitive-priority.com/bCX-VCsPd.G/lx0JY/Wecq/HeUmP9jugZEUrlPkJPDT-YW0sMDjjQM0DOlTBgetyN/jMQoyDNBDRQy5sOUQP";
-                            s.async = true;
-                            s.referrerPolicy = 'no-referrer-when-downgrade';
-                            l.parentNode.insertBefore(s, l);
-                        })({});
-                    `;
-                    // For slider ad, add a label for visual indication
-                    adDiv.innerHTML += `<span class="ad-label">AD</span>`;
-                    break;
-                case 'popunder_assured_sandwich':
-                     // Popunder is typically loaded once per page load and opens a new tab/window
-                     // It's not usually injected into a specific div, but rather a global script.
-                     // I will add this to the global script loading for now.
-                     console.warn("Popunder ads usually open new windows and might be aggressive. Integrated globally.");
-                     loadScript('https://assured-sandwich.com/bL3/V.0cPa3Eprv_bPmwVGJvZ/DL0/2zNODTIq0ANgTqMk3/LRTgYs0gMSj/QZ1iMjzugs');
-                    return; // Don't append to adDiv for popunder
-                default:
-                    console.warn(`Unknown ad type: ${adType} for div: ${divId}`);
-                    adDiv.textContent = `Ad Placeholder (${adType})`;
-                    return;
+                if (currentUser && !currentUser.isAnonymous) {
+                    const privateVideosSnapshot = await videosRef.where('uploaderId', '==', currentUser.uid).where('visibility', '==', 'private').get();
+                    privateVideosSnapshot.forEach(doc => allVideos.push({ id: doc.id, ...doc.data() }));
+                }
+
+                // Filter results client-side for now
+                const searchResults = allVideos.filter(video =>
+                    video.title.toLowerCase().includes(query) ||
+                    (video.description && video.description.toLowerCase().includes(query)) ||
+                    (video.uploaderName && video.uploaderName.toLowerCase().includes(query)) ||
+                    (video.tags && video.tags.some(tag => tag.toLowerCase().includes(query)))
+                );
+
+                searchQueryDisplay.textContent = query;
+                if (searchResults.length > 0) {
+                    noSearchResultsMessage.classList.add('hidden');
+                    renderVideoCards(searchResults, searchResultsList);
+                } else {
+                    noSearchResultsMessage.classList.remove('hidden');
+                    searchResultsList.innerHTML = '';
+                }
+                showSection('searchResultsSection');
+
+            } catch (error) {
+                console.error("Error performing search:", error);
+                searchResultsList.innerHTML = '<p class="text-red-500 text-center col-span-full">Failed to perform search. Please try again.</p>';
+                noSearchResultsMessage.classList.add('hidden');
+            } finally {
+                hideLoading();
+            }
+        }
+
+
+        // --- Video Player Functionality (Likes, Comments, Ads) ---
+
+        // VAST Ad Setup and Play
+        function requestVastAd(videoId) {
+            console.log('Requesting VAST ad...');
+            adDisplayContainer = new google.ima.AdDisplayContainer(vastAdContainer, youtubePlayer);
+            adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+            adsLoader.addEventListener(
+                google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
+                onAdsManagerLoaded,
+                false
+            );
+            adsLoader.addEventListener(
+                google.ima.AdErrorEvent.Type.AD_ERROR,
+                onAdError,
+                false
+            );
+
+            // Request video ads.
+            const adsRequest = new google.ima.AdsRequest();
+            // This is a sample VAST tag. Replace with your actual ad tag.
+            // For testing, use Google's sample tags:
+            // VAST 2.0: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonly&nofb=1&correlator='
+            // VAST 3.0: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonly&nofb=1&correlator='
+            // VMAP: 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/vmap_ad_samples&ciu_szs=300x250&gdfp_req=1&ad_rule=1&env=vp&output=vmap&unviewed_position_start=1&impl=s&cmsid=496&vid=short_onecue&correlator='
+            adsRequest.adTagUrl = 'https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ar%3Dpreonly&nofb=1&correlator=';
+            // You might want to make this dynamic or configurable
+
+            adsRequest.linearAdSlotWidth = youtubePlayer.offsetWidth;
+            adsRequest.linearAdSlotHeight = youtubePlayer.offsetHeight;
+            adsRequest.nonLinearAdSlotWidth = youtubePlayer.offsetWidth;
+            adsRequest.nonLinearAdSlotHeight = youtubePlayer.offsetHeight;
+
+            adsLoader.requestAds(adsRequest);
+            adPlayMessage.classList.remove('hidden');
+        }
+
+        function onAdsManagerLoaded(adsManagerLoadedEvent) {
+            console.log('Ads Manager Loaded.');
+            const adsRenderingSettings = new google.ima.AdsRenderingSettings();
+            adsRenderingSettings.restoreCustomPlaybackStateOnAdBreakComplete = true;
+            adsManager = adsManagerLoadedEvent.getAdsManager(youtubePlayer, adsRenderingSettings);
+            adsManager.addEventListener(google.ima.AdErrorEvent.Type.AD_ERROR, onAdError);
+            adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_PAUSE_REQUESTED, onContentPauseRequested);
+            adsManager.addEventListener(google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED, onContentResumeRequested);
+            adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, onAdLoaded); // Listen for AD_LOADED event
+
+            try {
+                adsManager.init(vastAdContainer.offsetWidth, vastAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
+                adsManager.start();
+            } catch (adError) {
+                // An error may be thrown if there was a problem with the VAST response.
+                console.error('Ads Manager initialization error:', adError);
+                playVideoDirectly(currentVideoData.youtubeId);
+            }
+        }
+
+        function onAdError(adErrorEvent) {
+            // Handle the error logging.
+            console.error('Ad Error:', adErrorEvent.getError());
+            // Play content.
+            playVideoDirectly(currentVideoData.youtubeId);
+        }
+
+        function onContentPauseRequested() {
+            // This function is called when the ad starts playing.
+            youtubePlayer.src = ''; // Pause/Stop YouTube content
+            vastAdContainer.style.display = 'block';
+            contentPlayer.style.display = 'none';
+            adPlayMessage.classList.remove('hidden');
+        }
+
+        function onContentResumeRequested() {
+            // This function is called when the ad is finished.
+            vastAdContainer.style.display = 'none';
+            adPlayMessage.classList.add('hidden');
+            contentPlayer.style.display = 'block';
+            playVideoDirectly(currentVideoData.youtubeId);
+        }
+
+        function onAdLoaded(adEvent) {
+            const ad = adEvent.getAd();
+            if (!ad.isLinear()) {
+                // Non-linear ad.
+                // Do nothing specific for now, as we only expect pre-roll linear ads
+            }
+        }
+
+        function playVideoDirectly(youtubeId) {
+            vastAdContainer.style.display = 'none';
+            adPlayMessage.classList.add('hidden');
+            contentPlayer.style.display = 'block';
+            youtubePlayer.src = getYouTubeEmbedUrl(youtubeId);
+            // Increment view count
+            incrementVideoView(currentVideoData.id);
+        }
+
+        // Ad loading based on monetization settings
+        function loadDynamicAds(monetizationSettings) {
+            adContainerVideoPlayer.innerHTML = ''; // Clear previous ads
+
+            if (monetizationSettings.banner468) {
+                const banner468 = document.createElement('div');
+                banner468.className = 'ad-banner-468x60 mx-auto';
+                banner468.textContent = 'Banner Ad 468x60';
+                adContainerVideoPlayer.appendChild(banner468);
             }
 
-            if (isDocumentWrite) {
-                // For document.write, we need to create a temporary iframe to contain it
-                // as document.write after page load can overwrite the whole document.
-                const iframe = document.createElement('iframe');
-                iframe.style.width = '100%';
-                iframe.style.height = '100%';
-                iframe.style.border = 'none';
-                adDiv.appendChild(iframe);
-                iframe.contentWindow.document.open();
-                iframe.contentWindow.document.write(scriptContent);
-                iframe.contentWindow.document.close();
+            if (monetizationSettings.banner300) {
+                const banner300 = document.createElement('div');
+                banner300.className = 'ad-banner-300x250 mx-auto';
+                banner300.textContent = 'Banner Ad 300x250';
+                adContainerVideoPlayer.appendChild(banner300);
+            }
+
+            if (monetizationSettings.native) {
+                const nativeAd = document.createElement('div');
+                nativeAd.className = 'ad-native mx-auto';
+                nativeAd.innerHTML = `
+                    <div class="ad-title">Sponsored Content</div>
+                    <div class="ad-description">This is a native advertisement. You can customize its content.</div>
+                    <div class="ad-cta">Learn More</div>
+                `;
+                adContainerVideoPlayer.appendChild(nativeAd);
+            }
+        }
+
+        // Like functionality
+        async function updateLikeButtonState(videoId) {
+            if (!currentUser || currentUser.isAnonymous) {
+                likeButton.disabled = true;
+                likeButton.style.opacity = 0.5;
+                return;
+            }
+            likeButton.disabled = false;
+            likeButton.style.opacity = 1;
+
+            const likeRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId).collection('likes').doc(currentUser.uid);
+            const doc = await likeRef.get();
+            if (doc.exists) {
+                likeButton.classList.add('text-red-500'); // Indicate liked state
             } else {
-                const script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.textContent = scriptContent;
-                adDiv.appendChild(script);
+                likeButton.classList.remove('text-red-500');
             }
         }
 
+        likeButton.addEventListener('click', async () => {
+            if (!currentUser || currentUser.isAnonymous || !currentVideoData) {
+                alert('Please sign in to like videos.');
+                return;
+            }
 
-        // --- Ad Script Injection (Global) ---
-        // Dynamically create and append script elements for third-party ads.
+            const videoId = currentVideoData.id;
+            const likeRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId).collection('likes').doc(currentUser.uid);
 
-        function loadScript(src, type = 'text/javascript', parent = document.body) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                script.src = src;
-                script.type = type;
-                script.async = true;
-                script.referrerPolicy = 'no-referrer-when-downgrade'; // For some ad networks
-
-                script.onload = () => {
-                    console.log(`Script loaded: ${src}`);
-                    resolve(script);
-                };
-                script.onerror = (e) => {
-                    console.error(`Error loading script: ${src}`, e);
-                    reject(new Error(`Failed to load script ${src}`));
-                };
-                parent.appendChild(script);
-            });
-        }
-
-        function injectExternalAdScripts() {
-            console.log("Injecting global ad scripts...");
-
-            // MultiTag In-page Push
-            injectSpecificAdScript(document.body, 'popunder_assured_sandwich'); // Using popunder from assured-sandwich.com as a global example
-
-            // Socialbar (Adstreaa)
-            loadScript('//pl26835180.profitableratecpm.com/51/87/c3/5187c39d0d72d45de29e9c62b51aaba2.js');
-
-            console.log("All global external ad scripts initiated for injection.");
-        }
-
-
-        // --- Search Functionality ---
-        function performSearch(query) {
-            const currentVideoType = currentPage === 'shorts' ? 'short' : 'long';
-            updateVideoFeed(currentVideoType, query);
-        }
-
-
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM Content Loaded. Starting app initialization.");
-            // Initialize Firebase when DOM is ready
-            initializeFirebase();
-
-            // Inject global ad scripts
-            injectExternalAdScripts();
-
-            // Header Button Listeners
-            // Toggle search bar visibility
-            document.getElementById('search-button').addEventListener('click', () => {
-                const isSmallScreen = window.innerWidth <= 640;
-                if (!isSmallScreen) { // Only toggle on large screens, always visible on small
-                    if (headerSearchContainer.classList.contains('hidden')) {
-                        headerSearchContainer.classList.remove('hidden');
-                        headerSearchContainer.classList.add('active'); // Mark as active for persistent visibility
-                        headerButtonsContainer.classList.add('hidden');
-                        headerSearchInput.focus();
-                    } else {
-                        // If search bar is visible, clicking search button again hides it and clears search
-                        headerSearchContainer.classList.add('hidden');
-                        headerSearchContainer.classList.remove('active'); // Remove active state
-                        headerButtonsContainer.classList.remove('hidden');
-                        headerSearchInput.value = ''; // Clear search on close
-                        // Re-fetch videos without search filter
-                        const currentVideoType = currentPage === 'shorts' ? 'short' : 'long';
-                        updateVideoFeed(currentVideoType);
-                    }
+            try {
+                const doc = await likeRef.get();
+                if (doc.exists) {
+                    // Unlike
+                    await likeRef.delete();
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId).update({
+                        likes: firebase.firestore.FieldValue.increment(-1)
+                    });
+                    likeButton.classList.remove('text-red-500');
+                    likeCount.textContent = parseInt(likeCount.textContent) - 1;
+                } else {
+                    // Like
+                    await likeRef.set({
+                        userId: currentUser.uid,
+                        likedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId).update({
+                        likes: firebase.firestore.FieldValue.increment(1)
+                    });
+                    likeButton.classList.add('text-red-500');
+                    likeCount.textContent = parseInt(likeCount.textContent) + 1;
                 }
-            });
-            clearSearchButton.addEventListener('click', () => {
-                headerSearchInput.value = '';
-                const currentVideoType = currentPage === 'shorts' ? 'short' : 'long';
-                updateVideoFeed(currentVideoType); // Clear search filter
-                headerSearchInput.focus();
-            });
-            headerSearchInput.addEventListener('input', (e) => {
-                performSearch(e.target.value);
-            });
-
-
-            document.getElementById('profile-header-button').addEventListener('click', () => showPage('profile'));
-            document.getElementById('upload-footer-button').addEventListener('click', openUploadModal); // Upload button moved to footer
-            document.getElementById('withdraw-header-button').addEventListener('click', openWithdrawModal);
-            signOutButton.addEventListener('click', handleSignOut);
-
-            // Footer Button Listeners
-            document.getElementById('home-footer-button').addEventListener('click', () => showPage('home'));
-            document.getElementById('shorts-footer-button').addEventListener('click', () => showPage('shorts')); // New Shorts button
-            document.getElementById('people-footer-button').addEventListener('click', () => showPage('people'));
-            document.getElementById('profile-footer-button').addEventListener('click', () => showPage('profile'));
-
-            // Custom Modal Listeners (delegated as modal is shown/hidden)
-            customModalCloseButton.addEventListener('click', () => closeModal('custom'));
-            // The confirm button's listener is set dynamically in showCustomModal
-
-            // Comment Modal Listeners
-            commentModalCloseButton.addEventListener('click', () => closeModal('comment'));
-            addCommentButton.addEventListener('click', addComment);
-            newCommentInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addComment();
-                }
-            });
-
-            // Upload Modal Listeners
-            uploadModalCloseButton.addEventListener('click', () => closeModal('upload'));
-            uploadVideoForm.addEventListener('submit', handleUploadSubmit);
-
-            // Withdraw Modal Listeners
-            withdrawModalCloseButton.addEventListener('click', () => closeModal('withdraw'));
-            withdrawForm.addEventListener('submit', handleWithdrawSubmit);
-
-            // Authentication Modal Listeners
-            authTabLogin.addEventListener('click', () => switchAuthTab('login'));
-            authTabSignup.addEventListener('click', () => switchAuthTab('signup'));
-            loginForm.addEventListener('submit', handleEmailLogin);
-            signupForm.addEventListener('submit', handleEmailSignup);
-            googleSignInButton.addEventListener('click', handleGoogleSignIn);
-            guestLoginButton.addEventListener('click', handleGuestLogin);
-            forgotPasswordButton.addEventListener('click', handleForgotPassword);
-
-            // Profile Page Tabs (New)
-            profileTabVideos.addEventListener('click', () => updateProfilePage('long'));
-            profileTabShorts.addEventListener('click', () => updateProfilePage('short'));
-
-            // Single video player back button
-            backToFeedButton.addEventListener('click', () => showPage(currentPage === 'shorts' ? 'shorts' : 'home')); // Go back to current feed type
-        });
-
-        // Ensure window resize updates IMA ad container size if needed,
-        // though the global container should handle it fairly well with CSS.
-        window.addEventListener('resize', () => {
-            if (currentAdManager && imaAdContainer.style.display !== 'none') {
-                 // Important: Re-init or resize ad manager if container dimensions change while ad is active
-                currentAdManager.resize(imaAdContainer.offsetWidth, imaAdContainer.offsetHeight, google.ima.ViewMode.NORMAL);
+            } catch (error) {
+                console.error("Error liking/unliking video:", error);
+                alert("Failed to update like: " + error.message);
             }
         });
 
+        // Share functionality
+        shareButton.addEventListener('click', () => {
+            if (currentVideoData && currentVideoData.url) {
+                if (navigator.share) {
+                    navigator.share({
+                        title: currentVideoData.title,
+                        text: `Check out this video: ${currentVideoData.title}`,
+                        url: currentVideoData.url,
+                    }).then(() => console.log('Successful share'))
+                      .catch((error) => console.log('Error sharing', error));
+                } else {
+                    // Fallback for browsers that don't support Web Share API
+                    prompt('Copy this link to share:', currentVideoData.url);
+                }
+            } else {
+                alert('No video selected to share.');
+            }
+        });
+
+
+        // Comment functionality
+        commentButton.addEventListener('click', async () => {
+            if (!currentUser || currentUser.isAnonymous || !currentVideoData) {
+                alert('Please sign in to comment.');
+                return;
+            }
+
+            const commentText = commentInput.value.trim();
+            if (!commentText) {
+                alert('Comment cannot be empty.');
+                return;
+            }
+
+            const videoId = currentVideoData.id;
+            let commenterName = 'Anonymous';
+            try {
+                const profileDoc = await db.collection('artifacts').doc(appId).collection('users').doc(currentUser.uid).collection('profile').doc('data').get();
+                if (profileDoc.exists) {
+                    commenterName = profileDoc.data().username || currentUser.email.split('@')[0];
+                }
+            } catch (error) {
+                console.error("Error fetching commenter name:", error);
+            }
+
+            try {
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId).collection('comments').add({
+                    userId: currentUser.uid,
+                    username: commenterName,
+                    text: commentText,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                commentInput.value = '';
+                fetchComments(videoId); // Refresh comments
+            } catch (error) {
+                console.error("Error adding comment:", error);
+                alert("Failed to add comment: " + error.message);
+            }
+        });
+
+        async function fetchComments(videoId) {
+            commentsList.innerHTML = ''; // Clear existing comments
+            try {
+                const commentsRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId).collection('comments');
+                const querySnapshot = await commentsRef.orderBy('createdAt', 'asc').get();
+                if (querySnapshot.empty) {
+                    commentsList.innerHTML = '<p class="text-gray-500 text-center">No comments yet. Be the first to comment!</p>';
+                    return;
+                }
+                querySnapshot.forEach(doc => {
+                    const comment = doc.data();
+                    const commentItem = document.createElement('div');
+                    commentItem.className = 'comment-item';
+                    commentItem.innerHTML = `
+                        <strong>${comment.username}</strong>
+                        <p class="text-sm text-gray-300">${comment.text}</p>
+                        <span class="text-xs text-gray-500">${formatDate(comment.createdAt)}</span>
+                    `;
+                    commentsList.appendChild(commentItem);
+                });
+            } catch (error) {
+                console.error("Error fetching comments:", error);
+                commentsList.innerHTML = '<p class="text-red-500 text-center">Failed to load comments.</p>';
+            }
+        }
+
+        // Increment video view count
+        async function incrementVideoView(videoId) {
+            try {
+                const videoRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('videos').doc(videoId);
+                await videoRef.update({
+                    views: firebase.firestore.FieldValue.increment(1)
+                });
+                console.log(`View count incremented for video ${videoId}`);
+                // Optionally, update the displayed view count without re-fetching all videos
+                if (currentVideoData && currentVideoData.id === videoId) {
+                    currentVideoData.views = (currentVideoData.views || 0) + 1;
+                    videoPlayerViews.textContent = `${(currentVideoData.views).toLocaleString()} views`;
+                }
+            } catch (error) {
+                console.error("Error incrementing view count:", error);
+            }
+        }
+
+        // Initial load
+        showLoading('Initializing...');
+        // The onAuthStateChanged listener handles showing the app or auth modal
     </script>
 </body>
 </html>
